@@ -185,6 +185,7 @@ int main() {
 						}
 						newStr += s + " ";
 					}
+					newStr.pop_back();
 					str = newStr;
 					std::cout << str << std::endl;
 				}
@@ -202,6 +203,7 @@ int main() {
 						}
 						newStr += s + " ";
 					}
+					newStr.pop_back();
 					str = newStr;
 					std::cout << str << std::endl;
 				}
