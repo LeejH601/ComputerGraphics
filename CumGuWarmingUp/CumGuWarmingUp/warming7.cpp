@@ -6,9 +6,14 @@
 #include <queue>
 #include <list>
 #include <stack>
+#include <conio.h>
 
 #define MAX_BOARD_SIZE 50
 #define BOARD_OFFSET 2
+#define LEFT 75
+#define RIGHT 77
+#define UP 72
+#define DOWN 80
 
 void gotoxy(int x, int y) {
 	COORD pos = { x,y };
@@ -277,6 +282,7 @@ int main() {
 	RouteDirectionMap.emplace(3, 0);
 
 	Point player{ -1,-1 };
+	Point OldPlayerPos = player;
 	int nPlayerIndex = -1;
 
 	//makeRoute();
@@ -288,21 +294,26 @@ int main() {
 		if (nPlayerIndex == -1)
 			return;
 
+		gotoxy(OldPlayerPos.x * BOARD_OFFSET, OldPlayerPos.y * BOARD_OFFSET / 2);
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+		std::cout << std::string("бр");
+
 		player.x = Route[nPlayerIndex].x;
 		player.y = Route[nPlayerIndex].y;
 
 		gotoxy(player.x * BOARD_OFFSET, player.y * BOARD_OFFSET / 2);
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 12);
 		std::cout << std::string("б┌");
+
+		OldPlayerPos = player;
 	};
 
 	while (true)
 	{
-		char command;
+		int command;
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 		gotoxy(0, MAX_BOARD_SIZE * BOARD_OFFSET / 2);
-		std::cout << "input : ";
-		std::cin >> command;
+		command = _getch();
 		switch (command)
 		{
 		case 'n':
@@ -312,6 +323,9 @@ int main() {
 			RouteDirectionMap[3] = 0;
 
 			makeRouteAStar();
+
+			RenderBoard();
+			RenderRoute();
 
 			player.x = -1;
 			player.y = -1;
@@ -324,21 +338,27 @@ int main() {
 			player.y = Route.front().y;
 			nPlayerIndex = 0;
 			break;
-		case '+':
-			nPlayerIndex = min(nPlayerIndex + 1, Route.size() - 1);
-			break;
-		case '-':
-			nPlayerIndex = max(0, nPlayerIndex - 1);
+		case 224:
+		{
+			int dir = _getch();
+			switch (dir)
+			{
+			case LEFT:
+				nPlayerIndex = max(0, nPlayerIndex - 1);
+				break;
+			case RIGHT:
+				nPlayerIndex = min(nPlayerIndex + 1, Route.size() - 1);
+				break;
+			default:
+				break;
+			}
+		}
 			break;
 		case 'q':
 			return 0;
 		default:
 			break;
 		}
-
-		system("cls");
-		RenderBoard();
-		RenderRoute();
 
 		RenderPlayer();
 	}
