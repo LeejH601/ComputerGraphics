@@ -17,6 +17,27 @@ bool isNumeric(std::string& str) {
 	return true;
 }
 
+int isCheckResemble(std::vector<std::vector<int>>& ResembleMap, std::string& str, int i, int j) {
+	if (j - i == 1) {
+		ResembleMap[i][j] = 1;
+		return 1;
+	}
+	else if (j == i) {
+		return 0;
+	}
+
+	if (ResembleMap[i][j] != -1) {
+		return ResembleMap[i][j];
+	}
+
+	int result = 1;
+	if (isCheckResemble(ResembleMap, str, i + 1, j - 1) != 1)
+		result = 0;
+	result = str[i] == str[j] ? 1 : 0;
+
+	return result;
+};
+
 int main() {
 
 	std::string fileName;
@@ -42,7 +63,6 @@ int main() {
 	};
 
 
-
 	while (true)
 	{
 		printStr(vStrings);
@@ -63,20 +83,37 @@ int main() {
 				break;
 			case 'e':
 			{
-				std::string insertString = "@@";
-				for (std::string& str : vStrings) {
-					std::string oldStr = str;
-					str.clear();
-					int cnt = 0;
-					for (auto it = oldStr.begin(); it != oldStr.end(); ++it) {
-						str += *it;
-						cnt++;
-						if (cnt >= 3) {
-							str += "@@";
-							cnt = 0;
+				static bool insertFlag = false;
+				if (!insertFlag) {
+					std::string insertString = "@@";
+					for (std::string& str : vStrings) {
+						std::string oldStr = str;
+						str.clear();
+						int cnt = 0;
+						for (auto it = oldStr.begin(); it != oldStr.end(); ++it) {
+							str += *it;
+							cnt++;
+							if (cnt >= 3) {
+								str += "@@";
+								cnt = 0;
+							}
 						}
 					}
+					insertFlag = true;
 				}
+				else {
+					for (std::string& str : vStrings) {
+						while (true)
+						{
+							std::string::size_type it = str.find("@@");
+							if (it == std::string::npos) break;
+
+							str.erase(it, 2);
+						}
+					}
+					insertFlag = false;
+				}
+
 				printStr(vStrings);
 			}
 
@@ -110,6 +147,28 @@ int main() {
 				printStr(vStrings);
 				break;
 			case 'h':
+				for (std::string& str : vStrings) {
+					auto begin = str.begin();
+					auto end = str.end() - 1;
+
+					std::string result{ "" };
+					while (end - begin > 1)
+					{
+						if (*begin == *end) {
+							result += *begin;
+							begin++;
+							end--;
+						}
+						else
+							break;
+					}
+					if (result.size() == 0)
+						continue;
+					std::cout << str << " : ";
+					std::cout << result << std::endl;
+				}
+
+
 				break;
 			case '+':
 				for (std::string& str : vStrings) {
