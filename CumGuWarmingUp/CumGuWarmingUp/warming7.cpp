@@ -280,6 +280,10 @@ bool makeRouteAStar() {
 		for (int i = obs.leftTop.x; i <= obs.rightBottom.x; ++i) {
 			for (int j = obs.leftTop.y; j <= obs.rightBottom.y; ++j) {
 				globalClosed.emplace_back(Point(i, j), FLT_MAX, FLT_MAX, Point(-1, -1));
+
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 12);
+				gotoxy(i * BOARD_OFFSET, j * BOARD_OFFSET / 2);
+				std::cout << std::string("бс");
 			}
 		}
 	}
@@ -287,11 +291,20 @@ bool makeRouteAStar() {
 	for (int i = 0; i < nGoals - 1; ++i) {
 		std::list<NODE> OpenNodes;
 		std::vector<NODE> CloseNodes = globalClosed;
+		int nContinueCount = 0;
+		int prevDir = -1;
 
 		Point startPoint = GoalList[i];
 		Point nextGoal = GoalList[i + 1];
+		Point PrevPoint = startPoint;
 
 		OpenNodes.emplace_back(startPoint, 0, 0, Point(-1, -1));
+
+		for (auto& nd : CloseNodes) {
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 12);
+			gotoxy(nd.GetPoint().x * BOARD_OFFSET, nd.GetPoint().y * BOARD_OFFSET / 2);
+			std::cout << std::string("бс");
+		}
 
 		while (true)
 		{
@@ -307,6 +320,11 @@ bool makeRouteAStar() {
 
 			CloseNodes.push_back(node);
 
+			/*SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 6);
+			gotoxy(node.GetPoint().x * BOARD_OFFSET, node.GetPoint().y * BOARD_OFFSET / 2);
+			std::cout << std::string("бс");*/
+			//Sleep(1);
+
 			if (node.GetPoint() == nextGoal) {
 				break;
 			}
@@ -321,11 +339,18 @@ bool makeRouteAStar() {
 						}) == CloseNodes.end()
 							)
 				{
+
 					auto it = std::find_if(OpenNodes.begin(), OpenNodes.end(), [&](const NODE& _node) {
 						return _node.GetPoint() == newP;
 						});
-					if (it == OpenNodes.end())
+					if (it == OpenNodes.end()) {
 						OpenNodes.emplace_back(newP, node.GetGScore() + 1, distance(newP, nextGoal), p);
+
+						SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);
+						gotoxy(node.GetPoint().x * BOARD_OFFSET, node.GetPoint().y * BOARD_OFFSET / 2);
+						std::cout << std::string("бс");
+
+					}
 					else {
 						float g = node.GetGScore() + 1;
 						float h = distance(newP, nextGoal);
@@ -337,6 +362,10 @@ bool makeRouteAStar() {
 					}
 				}
 			}
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 13);
+			gotoxy(nextGoal.x * BOARD_OFFSET, nextGoal.y * BOARD_OFFSET / 2);
+			std::cout << std::string("бс");
+			//Sleep(1);
 		}
 
 		std::stack<Point> reversePath;
@@ -362,7 +391,22 @@ bool makeRouteAStar() {
 			Route.push_back(reversePath.top());
 			reversePath.pop();
 		}
+
+		system("cls");
+		for (auto& p : Route) {
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+			gotoxy(p.x * BOARD_OFFSET, p.y * BOARD_OFFSET / 2);
+			std::cout << std::string("бр");
+		}
+
+		for (int j = 0; j <= i; ++j) {
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 9);
+			gotoxy(GoalList[j].x * BOARD_OFFSET, GoalList[j].y * BOARD_OFFSET / 2);
+			std::cout << std::string("бс");
+		}
 	}
+
+	
 
 	return true;
 }
