@@ -481,7 +481,7 @@ void RenderBoard() {
 }
 
 void RenderRoute() {
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
 	for (Point& p : Route) {
 		gotoxy(p.x * BOARD_OFFSET, p.y * BOARD_OFFSET / 2);
 		std::cout << std::string("бр");
@@ -489,6 +489,8 @@ void RenderRoute() {
 }
 
 int main() {
+	system("mode con cols=200 lines=200 | title warmingUp7");
+
 	RouteDirectionMap.emplace(0, 0);
 	RouteDirectionMap.emplace(1, 0);
 	RouteDirectionMap.emplace(2, 0);
@@ -518,7 +520,7 @@ int main() {
 			return;
 
 		gotoxy(OldPlayerPos.x * BOARD_OFFSET, OldPlayerPos.y * BOARD_OFFSET / 2);
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
 		std::cout << std::string("бр");
 
 		player.x = Route[nPlayerIndex].x;
