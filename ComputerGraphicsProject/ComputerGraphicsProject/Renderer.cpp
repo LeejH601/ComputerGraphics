@@ -22,7 +22,7 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 	//m_SolidRectShader = CompileShaders("./Shaders/SolidRect.vs",
 		//"./Shaders/SolidRect.fs");
 
-	TestShader = CompileShaders((char*)"./Shaders/PBR.vs", (char*)"./Shaders/PBR.fs");
+	TestShader = CompileShaders((char*)"./Shaders/PBR_vs.glsl", (char*)"./Shaders/PBR_ps.glsl");
 
 
 
@@ -225,12 +225,12 @@ GLuint CRenderer::CompileShaders(char* filenameVS, char* filenameFS)
 	};
 
 	// ShaderProgram 에 vs.c_str() 버텍스 쉐이더를 컴파일한 결과를 attach함
-	AddShader(ShaderProgram, vs.c_str(), GL_VERTEX_SHADER);
-	//glAttachShader(ShaderProgram, MakeVertexShader(filenameVS, 0));
+	//AddShader(ShaderProgram, vs.c_str(), GL_VERTEX_SHADER);
+	glAttachShader(ShaderProgram, MakeVertexShader(filenameVS, 0));
 
 	// ShaderProgram 에 fs.c_str() 프레그먼트 쉐이더를 컴파일한 결과를 attach함
-	AddShader(ShaderProgram, fs.c_str(), GL_FRAGMENT_SHADER);
-	//glAttachShader(ShaderProgram, MakeFragmentShader(filenameFS, 0));
+	//AddShader(ShaderProgram, fs.c_str(), GL_FRAGMENT_SHADER);
+	glAttachShader(ShaderProgram, MakeFragmentShader(filenameFS, 0));
 
 	GLint Success = 0;
 	GLchar ErrorLog[1024] = { 0 };

@@ -25,5 +25,8 @@ public:
 	void GenerateProjectionMatrix(float fov, float aspect, float zNear, float zFar);
 
 	virtual void BindShaderVariables(GLuint s_Program);
+
+	glm::vec3 GetPosition() { return m_f3Position; };
+	void SetPosision(glm::vec3 pos) { m_f3Position = pos; };
 };
 

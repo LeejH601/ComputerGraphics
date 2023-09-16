@@ -5,11 +5,17 @@ in vec3 Normal;
 
 out vec4 FragColor;
 
-uniform mat4 gmtxWorld;
-uniform mat4 gmtxVeiw;
-uniform mat4 gmtxProj;
 
 void main()
 {
-	FragColor = vec4(1.0f,0.0f,0.0f,1.0f);
+	//FragColor = vec4(WorldPos,1.0f);
+
+	vec3 vToLight = normalize(vec3(1, 1, 0));
+	float fDiffuseFactor = dot(vToLight, Normal);
+
+	vec4 cColor = vec4(1,0,0,1.0f);
+	//cColor.rgb *= fDiffuseFactor;
+	//cColor.rgb *= vec3(1,1,1);
+	//cColor.rgb *= WorldPos;
+	FragColor = cColor;
 }

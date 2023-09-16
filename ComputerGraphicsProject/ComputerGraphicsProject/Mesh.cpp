@@ -18,6 +18,46 @@ std::shared_ptr<CMesh> CMesh::CreateCubeMesh(float fWidth, float fHeight, float 
 		1, 6, 2
 	};
 
+	static unsigned int cubeShapeindex2[] = {
+		// ¿∞∏È√º
+		0, 2, 1,
+		0, 3, 2,
+		7, 5, 6,
+		7, 4, 5,
+		3, 6, 2,
+		3, 7, 6,
+		4, 1, 5,
+		4, 0, 1,
+		4, 3, 0,
+		4, 7, 3,
+		1, 6, 5,
+		1, 1, 6
+	};
+
+	//static GLuint indices[] = {
+	//	// Front face
+	//	0, 1, 2, 2, 3, 0,
+
+	//	// Back face
+	//	4, 5, 6, 6, 7, 4,
+
+	//	// Top face
+	//	0, 3, 7, 7, 4, 0,
+
+	//	// Bottom face
+	//	1, 2, 6, 6, 5, 1,
+
+	//	// Left face
+	//	0, 1, 5, 5, 4, 0,
+
+	//	// Right face
+	//	2, 3, 7, 7, 6, 2
+	//};
+
+	static GLuint indices[] = {
+	0, 1, 2, 3, 7, 6, 5, 4, 0, 1
+	};
+
 	static GLfloat cubeNormal[][3] = {
 	{0.0, 0.0, 1.0},
 	{0.0, 0.0, -1.0},
@@ -42,7 +82,15 @@ std::shared_ptr<CMesh> CMesh::CreateCubeMesh(float fWidth, float fHeight, float 
 	mesh->m_pVertices[6].position = glm::vec3(fx, -fy, -fz);
 	mesh->m_pVertices[7].position = glm::vec3(fx, fy, -fz);
 
-	//mesh->m_pVertices[0].normal = 
+
+	mesh->m_pVertices[0].normal = glm::normalize(mesh->m_pVertices[0].position);
+	mesh->m_pVertices[1].normal = glm::normalize(mesh->m_pVertices[1].position);
+	mesh->m_pVertices[2].normal = glm::normalize(mesh->m_pVertices[2].position);
+	mesh->m_pVertices[3].normal = glm::normalize(mesh->m_pVertices[3].position);
+	mesh->m_pVertices[4].normal = glm::normalize(mesh->m_pVertices[4].position);
+	mesh->m_pVertices[5].normal = glm::normalize(mesh->m_pVertices[5].position);
+	mesh->m_pVertices[6].normal = glm::normalize(mesh->m_pVertices[6].position);
+	mesh->m_pVertices[7].normal = glm::normalize(mesh->m_pVertices[7].position);
 	
 	mesh->m_nSubMeshes = 1;
 	mesh->m_pnSubSetIndices.resize(mesh->m_nSubMeshes);
@@ -97,13 +145,15 @@ void CMesh::CreateShaderVariables()
 	//glBindVertexArray(m_VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+	
 	glBufferData(GL_ARRAY_BUFFER, sizeof(CMesh::Vertex) * m_pVertices.size(), m_pVertices.data(), GL_STATIC_DRAW);
 
 	m_IBOs.resize(m_nSubMeshes);
 	for (int i = 0; i < m_nSubMeshes; ++i) {
 		glGenBuffers(1, &m_IBOs[i]);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBOs[i]);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_pnSubSetIndices[i], m_ppnSubSetIndices[i].data(), GL_STATIC_DRAW);
+		long long test = m_pnSubSetIndices[i] * sizeof(UINT);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_pnSubSetIndices[i] * sizeof(UINT), m_ppnSubSetIndices[i].data(), GL_STATIC_DRAW);
 	}
 }
 
@@ -117,7 +167,7 @@ void CMesh::BindShaderVariables(GLuint s_Program)
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 	glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(CMesh::Vertex), 0);
 	glVertexAttribPointer(normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(CMesh::Vertex),
-		(GLvoid*)(sizeof(glm::vec3)));
+		(GLvoid*)(sizeof(float) * 3));
 }
 
 void CMesh::Render()
@@ -125,7 +175,8 @@ void CMesh::Render()
 	if (m_nSubMeshes > 0) {
 		for (int i = 0; i < m_nSubMeshes; ++i) {
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBOs[i]);
-			glDrawElements(GL_TRIANGLES, m_pnSubSetIndices[i], GL_UNSIGNED_INT, m_ppnSubSetIndices[i].data());
+			//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, m_ppnSubSetIndices[i].data());
+			glDrawElements(GL_TRIANGLES, m_pnSubSetIndices[i] * sizeof(UINT), GL_UNSIGNED_INT, NULL);
 		}
 	}
 }

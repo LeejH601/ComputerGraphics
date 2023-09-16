@@ -1,13 +1,13 @@
 #version 330 core
-layout (location = 0) in vec3 v_Position;
-layout (location = 1) in vec3 v_Normal;
+in vec3 v_Position;
+in vec3 v_Normal;
 
 out vec3 WorldPos;
 out vec3 Normal;
 
+uniform mat4 projectionTransform;
 uniform mat4 worldTransform;
 uniform mat4 viewTransform;
-uniform mat4 projectionTransform;
 
 void main()
 {

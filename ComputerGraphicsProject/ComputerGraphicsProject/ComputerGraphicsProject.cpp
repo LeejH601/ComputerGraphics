@@ -21,18 +21,23 @@ void RenderScene(void)
 	//glClear(GL_DEPTH_BUFFER_BIT);
 	//g_Renderer->DrawAlphaClear();
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glCullFace(GL_BACK);
+	glPolygonMode(GL_FRONT, GL_FILL);
+	glPolygonMode(GL_BACK, GL_LINE);
 
 	GLuint s_Program = g_Renderer->TestShader;
 	glUseProgram(s_Program);
-
 	g_pMainCamera->BindShaderVariables(s_Program);
+	g_pTestObj->BindShaderVariables(s_Program);
+	g_pTestObj->Render();
+
+	/*g_pMainCamera->BindShaderVariables(s_Program);
 
 	g_pTestObj->BindShaderVariables(s_Program);
 
 
-	g_pTestObj->Render();
-	
+	g_pTestObj->Render();*/
+
 
 	glutSwapBuffers();
 }
@@ -49,6 +54,29 @@ void MouseInput(int button, int state, int x, int y)
 
 void KeyInput(unsigned char key, int x, int y)
 {
+	switch (key)
+	{
+	case 'w':
+		g_pMainCamera->SetPosision(g_pMainCamera->GetPosition() + glm::vec3(0, 0, -0.1));
+		break;
+	case 's':
+		g_pMainCamera->SetPosision(g_pMainCamera->GetPosition() + glm::vec3(0, 0, 0.1));
+		break;
+	case 'd':
+		g_pMainCamera->SetPosision(g_pMainCamera->GetPosition() + glm::vec3(0.1, 0, 0));
+		break;
+	case 'a':
+		g_pMainCamera->SetPosision(g_pMainCamera->GetPosition() + glm::vec3(-0.1, 0, 0));
+		break;
+	case 'q':
+		g_pMainCamera->SetPosision(g_pMainCamera->GetPosition() + glm::vec3(0, -0.1, 0));
+		break;
+	case 'e':
+		g_pMainCamera->SetPosision(g_pMainCamera->GetPosition() + glm::vec3(0, 0.1, 0));
+		break;
+	default:
+		break;
+	}
 	RenderScene();
 }
 

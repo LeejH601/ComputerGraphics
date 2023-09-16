@@ -5,11 +5,8 @@ in vec3 Normal;
 
 out vec4 FragColor;
 
-uniform mat4 worldTransform;
-uniform mat4 viewTransform;
-uniform mat4 projectionTransform;
 
 void main()
 {
-	FragColor = vec4(1.0f,0.0f,0.0f,1.0f);
+	FragColor = vec4(Normal,1.0f);
 }
