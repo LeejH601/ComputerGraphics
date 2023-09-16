@@ -4,11 +4,16 @@
 #include "Dependencies\freeglut.h"
 
 #include "Renderer.h"
+#include "Camera.h"
+#include "Object.h"
+#include "Mesh.h"
 
 CRenderer* g_Renderer = NULL;
+std::unique_ptr<CCamera> g_pMainCamera = nullptr;
+std::unique_ptr<CObject> g_pTestObj = nullptr;
 
-int g_WindowSizeX = 512;
-int g_WindowSizeY = 512;
+int g_WindowSizeX = 1280;
+int g_WindowSizeY = 768;
 
 void RenderScene(void)
 {
@@ -16,7 +21,15 @@ void RenderScene(void)
 	//glClear(GL_DEPTH_BUFFER_BIT);
 	//g_Renderer->DrawAlphaClear();
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+	GLuint s_Program = g_Renderer->TestShader;
+
+	g_pMainCamera->BindShaderVariables(s_Program);
+
+	g_pTestObj->BindShaderVariables(s_Program);
+	g_pTestObj->Render();
+	
 
 	glutSwapBuffers();
 }
@@ -65,6 +78,16 @@ int main(int argc, char** argv)
 	{
 		std::cout << "Renderer could not be initialized.. \n";
 	}
+
+	g_pMainCamera = std::make_unique<CCamera>();
+
+	g_pMainCamera->RegenarationViewMatrix();
+	g_pMainCamera->GenerateProjectionMatrix(glm::radians(65.0f), (float)g_WindowSizeX / (float)g_WindowSizeY, 0.1f, 50.0f);
+
+	g_pTestObj = std::make_unique<CObject>();
+	std::shared_ptr<CMesh> testCubeMesh;
+	testCubeMesh = CMesh::CreateCubeMesh(1.0f, 1.0f, 1.0f);
+	g_pTestObj->SetMesh(testCubeMesh.get());
 
 	glutDisplayFunc(RenderScene);
 	glutIdleFunc(Idle);

@@ -32,6 +32,10 @@ public:
 	CObject& operator=(const CObject& other);
 	CObject& operator=(CObject&& other) noexcept;
 
+	virtual void Render();
 
+	virtual void BindShaderVariables(GLuint s_Program);
+
+	void SetMesh(CMesh* mesh) { m_pMesh = mesh; };
 };
 

@@ -17,6 +17,7 @@ public:
 	bool IsInitialized();
 	void DrawSolidRect(float x, float y, float z, float size, float r, float g, float b, float a);
 	
+	GLuint TestShader;
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);
@@ -29,5 +30,7 @@ private:
 
 	unsigned int m_WindowSizeX = 0;
 	unsigned int m_WindowSizeY = 0;
+
+
 };
 

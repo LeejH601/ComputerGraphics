@@ -22,6 +22,7 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 	//m_SolidRectShader = CompileShaders("./Shaders/SolidRect.vs",
 		//"./Shaders/SolidRect.fs");
 
+	TestShader = CompileShaders((char*)"Shaders/PBR_vs.glsl", (char*)"Shaders/PBR_ps.glsl");
 
 
 

@@ -2,7 +2,9 @@
 
 #include <stdio.h>
 #include <tchar.h>
-
+#include <vector>
+#include <string>
+#include <memory>
 
 #include "Dependencies/glew.h"
 #include "Dependencies/freeglut.h"
