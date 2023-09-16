@@ -158,7 +158,9 @@ int main() {
 		auto startTime = std::chrono::high_resolution_clock::now();
 		auto endTime = startTime;
 		int nReverseCount = 0;
-		while (!CheckEnd())
+		bool resetFlag = false;
+		bool clearCheat = false;
+		while (!CheckEnd() && !resetFlag && !clearCheat)
 		{
 
 			try
@@ -219,6 +221,12 @@ int main() {
 						break;
 					}
 					break;
+				case 'r':
+					resetFlag = true;
+					break;
+				case 'e':
+					clearCheat = true;
+					break;
 				default:
 					break;
 				}
@@ -232,25 +240,43 @@ int main() {
 			}
 
 		}
-		endTime = std::chrono::high_resolution_clock::now();
+		
 
-		gotoxy(0, 2 * BOARD_WIDTH + BOARD_WIDTH / 2);
-		std::cout << "Clear" << std::endl;
-		std::cout << "걸린 시간 : " << std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count() << std::endl;
-		std::cout << "뒤집은 횟수 : " << nReverseCount << std::endl;
-		//nReverseCount = 18;
-		float result = nReverseCount - 16;
-		result /= 5.0f;
-		result = (-5.f * log10(result + 2.f) + 6) / 4.0f;
-		result *= 100.0f;
-		result = max(0.0f, min(result, 100.0f));
-		std::wcout << "총점 : " << result << std::endl;
-		std::cout << "r 키를 눌러 재시작";
-		int command = _getch();
-		if (command == 'r')
-			continue;
-		else
-			break;
+		if (!resetFlag) {
+			if (clearCheat) {
+				for (int i = 0; i < BOARD_WIDTH; ++i) {
+					for (int j = 0; j < BOARD_WIDTH; ++j) {
+						board[i][j].SetIsReverse(false);
+					}
+				}
+			}
+			showBoard();
+			endTime = std::chrono::high_resolution_clock::now();
+
+			gotoxy(0, 2 * BOARD_WIDTH + BOARD_WIDTH / 2);
+			std::cout << "Clear" << std::endl;
+			std::cout << "걸린 시간 : " << std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count() << std::endl;
+			std::cout << "뒤집은 횟수 : " << nReverseCount << std::endl;
+			//nReverseCount = 18;
+			float result = nReverseCount - 16;
+			result /= 5.0f;
+			result = (-5.f * log10(result + 2.f) + 6) / 4.0f;
+			result *= 100.0f;
+			result = max(0.0f, min(result, 100.0f));
+			std::wcout << "총점 : " << result << std::endl;
+
+			std::cout << "r 키를 눌러 재시작";
+			int command = _getch();
+			if (command == 'r')
+				continue;
+			else
+				break;
+		}
+		else {
+			gotoxy(0, 2 * BOARD_WIDTH + BOARD_WIDTH / 2);
+			std::cout << "게임을 리셋합니다." << std::endl;
+			system("pause");
+		}
 	}
 
 
