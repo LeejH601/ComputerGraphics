@@ -24,10 +24,13 @@ void RenderScene(void)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	GLuint s_Program = g_Renderer->TestShader;
+	glUseProgram(s_Program);
 
 	g_pMainCamera->BindShaderVariables(s_Program);
 
 	g_pTestObj->BindShaderVariables(s_Program);
+
+
 	g_pTestObj->Render();
 	
 
@@ -87,6 +90,7 @@ int main(int argc, char** argv)
 	g_pTestObj = std::make_unique<CObject>();
 	std::shared_ptr<CMesh> testCubeMesh;
 	testCubeMesh = CMesh::CreateCubeMesh(1.0f, 1.0f, 1.0f);
+	testCubeMesh->CreateShaderVariables();
 	g_pTestObj->SetMesh(testCubeMesh.get());
 
 	glutDisplayFunc(RenderScene);

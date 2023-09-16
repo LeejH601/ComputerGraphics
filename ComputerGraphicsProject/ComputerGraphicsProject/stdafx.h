@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <iostream>
+#include <sstream>
 
 #include "Dependencies/glew.h"
 #include "Dependencies/freeglut.h"

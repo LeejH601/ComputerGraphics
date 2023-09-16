@@ -5,9 +5,9 @@ in vec3 Normal;
 
 out vec4 FragColor;
 
-uniform mat4 gmtxWorld;
-uniform mat4 gmtxVeiw;
-uniform mat4 gmtxProj;
+uniform mat4 worldTransform;
+uniform mat4 viewTransform;
+uniform mat4 projectionTransform;
 
 void main()
 {

@@ -67,7 +67,7 @@ void CObject::Render()
 
 void CObject::BindShaderVariables(GLuint s_Program)
 {
-	GLuint worldLoc = glGetUniformLocation(s_Program, "gmtxWorld");
+	GLuint worldLoc = glGetUniformLocation(s_Program, "worldTransform");
 	glEnableVertexAttribArray(worldLoc);
 
 	glUniformMatrix4fv(worldLoc, 1, GL_FALSE, glm::value_ptr(m_mat4x4Wolrd));

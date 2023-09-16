@@ -6,6 +6,8 @@ CCamera::CCamera()
 	m_f3Look = { 0,1,0 };
 	m_f3Up = { 0,0,1 };
 	m_f3Right = { 1,0,0 };
+
+	m_f4ViewPort = { 0,0,1280,768 };
 }
 
 CCamera::~CCamera()
@@ -28,13 +30,15 @@ void CCamera::BindShaderVariables(GLuint s_Program)
 {
 	if (s_Program == -1)
 		return;
+	glViewport(m_f4ViewPort.x, m_f4ViewPort.y, m_f4ViewPort.z, m_f4ViewPort.w);
+
 	RegenarationViewMatrix();
 
-	unsigned int viewLocation;
-	unsigned int projectionLocation;
+	GLuint viewLocation;
+	GLuint projectionLocation;
 
-	viewLocation = glGetUniformLocation(s_Program, "gmtxVeiw");	// ViewMatrix
-	projectionLocation = glGetUniformLocation(s_Program, "gmtxProj");	// ProjMatrix
+	viewLocation = glGetUniformLocation(s_Program, "viewTransform");	// ViewMatrix
+	projectionLocation = glGetUniformLocation(s_Program, "projectionTransform");	// ProjMatrix
 
 	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &m_mat4x4View[0][0]);
 	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &m_mat4x4Projection[0][0]);

@@ -1,6 +1,7 @@
 #version 330 core
-layout (location = 0) in vec3 v_Position;
-layout (location = 1) in vec3 v_Normal;
+
+in vec3 v_Position;
+in vec3 v_Normal;
 
 out vec3 WorldPos;
 out vec3 Normal;

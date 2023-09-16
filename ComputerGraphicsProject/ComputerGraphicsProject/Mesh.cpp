@@ -91,15 +91,17 @@ std::shared_ptr<CMesh> CMesh::LoadMeshFromFile(std::string fileName)
 
 void CMesh::CreateShaderVariables()
 {
-	glGenVertexArrays(1, &m_VAO);
+	//glGenVertexArrays(1, &m_VAO);
 	glGenBuffers(1, &m_VBO);
 
-	glBindVertexArray(m_VAO);
+	//glBindVertexArray(m_VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(CMesh::Vertex) * m_pVertices.size(), m_pVertices.data(), GL_STATIC_DRAW);
 
+	m_IBOs.resize(m_nSubMeshes);
 	for (int i = 0; i < m_nSubMeshes; ++i) {
+		glGenBuffers(1, &m_IBOs[i]);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBOs[i]);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_pnSubSetIndices[i], m_ppnSubSetIndices[i].data(), GL_STATIC_DRAW);
 	}
@@ -107,9 +109,9 @@ void CMesh::CreateShaderVariables()
 
 void CMesh::BindShaderVariables(GLuint s_Program)
 {
-	GLuint posLoc = glGetAttribLocation(s_Program, "vPosition");
+	GLuint posLoc = glGetAttribLocation(s_Program, "v_Position");
 	glEnableVertexAttribArray(posLoc);
-	GLuint normalLoc = glGetAttribLocation(s_Program, "vNormal");
+	GLuint normalLoc = glGetAttribLocation(s_Program, "v_Normal");
 	glEnableVertexAttribArray(normalLoc);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);

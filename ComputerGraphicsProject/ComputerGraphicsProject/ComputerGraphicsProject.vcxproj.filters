@@ -60,5 +60,7 @@
   <ItemGroup>
     <None Include="Shaders\PBR_ps.glsl" />
     <None Include="Shaders\PBR_vs.glsl" />
+    <None Include="Shaders\PBR.fs" />
+    <None Include="Shaders\PBR.vs" />
   </ItemGroup>
 </Project>

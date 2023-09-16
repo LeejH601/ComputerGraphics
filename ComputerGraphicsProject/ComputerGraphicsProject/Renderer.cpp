@@ -22,7 +22,7 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 	//m_SolidRectShader = CompileShaders("./Shaders/SolidRect.vs",
 		//"./Shaders/SolidRect.fs");
 
-	TestShader = CompileShaders((char*)"Shaders/PBR_vs.glsl", (char*)"Shaders/PBR_ps.glsl");
+	TestShader = CompileShaders((char*)"./Shaders/PBR.vs", (char*)"./Shaders/PBR.fs");
 
 
 
@@ -73,6 +73,118 @@ void CRenderer::AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum 
 	glAttachShader(ShaderProgram, ShaderObj);
 }
 
+int CRenderer::MakeVertexShader(const char* vertexPath, int n)
+{
+	unsigned int ID;
+
+	// 1. retrieve the vertex/fragment source code from filePath
+	std::string vertexCode;
+	std::ifstream vShaderFile;
+
+	// ensure ifstream objects can throw exceptions:
+	vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	try
+	{
+		// open files
+		vShaderFile.open(vertexPath);
+
+		std::stringstream vShaderStream;
+
+		// read file's buffer contents into streams
+		vShaderStream << vShaderFile.rdbuf();
+
+		// close file handlers
+		vShaderFile.close();
+
+		// convert stream into string
+		vertexCode = vShaderStream.str();
+	}
+	catch (std::ifstream::failure e)
+	{
+		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+	}
+	const char* vShaderCode = vertexCode.c_str();
+
+	// 2. compile shaders
+	//unsigned int vertex, fragment;
+
+	// vertex shader
+	ID = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(ID, 1, &vShaderCode, NULL);
+	glCompileShader(ID);
+	checkCompileErrors(ID, "VERTEX");
+	return ID;
+}
+
+int CRenderer::MakeFragmentShader(const char* fragmentPath, int count)
+{
+	unsigned int ID;
+
+	// 1. retrieve the vertex/fragment source code from filePath
+
+	std::string fragmentCode;
+	std::ifstream fShaderFile;
+
+	// ensure ifstream objects can throw exceptions:
+	fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	try
+	{
+		// open files
+		fShaderFile.open(fragmentPath);
+		std::stringstream vShaderStream, fShaderStream;
+
+		// read file's buffer contents into streams
+		fShaderStream << fShaderFile.rdbuf();
+
+		// close file handlers
+		fShaderFile.close();
+
+		// convert stream into string
+		fragmentCode = fShaderStream.str();
+	}
+	catch (std::ifstream::failure e)
+	{
+		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+	}
+
+	const char* fShaderCode = fragmentCode.c_str();
+
+	// 2. compile shaders
+	//unsigned int vertex, fragment;
+
+	// fragment Shader
+	ID = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(ID, 1, &fShaderCode, NULL);
+	glCompileShader(ID);
+	checkCompileErrors(ID, "FRAGMENT");
+
+	return ID;
+}
+
+void CRenderer::checkCompileErrors(unsigned int shader, std::string type)
+{
+	int success;
+	char infoLog[1024];
+	if (type != "PROGRAM")
+	{
+		glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+		if (!success)
+		{
+			glGetShaderInfoLog(shader, 1024, NULL, infoLog);
+			std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+		}
+	}
+	else
+	{
+		glGetProgramiv(shader, GL_LINK_STATUS, &success);
+		if (!success)
+		{
+			glGetProgramInfoLog(shader, 1024, NULL, infoLog);
+			std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+		}
+	}
+}
+
 bool CRenderer::ReadFile(char* filename, std::string* target)
 {
 	std::ifstream file(filename);
@@ -114,9 +226,11 @@ GLuint CRenderer::CompileShaders(char* filenameVS, char* filenameFS)
 
 	// ShaderProgram 에 vs.c_str() 버텍스 쉐이더를 컴파일한 결과를 attach함
 	AddShader(ShaderProgram, vs.c_str(), GL_VERTEX_SHADER);
+	//glAttachShader(ShaderProgram, MakeVertexShader(filenameVS, 0));
 
 	// ShaderProgram 에 fs.c_str() 프레그먼트 쉐이더를 컴파일한 결과를 attach함
 	AddShader(ShaderProgram, fs.c_str(), GL_FRAGMENT_SHADER);
+	//glAttachShader(ShaderProgram, MakeFragmentShader(filenameFS, 0));
 
 	GLint Success = 0;
 	GLchar ErrorLog[1024] = { 0 };
