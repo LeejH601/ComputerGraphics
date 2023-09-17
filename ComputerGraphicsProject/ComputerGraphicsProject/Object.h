@@ -11,9 +11,9 @@ class CObject
 	glm::mat4x4 m_mat4x4Transform;
 	glm::mat4x4 m_mat4x4Wolrd;
 
-	glm::vec4 m_f4Rotation;
-	glm::vec3 m_f3Position;
-	glm::vec3 m_f3Scale;
+	glm::vec4 m_vec4Rotation;
+	glm::vec3 m_vec3Position;
+	glm::vec3 m_vec3Scale;
 
 	CMesh* m_pMesh = nullptr;
 

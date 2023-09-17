@@ -4,18 +4,18 @@
 class CCamera
 {
 private:
-	glm::vec4 m_f4Rotation;
-	glm::vec3 m_f3Position;
+	glm::vec4 m_vec4Rotation;
+	glm::vec3 m_vec3Position;
 
-	glm::vec3 m_f3Look;
-	glm::vec3 m_f3Up;
-	glm::vec3 m_f3Right;
+	glm::vec3 m_vec3Look;
+	glm::vec3 m_vec3Up;
+	glm::vec3 m_vec3Right;
 
 public:
 	glm::mat4x4 m_mat4x4Projection;
 	glm::mat4x4 m_mat4x4View;
 
-	glm::vec4 m_f4ViewPort;
+	glm::vec4 m_vec4ViewPort;
 
 public:
 	CCamera();
@@ -26,7 +26,7 @@ public:
 
 	virtual void BindShaderVariables(GLuint s_Program);
 
-	glm::vec3 GetPosition() { return m_f3Position; };
-	void SetPosision(glm::vec3 pos) { m_f3Position = pos; };
+	glm::vec3 GetPosition() { return m_vec3Position; };
+	void SetPosision(glm::vec3 pos) { m_vec3Position = pos; };
 };
 
