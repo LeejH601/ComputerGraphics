@@ -71,8 +71,8 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 normal, vec3 ToLig
 	float Specular = (D * G * F) / (4 * NdotL * NdotV);
 
 
-	//FinalColor += mix(Diffuse, vec3(Specular) * SpecularColor, Metallic) ;
-	FinalColor += Diffuse;
+	FinalColor += mix(Diffuse, vec3(Specular) * SpecularColor, Metallic) ;
+	//FinalColor += Diffuse;
 
 
 	return FinalColor;

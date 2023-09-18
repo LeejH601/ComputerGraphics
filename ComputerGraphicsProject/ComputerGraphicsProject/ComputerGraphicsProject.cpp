@@ -135,7 +135,7 @@ int main(int argc, char** argv)
 	testCubeMesh->CreateShaderVariables();
 
 	std::shared_ptr<CMesh> testSphereMesh;
-	testSphereMesh = CMesh::CreateSphereMesh(32, 32);
+	testSphereMesh = CMesh::CreateSphereMesh(20, 20);
 	testSphereMesh->CreateShaderVariables();
 
 	g_pTestObj->SetMesh(testSphereMesh.get());
