@@ -18,42 +18,34 @@ uniform Light gMainLight;
 uniform vec3 CameraPosition;
 
 const float roughness = 0.5f;
-const float Fresnel = 0.22f;
+const float Fresnel = 1.46f;
 const float Metallic = 0.04f;
 const vec3 SpecularColor = vec3(1,1,1);
 
-float NDF_GGXTR(vec3 n, vec3 h, float a)
+float GGX_Trowbridge_Reitz(vec3 n, vec3 h, float r)
 {
-	float a_pow = pow(a, 2);
-	return a_pow / (c_PI * pow(  pow(dot(n,h),2) * (a_pow - 1.f) + 1.f , 2) );
+	float a = pow(r, 2);
+	
+	float NdotH = dot(n, h);
+	return pow(a , 2) / ( c_PI * pow( pow(NdotH, 2) * (pow(a , 2) - 1) + 1 ,2 ) );
 
-	float d = (dot(n,h) * a_pow - dot(n,h)) * dot(n,h) + 1;
-	return a_pow / (c_PI * d * d);
 }
 
-float Fresnel_Cook_Torrance(vec3 h, vec3 v, float F0)
+float G_Schlick_GGX(vec3 v, vec3 n, float r)
 {
-	float n = (1 + sqrt(F0)) / (1 - sqrt(F0));
-	float c = dot(h, v);
-	float g = sqrt( pow(n, 2) + pow(c , 2) -1 );
-	return 0.5f * pow( (g - c) / (g + c), 2) * ( 1.0f + pow( ((g + c) * c - 1)  / ((g - c) * c + 1) , 2) );
-}
-vec3 FresnelSchlick(vec3 h, vec3 v, vec3 F0)
-{
-	return F0 + ( (1.f - F0 ) * pow( 1.f - (dot(h, v)) , 5 ) );
-}
+	float a = pow(r, 2);
 
-vec3 Unreal_F_Schlick(vec3 specularColor, vec3 h, vec3 v)
-{
-	float Fc = pow((1 - dot(v, h)), 5);
+	float k = a / 2;
 
-	return clamp( (50.0f * specularColor.g) * Fc + (1 - Fc) * specularColor, 0.0f, 1.0f);
+	float NdotV = dot(n, v);
+
+	return NdotV / ( NdotV * (1 - k) + k );
 }
 
-float SchlickGGX(vec3 n, vec3 v, float a)
+float F_Cook_Torrance(vec3 v, vec3 h, float F0)
 {
-	float k = a * sqrt(2 / c_PI);
-	return dot(n, v) / ( (dot(n,v) * ( 1.f - k )) + k );
+	float VdotH = dot(v, h);
+	return F0 + (1 - F0) * pow( 1 - VdotH , 5);
 }
 
 vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 normal, vec3 ToLight)
@@ -65,7 +57,23 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 normal, vec3 ToLig
 	float Lambert = NdotL / c_PI;
 	Diffuse = Lambert * BaseColor;
 
+	vec3 half = normalize(ToLight + normal);
+	vec3 view = normalize( CameraPosition - WorldPos);
+
+	float D = GGX_Trowbridge_Reitz(normal, half, roughness);
+	float G = G_Schlick_GGX(view, normal, roughness);
+
+	float F0 = pow( (Fresnel - 1) / (Fresnel + 1) ,2 );
+	float F = F_Cook_Torrance(view, half, F0);
+
+
+	float NdotV = dot(normal, view);
+	float Specular = (D * G * F) / (4 * NdotL * NdotV);
+
+
+	//FinalColor += mix(Diffuse, vec3(Specular) * SpecularColor, Metallic) ;
 	FinalColor += Diffuse;
+
 
 	return FinalColor;
 };

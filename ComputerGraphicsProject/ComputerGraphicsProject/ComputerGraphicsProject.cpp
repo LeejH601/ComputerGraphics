@@ -131,7 +131,7 @@ int main(int argc, char** argv)
 
 	g_pTestObj = std::make_unique<CObject>();
 	std::shared_ptr<CMesh> testCubeMesh;
-	testCubeMesh = CMesh::CreateCubeMeshForIndex(5.0f, 5.0f, 5.0f);
+	testCubeMesh = CMesh::CreateCubeMesh(5.0f, 5.0f, 5.0f);
 	testCubeMesh->CreateShaderVariables();
 
 	std::shared_ptr<CMesh> testSphereMesh;
