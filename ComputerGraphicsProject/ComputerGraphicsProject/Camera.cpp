@@ -3,9 +3,9 @@
 CCamera::CCamera()
 {
 	m_vec3Position = { 0,0,0 };
-	m_vec3Look = { 0,0,-1 };
+	m_vec3Look = { 0,0,1 };
 	m_vec3Up = { 0,1, 0 };
-	m_vec3Right = { 1,0,0 };
+	m_vec3Right = { -1,0,0 };
 
 	m_vec4ViewPort = { 0,0,1280,768 };
 }
@@ -25,7 +25,7 @@ void CCamera::RegenarationViewMatrix()
 		m_vec3Right.x, m_vec3Up.x, m_vec3Look.x, 0,
 		m_vec3Right.y, m_vec3Up.y, m_vec3Look.y, 0,
 		m_vec3Right.z, m_vec3Up.z, m_vec3Look.z, 0,
-		glm::dot(m_vec3Position, m_vec3Right), -glm::dot(m_vec3Position, m_vec3Up),glm::dot(m_vec3Position, m_vec3Look),1
+		-glm::dot(m_vec3Position, m_vec3Right), -glm::dot(m_vec3Position, m_vec3Up), -glm::dot(m_vec3Position, m_vec3Look),1
 	};
 
 	/*m_mat4x4View[0][0] = m_vec3Right.x; m_mat4x4View[0][1] = m_vec3Up.x; m_mat4x4View[0][2] = m_vec3Look.x;
@@ -54,10 +54,13 @@ void CCamera::BindShaderVariables(GLuint s_Program)
 
 	GLuint viewLocation;
 	GLuint projectionLocation;
+	GLuint PosLocation;
 
 	viewLocation = glGetUniformLocation(s_Program, "viewTransform");	// ViewMatrix
 	projectionLocation = glGetUniformLocation(s_Program, "projectionTransform");	// ProjMatrix
+	PosLocation = glGetUniformLocation(s_Program, "CameraPosition");	// CameraPos
 
 	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &m_mat4x4View[0][0]);
 	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &m_mat4x4Projection[0][0]);
+	glUniformMatrix3fv(PosLocation, 1, GL_FALSE, glm::value_ptr(m_vec3Position));
 }

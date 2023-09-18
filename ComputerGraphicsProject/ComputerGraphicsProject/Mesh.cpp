@@ -2,6 +2,78 @@
 
 std::shared_ptr<CMesh> CMesh::CreateCubeMesh(float fWidth, float fHeight, float fDepth)
 {
+	std::shared_ptr<CMesh> mesh = std::make_shared<CMesh>();
+
+	mesh->m_nVertices = 36;
+	mesh->m_pVertices.resize(mesh->m_nVertices);
+
+	static unsigned int cubeShapeindex[] = {
+		// ¿∞∏È√º
+		0, 1, 2, // +z
+		0, 2, 3,
+		7, 6, 5, // -z
+		7, 5, 4,
+		3, 2, 6, // +x
+		3, 6, 7,
+		4, 5, 1, // -x
+		4, 1, 0,
+		4, 0, 3, // +y
+		4, 3, 7,
+		1, 5, 6, // -y
+		1, 6, 2
+	};
+
+
+	static GLfloat cubeNormal[][3] = {
+	{0.0, 0.0, 1.0},
+	{0.0, 0.0, -1.0},
+	{1.0, 0.0, 0.0},
+	{-1.0, 0.0, 0.0},
+	{0.0, 1.0, 0.0},
+	{0.0, -1.0, 0.0}
+	};
+
+	static unsigned int cubeNormalindex[] = {
+		// ¿∞∏È√º
+		0, 0, 0,
+		0, 0, 0,
+		1, 1, 1,
+		1, 1, 1,
+		2, 2, 2,
+		2, 2, 2,
+		3, 3, 3,
+		3, 3, 3,
+		4, 4, 4,
+		4, 4, 4,
+		5, 5, 5,
+		5, 5, 5
+	};
+
+
+	std::vector<glm::vec3> Vertices; Vertices.resize(8);
+
+	float fx = fWidth * 0.5f, fy = fHeight * 0.5f, fz = fDepth * 0.5f;
+
+	
+	Vertices[0] = glm::vec3(-fx, fy, fz);
+	Vertices[1] = glm::vec3(-fx, -fy, fz);
+	Vertices[2] = glm::vec3(fx, -fy, fz);
+	Vertices[3] = glm::vec3(fx, fy, fz);
+	Vertices[4] = glm::vec3(-fx, fy, -fz);
+	Vertices[5] = glm::vec3(-fx, -fy, -fz);
+	Vertices[6] = glm::vec3(fx, -fy, -fz);
+	Vertices[7] = glm::vec3(fx, fy, -fz);
+
+	for (int i = 0; i < mesh->m_nVertices; ++i) {
+		mesh->m_pVertices[i].position = Vertices[cubeShapeindex[i]];
+		mesh->m_pVertices[i].normal = glm::vec3(cubeNormal[cubeNormalindex[i]][0], cubeNormal[cubeNormalindex[i]][1], cubeNormal[cubeNormalindex[i]][2]);
+	}
+
+	return mesh;
+}
+
+std::shared_ptr<CMesh> CMesh::CreateCubeMeshForIndex(float fWidth, float fHeight, float fDepth)
+{
 	static unsigned int cubeShapeindex[] = {
 		// ¿∞∏È√º
 		0, 1, 2,
@@ -178,5 +250,8 @@ void CMesh::Render()
 			//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, m_ppnSubSetIndices[i].data());
 			glDrawElements(GL_TRIANGLES, m_pnSubSetIndices[i] * sizeof(UINT), GL_UNSIGNED_INT, NULL);
 		}
+	}
+	else {
+		glDrawArrays(GL_TRIANGLES, 0, m_nVertices);
 	}
 }

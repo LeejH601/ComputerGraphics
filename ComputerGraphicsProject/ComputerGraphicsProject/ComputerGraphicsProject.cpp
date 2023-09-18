@@ -7,10 +7,12 @@
 #include "Camera.h"
 #include "Object.h"
 #include "Mesh.h"
+#include "Light.h"
 
 CRenderer* g_Renderer = NULL;
 std::unique_ptr<CCamera> g_pMainCamera = nullptr;
 std::unique_ptr<CObject> g_pTestObj = nullptr;
+
 
 int g_WindowSizeX = 1280;
 int g_WindowSizeY = 768;
@@ -18,15 +20,25 @@ int g_WindowSizeY = 768;
 void RenderScene(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
 	//glClear(GL_DEPTH_BUFFER_BIT);
 	//g_Renderer->DrawAlphaClear();
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glCullFace(GL_BACK);
+	//glCullFace(GL_BACK);
 	glPolygonMode(GL_FRONT, GL_FILL);
-	glPolygonMode(GL_BACK, GL_LINE);
+	//glPolygonMode(GL_BACK, GL_FILL);
+
+	static CLight testLight;
+	static float d_time = 0.0f;
+	d_time += 0.01f;
+	testLight.m_vec3LightColor = glm::vec3(1, 1, 1);
+	testLight.m_vec3Direction = glm::normalize(glm::vec3(-1, -1, -1));
+	//testLight.m_vec3Direction = glm::vec3(sin(d_time), 0.0f, cos(d_time));
 
 	GLuint s_Program = g_Renderer->TestShader;
 	glUseProgram(s_Program);
+
+	testLight.BindShaderVariables(s_Program);
 	g_pMainCamera->BindShaderVariables(s_Program);
 	g_pTestObj->BindShaderVariables(s_Program);
 	g_pTestObj->Render();
@@ -77,6 +89,8 @@ void KeyInput(unsigned char key, int x, int y)
 	default:
 		break;
 	}
+	glm::vec3 pos = g_pMainCamera->GetPosition();
+	std::cout << pos.x << " " << pos.y << " " << pos.z << std::endl;
 	RenderScene();
 }
 
@@ -117,7 +131,7 @@ int main(int argc, char** argv)
 
 	g_pTestObj = std::make_unique<CObject>();
 	std::shared_ptr<CMesh> testCubeMesh;
-	testCubeMesh = CMesh::CreateCubeMesh(1.0f, 1.0f, 1.0f);
+	testCubeMesh = CMesh::CreateCubeMeshForIndex(5.0f, 5.0f, 5.0f);
 	testCubeMesh->CreateShaderVariables();
 	g_pTestObj->SetMesh(testCubeMesh.get());
 

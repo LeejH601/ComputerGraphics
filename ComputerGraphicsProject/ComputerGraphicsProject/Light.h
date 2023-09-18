@@ -10,5 +10,8 @@ public:
 
 	CLight() = default;
 	virtual ~CLight() = default;
+
+	virtual void CreateShaderVariables();
+	virtual void BindShaderVariables(GLuint s_Program);
 };
 

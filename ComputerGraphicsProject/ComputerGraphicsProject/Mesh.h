@@ -57,6 +57,7 @@ public:
 	};
 
 	static std::shared_ptr<CMesh> CreateCubeMesh(float dx, float dy, float dz);
+	static std::shared_ptr<CMesh> CreateCubeMeshForIndex(float dx, float dy, float dz);
 	static std::shared_ptr<CMesh> LoadMeshFromFile(std::string fileName);
 
 	virtual void CreateShaderVariables();
