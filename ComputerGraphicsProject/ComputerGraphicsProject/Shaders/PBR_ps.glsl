@@ -17,7 +17,7 @@ struct Light
 uniform Light gMainLight;	
 uniform vec3 CameraPosition;
 
-const float roughness = 0.0f;
+const float roughness = 0.5f;
 const float Fresnel = 0.22f;
 const float Metallic = 0.04f;
 const vec3 SpecularColor = vec3(1,1,1);
@@ -25,12 +25,19 @@ const vec3 SpecularColor = vec3(1,1,1);
 float NDF_GGXTR(vec3 n, vec3 h, float a)
 {
 	float a_pow = pow(a, 2);
-	//return a_pow / (c_PI * pow(  pow(dot(n,h),2) * (a_pow - 1.f) + 1.f , 2) );
+	return a_pow / (c_PI * pow(  pow(dot(n,h),2) * (a_pow - 1.f) + 1.f , 2) );
 
 	float d = (dot(n,h) * a_pow - dot(n,h)) * dot(n,h) + 1;
 	return a_pow / (c_PI * d * d);
 }
 
+float Fresnel_Cook_Torrance(vec3 h, vec3 v, float F0)
+{
+	float n = (1 + sqrt(F0)) / (1 - sqrt(F0));
+	float c = dot(h, v);
+	float g = sqrt( pow(n, 2) + pow(c , 2) -1 );
+	return 0.5f * pow( (g - c) / (g + c), 2) * ( 1.0f + pow( ((g + c) * c - 1)  / ((g - c) * c + 1) , 2) );
+}
 vec3 FresnelSchlick(vec3 h, vec3 v, vec3 F0)
 {
 	return F0 + ( (1.f - F0 ) * pow( 1.f - (dot(h, v)) , 5 ) );
@@ -43,40 +50,22 @@ vec3 Unreal_F_Schlick(vec3 specularColor, vec3 h, vec3 v)
 	return clamp( (50.0f * specularColor.g) * Fc + (1 - Fc) * specularColor, 0.0f, 1.0f);
 }
 
-float SchlickGGX(vec3 n, vec3 v, float k)
+float SchlickGGX(vec3 n, vec3 v, float a)
 {
+	float k = a * sqrt(2 / c_PI);
 	return dot(n, v) / ( (dot(n,v) * ( 1.f - k )) + k );
 }
 
 vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 normal, vec3 ToLight)
 {
-	vec3 halfwayVec = normalize(ToLight + normal);
-	float D = NDF_GGXTR(normal,halfwayVec, roughness );
+	vec3 Diffuse;
 
-	vec3 view = normalize( CameraPosition - WorldPos);
+	float NdotL = dot(normal, ToLight);
 
-	//vec3 F0 = mix( vec3(Fresnel), BaseColor, Metallic);
-	vec3 F0 = vec3(pow((Fresnel - 1) / (Fresnel + 1), 2));
+	float Lambert = NdotL / c_PI;
+	Diffuse = Lambert * BaseColor;
 
-	//vec3 F = Unreal_F_Schlick(SpecularColor, halfwayVec, view);
-	vec3 F = FresnelSchlick(halfwayVec, view, F0);
-
-	float G = SchlickGGX(normal, view, roughness );
-
-
-
-	//vec3 fLambert =  mix(vec3(1,1,1) - F, vec3(0,0,0), Metallic);
-	float fLambert =  dot(normal,ToLight) / c_PI;
-
-	vec3 Diffuse = fLambert * BaseColor;
-
-	float w0 =  dot(normal, view);
-	float wi = dot(normal, ToLight);
-	vec3 Specular = (D * F * G) /(4 * w0 * wi);
-
-	//Specular = mix(Specular, BaseColor, Metallic);
-
-	FinalColor += (Diffuse + Specular) * wi;
+	FinalColor += Diffuse;
 
 	return FinalColor;
 };
@@ -85,19 +74,16 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 normal, vec3 ToLig
 
 void main()
 {
-	//FragColor = vec4(WorldPos,1.0f);
-
 	vec3 vToLight = -normalize(gMainLight.vec3Direction);
 
 	vec4 cColor = vec4(0,0,0,1.0f);
 
-	vec3 BaseColor = vec3(1,0,0);
+	vec3 BaseColor = vec3(0,1,0);
 
-	if(dot(vToLight, Normal) > 0.f)
-		cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, Normal, vToLight);
+	cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, Normal, vToLight);
 
-	//cColor.rgb = (Normal + 1.0f) / 4.0f + 0.5f;
-	//cColor.rgb = WorldPos / 2.0f + 0.5f;
+	//cColor.rgb += vec3(0.2,0.2,0.2);
+
 	
 	FragColor = cColor;
 }

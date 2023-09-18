@@ -133,7 +133,12 @@ int main(int argc, char** argv)
 	std::shared_ptr<CMesh> testCubeMesh;
 	testCubeMesh = CMesh::CreateCubeMeshForIndex(5.0f, 5.0f, 5.0f);
 	testCubeMesh->CreateShaderVariables();
-	g_pTestObj->SetMesh(testCubeMesh.get());
+
+	std::shared_ptr<CMesh> testSphereMesh;
+	testSphereMesh = CMesh::CreateSphereMesh(10, 10);
+	testSphereMesh->CreateShaderVariables();
+
+	g_pTestObj->SetMesh(testSphereMesh.get());
 
 	glutDisplayFunc(RenderScene);
 	glutIdleFunc(Idle);

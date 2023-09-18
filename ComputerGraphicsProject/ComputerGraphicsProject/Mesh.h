@@ -45,7 +45,7 @@ class CMesh
 {
 public:
 
-	
+
 
 	struct Vertex
 	{
@@ -58,6 +58,7 @@ public:
 
 	static std::shared_ptr<CMesh> CreateCubeMesh(float dx, float dy, float dz);
 	static std::shared_ptr<CMesh> CreateCubeMeshForIndex(float dx, float dy, float dz);
+	static std::shared_ptr<CMesh> CreateSphereMesh(int n_slices, int n_stacks);
 	static std::shared_ptr<CMesh> LoadMeshFromFile(std::string fileName);
 
 	virtual void CreateShaderVariables();
