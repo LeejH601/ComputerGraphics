@@ -17,10 +17,12 @@ struct Light
 uniform Light gMainLight;	
 uniform vec3 CameraPosition;
 
-const float roughness = 0.2f;
+uniform vec3 gBaseColor;
+
+const float gRoughnessColor = 0.5f;
 const float Fresnel = 1.46f;
-const float Metallic = 0.04f;
-const vec3 SpecularColor = vec3(1,1,1);
+const float gMetallicColor = 0.04f;
+uniform vec3 gSpecularColor;
 
 
 vec3 aces_approx(vec3 v)
@@ -68,7 +70,9 @@ float Vis_SmithJoint(float a, float NdotV, float NdotL)
 	return 0.5 * (1.f / (Vis_SmithV + Vis_SmithL));
 }
 
-vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 normal, vec3 ToLight)
+//#define USE_VIS
+
+vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 sColor, vec3 normal, vec3 ToLight)
 {
 	vec3 Diffuse;
 
@@ -83,16 +87,22 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 normal, vec3 ToLig
 
 	vec3 halfv = normalize(ToLight + normal);
 
-	float D = GGX_Trowbridge_Reitz(normal, halfv, roughness);
-	float G = G_Schlick_GGX(NdotV, roughness);
+	float D = GGX_Trowbridge_Reitz(normal, halfv, gRoughnessColor);
+	float G = G_Schlick_GGX(NdotV, gRoughnessColor);
 
 	float F0 = pow( (Fresnel - 1) / (Fresnel + 1) ,2 );
 	float F = F_Cook_Torrance(view, halfv, F0) * NdotL; // 아티팩트 방지를 위해 NdotL를 곱함.
 
-	float Specular = (D * G * F) / (4 * NdotL * NdotV);
 
+	float Specular;
+
+	#ifdef USE_VIS
+	Specular = D * Vis_SmithJoint(gRoughnessColor, NdotV ,NdotL) * F;
+	#else
+	Specular = (D * G * F) / (4 * NdotL * NdotV);
+	#endif
 	
-	FinalColor += mix(Diffuse, vec3(Specular) * SpecularColor, Metallic) ;
+	FinalColor += mix(Diffuse, vec3(Specular) * sColor, gMetallicColor) ;
 	FinalColor = max(vec3(0.0f), FinalColor);
 
 
@@ -108,11 +118,13 @@ void main()
 	vec4 cColor = vec4(0,0,0,1.0f);
 
 	vec3 BaseColor = vec3(0,1.0f,0);
+	vec3 SpecularColor = vec3(1,1,1);
+
 	float gamma = 2.2;
 
 	BaseColor = pow(BaseColor, vec3(gamma) );
 
-	cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, normalize(Normal), vToLight);
+	cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, SpecularColor, normalize(Normal), vToLight);
 
 	float S = 1.0;
 	cColor.rgb = vec3(S * aces_approx(cColor.xyz * 0.8));

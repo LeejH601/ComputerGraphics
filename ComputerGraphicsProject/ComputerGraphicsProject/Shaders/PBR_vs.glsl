@@ -9,6 +9,7 @@ uniform mat4 projectionTransform;
 uniform mat4 worldTransform;
 uniform mat4 viewTransform;
 
+
 void main()
 {
 	gl_Position = projectionTransform * viewTransform * worldTransform * vec4(v_Position, 1.0);
