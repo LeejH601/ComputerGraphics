@@ -17,7 +17,7 @@ struct Light
 uniform Light gMainLight;	
 uniform vec3 CameraPosition;
 
-const float roughness = 0.5f;
+const float roughness = 0.1f;
 const float Fresnel = 1.46f;
 const float Metallic = 0.04f;
 const vec3 SpecularColor = vec3(1,1,1);
@@ -58,17 +58,33 @@ float F_Cook_Torrance(vec3 v, vec3 h, float F0)
 	return F0 + (1 - F0) * pow( 1 - VdotH , 5);
 }
 
+float Vis_SmithJoint(float a, float NdotV, float NdotL) 
+{
+	float a2 = pow(a , 2);
+
+	float Vis_SmithV = NdotL * sqrt(NdotV * (NdotV - NdotV * a2) + a2);
+	float Vis_SmithL = NdotV * sqrt(NdotL * (NdotL - NdotL * a2) + a2);
+	return 0.5 * (1.f / (Vis_SmithV + Vis_SmithL));
+}
+
 vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 normal, vec3 ToLight)
 {
 	vec3 Diffuse;
 
-	vec3 view = normalize( CameraPosition - WorldPos);
+	vec3 view = normalize(CameraPosition - WorldPos);
 
 	float NdotL = dot(normal, ToLight);
 	float NdotV = max(0.00001f, dot(normal, view));
 
-	float Lambert = NdotL / c_PI;
+	//if(abs(NdotL) < 0.00001f)
+		//NdotL -= 0.001f;
+
+	float Lambert = max(NdotL / c_PI, 0.0f);
 	Diffuse = Lambert * BaseColor;
+	
+	
+	//NdotL = NdotL * 0.5f + 0.5f;
+
 
 	vec3 halfv = normalize(ToLight + normal);
 
@@ -76,17 +92,23 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 normal, vec3 ToLig
 	float G = G_Schlick_GGX(NdotV, roughness);
 
 	float F0 = pow( (Fresnel - 1) / (Fresnel + 1) ,2 );
-	float F = F_Cook_Torrance(view, halfv, F0);
+	float F = F_Cook_Torrance(view, halfv, F0) * NdotL;
 
 	float a = (4 * NdotL * NdotV);
 	float Specular;
-	Specular = (D * G * F) /  a;
+	
+	
+		Specular = (D * G * F) / a;
+		//Specular = D * F * Vis_SmithJoint(pow(roughness,2),NdotV,NdotL );
+
 
 
 	
 	FinalColor += mix(Diffuse, vec3(Specular) * SpecularColor, Metallic) ;
+	//FinalColor +=  Diffuse + vec3(Specular) * SpecularColor ;
 	//FinalColor += Diffuse;
 
+	FinalColor = max(vec3(0.0f), FinalColor);
 
 	return FinalColor;
 };
@@ -106,7 +128,7 @@ void main()
 	BaseColor.y = pow(BaseColor.y , gamma );
 	BaseColor.z = pow(BaseColor.z, gamma );
 
-	cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, Normal, vToLight);
+	cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, normalize(Normal), vToLight);
 
 	float S = 1.0;
 	cColor.rgb = vec3(S * aces_approx(cColor.xyz * 0.8));
