@@ -17,7 +17,7 @@ struct Light
 uniform Light gMainLight;	
 uniform vec3 CameraPosition;
 
-const float roughness = 0.1f;
+const float roughness = 0.2f;
 const float Fresnel = 1.46f;
 const float Metallic = 0.04f;
 const vec3 SpecularColor = vec3(1,1,1);
@@ -42,6 +42,7 @@ float GGX_Trowbridge_Reitz(vec3 n, vec3 h, float r)
 	return pow(a , 2) / ( c_PI * pow( pow(NdotH, 2) * (pow(a , 2) - 1) + 1 ,2 ) );
 
 }
+
 
 float G_Schlick_GGX(float NdotV, float r)
 {
@@ -76,15 +77,9 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 normal, vec3 ToLig
 	float NdotL = dot(normal, ToLight);
 	float NdotV = max(0.00001f, dot(normal, view));
 
-	//if(abs(NdotL) < 0.00001f)
-		//NdotL -= 0.001f;
-
 	float Lambert = max(NdotL / c_PI, 0.0f);
 	Diffuse = Lambert * BaseColor;
 	
-	
-	//NdotL = NdotL * 0.5f + 0.5f;
-
 
 	vec3 halfv = normalize(ToLight + normal);
 
@@ -92,23 +87,14 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 normal, vec3 ToLig
 	float G = G_Schlick_GGX(NdotV, roughness);
 
 	float F0 = pow( (Fresnel - 1) / (Fresnel + 1) ,2 );
-	float F = F_Cook_Torrance(view, halfv, F0) * NdotL;
+	float F = F_Cook_Torrance(view, halfv, F0) * NdotL; // 아티팩트 방지를 위해 NdotL를 곱함.
 
-	float a = (4 * NdotL * NdotV);
-	float Specular;
-	
-	
-		Specular = (D * G * F) / a;
-		//Specular = D * F * Vis_SmithJoint(pow(roughness,2),NdotV,NdotL );
-
-
+	float Specular = (D * G * F) / (4 * NdotL * NdotV);
 
 	
 	FinalColor += mix(Diffuse, vec3(Specular) * SpecularColor, Metallic) ;
-	//FinalColor +=  Diffuse + vec3(Specular) * SpecularColor ;
-	//FinalColor += Diffuse;
-
 	FinalColor = max(vec3(0.0f), FinalColor);
+
 
 	return FinalColor;
 };
@@ -124,19 +110,14 @@ void main()
 	vec3 BaseColor = vec3(0,1.0f,0);
 	float gamma = 2.2;
 
-	BaseColor.x = pow(BaseColor.x, gamma );
-	BaseColor.y = pow(BaseColor.y , gamma );
-	BaseColor.z = pow(BaseColor.z, gamma );
+	BaseColor = pow(BaseColor, vec3(gamma) );
 
 	cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, normalize(Normal), vToLight);
 
 	float S = 1.0;
 	cColor.rgb = vec3(S * aces_approx(cColor.xyz * 0.8));
-	//cColor.rgb += vec3(0.2,0.2,0.2);
 	
-	cColor.x = pow(cColor.x, 1.0 / gamma);
-	cColor.y = pow(cColor.y, 1.0 / gamma);
-	cColor.z = pow(cColor.z, 1.0 / gamma) ;
+	cColor.rgb = pow(cColor.rgb, vec3(1.0 / gamma));
 	
 	FragColor = cColor;
 }
