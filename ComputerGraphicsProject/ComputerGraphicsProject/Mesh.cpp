@@ -948,10 +948,10 @@ std::shared_ptr<CMesh> CMesh::CreateSphereMesh(int n_stacks, int n_slices)
 	static float f_PI = 3.141592f;
 	float radius = 1.0f;
 
-	mesh->m_nVertices = sizeof(RawVertexArray) / sizeof(float);
+	mesh->m_nVertices = sizeof(RawVertexArray) / (sizeof(float) * 3);
 
-	for (int i = 0; i < mesh->m_nVertices; i += 3) {
-		vertexBuffer.position = glm::normalize(glm::vec3(RawVertexArray[i], RawVertexArray[i + 1], RawVertexArray[i + 2]));
+	for (int i = 0; i < mesh->m_nVertices * 3; i += 3) {
+		vertexBuffer.position = glm::normalize(glm::vec3(RawVertexArray[i], RawVertexArray[i + 1], RawVertexArray[i + 2])) * 3.f;
 		vertexBuffer.normal = glm::normalize(vertexBuffer.position - glm::vec3(0, 0, 0));
 		mesh->m_pVertices.push_back(vertexBuffer);
 	}
@@ -965,7 +965,7 @@ std::shared_ptr<CMesh> CMesh::CreateSphereMesh(int n_stacks, int n_slices)
 	for (int i = 0; i < mesh->m_pnSubSetIndices[0]; ++i) {
 		mesh->m_ppnSubSetIndices[0][i] = RawIndicesArray[i];
 	}
-	//std::cout << std::endl;
+	std::cout << std::endl;
 	//for (int m = 0; m < horizontalLines; m++)
 	//{
 	//	for (int n = 0; n < verticalLines - 1; n++)

@@ -24,9 +24,9 @@ void RenderScene(void)
 	//glClear(GL_DEPTH_BUFFER_BIT);
 	//g_Renderer->DrawAlphaClear();
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	//glCullFace(GL_BACK);
-	glPolygonMode(GL_FRONT, GL_FILL);
-	//glPolygonMode(GL_BACK, GL_FILL);
+	glCullFace(GL_BACK);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//glPolygonMode(GL_BACK, GL_LINE);
 
 	static CLight testLight;
 	static float d_time = 0.0f;
@@ -135,7 +135,7 @@ int main(int argc, char** argv)
 	testCubeMesh->CreateShaderVariables();
 
 	std::shared_ptr<CMesh> testSphereMesh;
-	testSphereMesh = CMesh::CreateSphereMesh(10, 10);
+	testSphereMesh = CMesh::CreateSphereMesh(32, 32);
 	testSphereMesh->CreateShaderVariables();
 
 	g_pTestObj->SetMesh(testSphereMesh.get());
