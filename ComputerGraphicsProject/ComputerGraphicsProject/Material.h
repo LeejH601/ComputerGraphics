@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+#include "Texture.h"
 
 #define MATERIAL_BASE_MAP			0x01
 #define MATERIAL_SPECULAR_MAP		0x02
@@ -31,6 +32,8 @@ public:
 	glm::float32 Opacity;
 
 	// 텍스쳐 필요
+	std::shared_ptr<CTexture> m_pBaseTexture;
 
+	void SetBaseTexture(std::shared_ptr<CTexture>& pTexture);
 };
 

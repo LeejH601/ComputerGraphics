@@ -37,7 +37,10 @@ void CMaterial::BindShaderVariables(GLuint s_Program)
 
 
 	if (TextureMask & MATERIAL_BASE_MAP) {
+		GLuint samplerULoc = glGetUniformLocation(s_Program, "u_BaseTexture");
+		glUniform1i(samplerULoc, 0);
 
+		m_pBaseTexture->BindShaderVariables(s_Program, GL_TEXTURE0);
 	}
 	if (TextureMask & MATERIAL_NORMAL_MAP) {
 
@@ -51,4 +54,10 @@ void CMaterial::BindShaderVariables(GLuint s_Program)
 	if (TextureMask & MATERIAL_EMISSION_MAP) {
 
 	}
+}
+
+void CMaterial::SetBaseTexture(std::shared_ptr<CTexture>& pTexture)
+{
+	m_pBaseTexture = pTexture;
+	TextureMask |= MATERIAL_BASE_MAP;
 }

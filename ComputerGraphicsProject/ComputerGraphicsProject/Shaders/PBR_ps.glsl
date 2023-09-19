@@ -25,6 +25,9 @@ uniform float gMetallicColor;
 uniform vec3 gSpecularColor;
 
 
+uniform sampler2D u_BaseTexture;
+
+
 vec3 aces_approx(vec3 v)
 {
     v *= 0.6f;
