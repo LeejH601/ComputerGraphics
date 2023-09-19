@@ -85,7 +85,7 @@ float Vis_SmithJoint(float a, float NdotV, float NdotL)
 
 //#define USE_VIS
 
-vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 sColor, vec3 normal, vec3 ToLight, float Fresnel, float Roughness, float MetallicColor)
+vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 sColor, vec3 normal, vec3 ToLight, vec3 LightColor, float Fresnel, float Roughness, float MetallicColor)
 {
 	vec3 Diffuse;
 
@@ -95,7 +95,7 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 sColor, vec3 norma
 	float NdotV = max(0.00001f, dot(normal, view));
 
 	float Lambert = max(NdotL / c_PI, 0.0f);
-	Diffuse = Lambert * BaseColor;
+	Diffuse = Lambert * BaseColor * LightColor;
 	
 
 	vec3 halfv = normalize(ToLight + normal);
@@ -115,7 +115,7 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 sColor, vec3 norma
 	Specular = (D * G * F) / (4 * NdotL * NdotV);
 	#endif 
 	
-	FinalColor += mix(Diffuse, vec3(Specular) * sColor, MetallicColor) ;
+	FinalColor += mix(Diffuse, vec3(Specular) * sColor * LightColor, MetallicColor) ;
 	FinalColor = max(vec3(0.0f), FinalColor);
 
 
@@ -146,7 +146,8 @@ void main()
 
 	BaseColor = pow(BaseColor, vec3(gamma) );
 
-	cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, SpecularColor, normalize(Normal), vToLight, Fresnel, Roughness, MetallicColor);
+	vec3 LightColor = gMainLight.vec3LightColor * 4.0f;
+	cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, SpecularColor, normalize(Normal), vToLight, LightColor, Fresnel, Roughness, MetallicColor);
 
 	float S = 1.0;
 	cColor.rgb = vec3(S * aces_approx(cColor.xyz * 0.8));
