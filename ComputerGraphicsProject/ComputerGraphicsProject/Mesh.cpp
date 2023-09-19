@@ -274,35 +274,189 @@ std::shared_ptr<CMesh> CMesh::CreateSphereMesh(int nStacks, int nSlices)
 	return mesh;
 }
 
-std::shared_ptr<CMesh> CMesh::LoadMeshFromFile(std::string fileName)
+void CMesh::LoadMeshFromFile(FILE* pInFile)
 {
-	FILE* objFile;
+	char pstrToken[64] = { '\0' };
+	int nPositions = 0, nColors = 0, nNormals = 0, nTangents = 0, nBiTangents = 0, nTextureCoords = 0, nIndices = 0, nSubMeshes = 0, nSubIndices = 0;
 
-	fopen_s(&objFile, fileName.c_str(), "rb");
+	UINT nReads = (UINT)::fread(&m_nVertices, sizeof(int), 1, pInFile);
 
-	if (objFile == NULL) {
-		printf("Impossible to open the file !\n");
-		return nullptr;
-	}
+	char pstrMeshName[256];
+	::ReadStringFromFile(pInFile, pstrMeshName);
+	m_strMeshName = pstrMeshName;
 
-	std::shared_ptr<CMesh> mesh = std::make_shared<CMesh>();
+	std::wstring wMeshName;
+	size_t tmp = 0;
+	wMeshName.resize(strlen(pstrMeshName) + 1);
+	mbstowcs_s(&tmp, wMeshName.data(), (size_t)wMeshName.size(), pstrMeshName, (size_t)wMeshName.size());
+	OutputDebugString(wMeshName.c_str());
+	OutputDebugString(L"\n");
 
-	while (1) {
+	for (; ; )
+	{
+		::ReadStringFromFile(pInFile, pstrToken);
+		if (!strcmp(pstrToken, "<Bounds>:"))
+		{
+			nReads = (UINT)::fread(&m_vec3AABBCenter, sizeof(glm::vec3), 1, pInFile);
+			nReads = (UINT)::fread(&m_vec3AABBExtents, sizeof(glm::vec3), 1, pInFile);
 
-		char lineHeader[128];
-		// read the first word of the line
-		int res = fscanf_s(objFile, "%s", lineHeader);
-		if (res == EOF)
-			break; // EOF = End Of File. Quit the loop.
-		if (strcmp(lineHeader, "v") == 0) {
-			glm::vec3 vertex;
-			fscanf_s(objFile, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z);
+			/*std::wstring wBounds = L"m_xmf3AABBCenter.x: ";
+			wBounds = wBounds.append(std::to_wstring(m_xmf3AABBCenter.x));
+			wBounds = wBounds.append(L" m_xmf3AABBCenter.y: ");
+			wBounds = wBounds.append(std::to_wstring(m_xmf3AABBCenter.y));
+			wBounds = wBounds.append(L" m_xmf3AABBCenter.z: ");
+			wBounds = wBounds.append(std::to_wstring(m_xmf3AABBCenter.z));
+			OutputDebugString(wBounds.c_str());
+			OutputDebugString(L"\n");
+
+			std::wstring wExtents = L"m_xmf3AABBExtents.x: ";
+			wExtents = wExtents.append(std::to_wstring(m_xmf3AABBExtents.x));
+			wExtents = wExtents.append(L" m_xmf3AABBExtents.y: ");
+			wExtents = wExtents.append(std::to_wstring(m_xmf3AABBExtents.y));
+			wExtents = wExtents.append(L" m_xmf3AABBExtents.z: ");
+			wExtents = wExtents.append(std::to_wstring(m_xmf3AABBExtents.z));
+			OutputDebugString(wExtents.c_str());
+			OutputDebugString(L"\n");*/
+		}
+		else if (!strcmp(pstrToken, "<Positions>:"))
+		{
+			nReads = (UINT)::fread(&nPositions, sizeof(int), 1, pInFile);
+			if (nPositions > 0)
+			{
+				//m_nType |= VERTEXT_POSITION;
+				std::vector<glm::vec3> pxmf3Positions;
+				pxmf3Positions.resize(nPositions);
+				nReads = (UINT)::fread(pxmf3Positions.data(), sizeof(glm::vec3), nPositions, pInFile);
+
+				if (m_pVertices.size() == 0)
+					m_pVertices.resize(nPositions);
+
+				for (int i = 0; i < nPositions; ++i) {
+					m_pVertices[i].position = pxmf3Positions[i];
+				}
+				
+			}
+		}
+		else if (!strcmp(pstrToken, "<Colors>:"))
+		{
+			nReads = (UINT)::fread(&nColors, sizeof(int), 1, pInFile);
+			if (nColors > 0)
+			{
+				//m_nType |= VERTEXT_COLOR;
+				std::vector<glm::vec4> m_pxmf4Colors;
+				m_pxmf4Colors.resize(nColors);
+				nReads = (UINT)::fread(m_pxmf4Colors.data(), sizeof(glm::vec4), nColors, pInFile);
+			}
+		}
+		else if (!strcmp(pstrToken, "<TextureCoords0>:"))
+		{
+			nReads = (UINT)::fread(&nTextureCoords, sizeof(int), 1, pInFile);
+			if (nTextureCoords > 0)
+			{
+				//m_nType |= VERTEXT_TEXTURE_COORD0;
+				std::vector<glm::vec2> m_pxmf2TextureCoords0;
+				m_pxmf2TextureCoords0.resize(nTextureCoords);
+				nReads = (UINT)::fread(m_pxmf2TextureCoords0.data(), sizeof(glm::vec2), nTextureCoords, pInFile);
+
+				for (int i = 0; i < nPositions; ++i) {
+					m_pVertices[i].texcoord0 = m_pxmf2TextureCoords0[i];
+				}
+			}
+		}
+		else if (!strcmp(pstrToken, "<TextureCoords1>:"))
+		{
+			nReads = (UINT)::fread(&nTextureCoords, sizeof(int), 1, pInFile);
+			if (nTextureCoords > 0)
+			{
+				//m_nType |= VERTEXT_TEXTURE_COORD1;
+				std::vector<glm::vec2> m_pxmf2TextureCoords1;
+				m_pxmf2TextureCoords1.resize(nTextureCoords);
+				nReads = (UINT)::fread(m_pxmf2TextureCoords1.data(), sizeof(glm::vec2), nTextureCoords, pInFile);
+
+				for (int i = 0; i < nPositions; ++i) {
+					m_pVertices[i].texcoord1 = m_pxmf2TextureCoords1[i];
+				}
+			}
+		}
+		else if (!strcmp(pstrToken, "<Normals>:"))
+		{
+			nReads = (UINT)::fread(&nNormals, sizeof(int), 1, pInFile);
+			if (nNormals > 0)
+			{
+				//m_nType |= VERTEXT_NORMAL;
+				std::vector<glm::vec3> m_pxmf3Normals;
+				m_pxmf3Normals.resize(nNormals);
+				nReads = (UINT)::fread(m_pxmf3Normals.data(), sizeof(glm::vec3), nNormals, pInFile);
+
+				for (int i = 0; i < nPositions; ++i) {
+					m_pVertices[i].normal = m_pxmf3Normals[i];
+				}
+			}
+		}
+		else if (!strcmp(pstrToken, "<Tangents>:"))
+		{
+			nReads = (UINT)::fread(&nTangents, sizeof(int), 1, pInFile);
+			if (nTangents > 0)
+			{
+				//m_nType |= VERTEXT_TANGENT;
+				std::vector<glm::vec3> m_pxmf3Tangents;
+				m_pxmf3Tangents.resize(nTangents);
+				nReads = (UINT)::fread(m_pxmf3Tangents.data(), sizeof(glm::vec3), nTangents, pInFile);
+
+				for (int i = 0; i < nPositions; ++i) {
+					m_pVertices[i].tangent = m_pxmf3Tangents[i];
+				}
+			}
+		}
+		else if (!strcmp(pstrToken, "<BiTangents>:"))
+		{
+			nReads = (UINT)::fread(&nBiTangents, sizeof(int), 1, pInFile);
+			if (nBiTangents > 0)
+			{
+				std::vector<glm::vec3> m_pxmf3BiTangents;
+				m_pxmf3BiTangents.resize(nBiTangents);
+				nReads = (UINT)::fread(m_pxmf3BiTangents.data(), sizeof(glm::vec3), nBiTangents, pInFile);
+
+				for (int i = 0; i < nPositions; ++i) {
+					m_pVertices[i].bitangent = m_pxmf3BiTangents[i];
+				}
+			}
+		}
+		else if (!strcmp(pstrToken, "<SubMeshes>:"))
+		{
+			nReads = (UINT)::fread(&(m_nSubMeshes), sizeof(int), 1, pInFile);
+			if (m_nSubMeshes > 0)
+			{
+				m_pnSubSetIndices.resize(m_nSubMeshes);
+				m_ppnSubSetIndices.resize(m_nSubMeshes);
 
 
+				for (int i = 0; i < m_nSubMeshes; i++)
+				{
+					::ReadStringFromFile(pInFile, pstrToken);
+					if (!strcmp(pstrToken, "<SubMesh>:"))
+					{
+						int nIndex = 0;
+						nReads = (UINT)::fread(&nIndex, sizeof(int), 1, pInFile); //i
+						nReads = (UINT)::fread(&(m_pnSubSetIndices[i]), sizeof(int), 1, pInFile);
+						if (m_pnSubSetIndices[i] > 0)
+						{
+							// 서브 메쉬들의 인덱스 들
+							m_ppnSubSetIndices[i].resize(m_pnSubSetIndices[i]);
+							nReads = (UINT)::fread(m_ppnSubSetIndices[i].data(), sizeof(UINT), m_pnSubSetIndices[i], pInFile);
+
+							
+						}
+					}
+				}
+			}
+		}
+		else if (!strcmp(pstrToken, "</Mesh>"))
+		{
+			break;
 		}
 	}
-
-
+	CreateShaderVariables();
 }
 
 void CMesh::CreateShaderVariables()
@@ -331,11 +485,15 @@ void CMesh::BindShaderVariables(GLuint s_Program)
 	glEnableVertexAttribArray(posLoc);
 	GLuint normalLoc = glGetAttribLocation(s_Program, "v_Normal");
 	glEnableVertexAttribArray(normalLoc);
+	GLuint tex0Loc = glGetAttribLocation(s_Program, "v_texcoord0");
+	glEnableVertexAttribArray(tex0Loc);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 	glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(CMesh::Vertex), 0);
 	glVertexAttribPointer(normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(CMesh::Vertex),
 		(GLvoid*)(sizeof(float) * 3));
+	glVertexAttribPointer(tex0Loc, 2, GL_FLOAT, GL_FALSE, sizeof(CMesh::Vertex),
+		(GLvoid*)(sizeof(float) * 12));
 }
 
 void CMesh::Render()

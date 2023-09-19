@@ -14,3 +14,8 @@
 #include "Dependencies/glm/glm.hpp"
 #include "Dependencies/glm/ext.hpp"
 #include "Dependencies/glm/gtc/matrix_transform.hpp"
+
+
+extern int ReadIntegerFromFile(FILE* pInFile);
+extern float ReadFloatFromFile(FILE* pInFile);
+extern BYTE ReadStringFromFile(FILE* pInFile, char* pstrToken);

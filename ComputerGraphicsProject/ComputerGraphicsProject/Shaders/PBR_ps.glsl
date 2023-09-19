@@ -1,7 +1,15 @@
 #version 330 core
 
+#define MATERIAL_BASE_MAP			0x01
+#define MATERIAL_SPECULAR_MAP		0x02
+#define MATERIAL_NORMAL_MAP			0x04
+#define MATERIAL_METALLIC_MAP		0x08
+#define MATERIAL_EMISSION_MAP		0x10
+#define MATERIAL_ROUGHNESS_MAP		0x20
+
 in vec3 WorldPos;
 in vec3 Normal;
+in vec2 Texcoord0;
 
 out vec4 FragColor;
 
@@ -13,6 +21,8 @@ struct Light
 	float fIntensity;
 	vec3 vec3Direction;
 };
+
+uniform int gTextureMask;
 
 uniform Light gMainLight;	
 uniform vec3 CameraPosition;
@@ -125,6 +135,12 @@ void main()
 	float Fresnel = gFresnel;
 	float Roughness = gRoughnessColor;
 	float MetallicColor = gMetallicColor;
+
+	MetallicColor = max(0.01f, MetallicColor);
+	
+	BaseColor = texture(u_BaseTexture, Texcoord0).xyz;
+	//BaseColor = vec3(Texcoord0.x,Texcoord0.y,0);
+	//BaseColor.xyz *= 2;
 
 	float gamma = 2.2;
 

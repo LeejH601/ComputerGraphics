@@ -2,7 +2,7 @@
 
 CCamera::CCamera()
 {
-	m_vec3Position = { 0,0, 20 };
+	m_vec3Position = { 0,0, 0.5 };
 	m_vec3Look = { 0,0,1 };
 	m_vec3Up = { 0,1, 0 };
 	m_vec3Right = { -1,0,0 };

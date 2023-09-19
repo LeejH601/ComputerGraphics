@@ -41,6 +41,8 @@
 //	5, 5, 5
 //};
 
+
+
 class CMesh
 {
 public:
@@ -53,13 +55,14 @@ public:
 		glm::vec3 normal;
 		glm::vec3 tangent;
 		glm::vec3 bitangent;
-		glm::vec2 texcoord;
+		glm::vec2 texcoord0;
+		glm::vec2 texcoord1;
 	};
 
 	static std::shared_ptr<CMesh> CreateCubeMesh(float dx, float dy, float dz);
 	static std::shared_ptr<CMesh> CreateCubeMeshForIndex(float dx, float dy, float dz);
 	static std::shared_ptr<CMesh> CreateSphereMesh(int n_slices, int n_stacks);
-	static std::shared_ptr<CMesh> LoadMeshFromFile(std::string fileName);
+	void LoadMeshFromFile(FILE* pInFile);
 
 	virtual void CreateShaderVariables();
 	virtual void BindShaderVariables(GLuint s_Program);
@@ -82,6 +85,9 @@ private:
 	GLuint m_VAO;
 	GLuint m_VBO;
 	std::vector<GLuint> m_IBOs;
+
+	glm::vec3 m_vec3AABBCenter;
+	glm::vec3 m_vec3AABBExtents;
 
 	// 사용할지는 모름
 	UINT                            m_nSlot = 0;

@@ -138,13 +138,15 @@ int main(int argc, char** argv)
 	testSphereMesh = CMesh::CreateSphereMesh(20, 20);
 	testSphereMesh->CreateShaderVariables();
 
-	g_pTestObj->SetMesh(testSphereMesh.get());
+	g_pTestObj->SetMesh(testSphereMesh);
 
 	std::shared_ptr<CMaterial> pMaterial = std::make_shared<CMaterial>();
 	std::shared_ptr<CTexture> pTexture = std::make_shared<CTexture>();
 	pTexture->LoadTextureFromPNG("./Textures/rgb.png", GL_NEAREST);
 	pMaterial->SetBaseTexture(pTexture);
-	g_pTestObj->SetMaterial(pMaterial);
+
+	g_pTestObj->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+	//g_pTestObj->SetMaterial(pMaterial);
 
 	glutDisplayFunc(RenderScene);
 	glutIdleFunc(Idle);

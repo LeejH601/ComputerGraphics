@@ -15,14 +15,16 @@ class CObject
 	glm::vec3 m_vec3Position;
 	glm::vec3 m_vec3Scale;
 
-	CMesh* m_pMesh = nullptr;
+	std::shared_ptr<CMesh> m_pMesh = nullptr;
 
 	std::string m_strObjectName;
 	
 	UINT m_nMaterials;
 	std::vector<std::shared_ptr<CMaterial>> m_ppMaterials;
 
-
+	std::shared_ptr<CObject> m_pChild = nullptr;
+	CObject* m_pParent = nullptr;
+	std::shared_ptr<CObject> m_pSibling = nullptr;
 
 public:
 	CObject();
@@ -36,7 +38,30 @@ public:
 
 	virtual void BindShaderVariables(GLuint s_Program);
 
-	void SetMesh(CMesh* mesh) { m_pMesh = mesh; };
+	void SetMesh(std::shared_ptr<CMesh>& mesh) { m_pMesh = mesh; };
 	void SetMaterial(std::shared_ptr<CMaterial>& pMaterial);
+	void SetMaterial(int nMaterial, std::shared_ptr<CMaterial> pMaterial);
+	void SetChild(std::shared_ptr<CObject> child);
+
+	void LoadFrameHierarchyFromFile(CObject* pParent, FILE* pInFile, int* pnSkinnedMeshes = nullptr);
+	void LoadMaterialsFromFile(CObject* pParent, FILE* pInFile);
+	void LoadGeometryAndAnimationFromFile(const char* pstrFileName);
 };
 
+class CLoadedModelInfo
+{
+public:
+	CLoadedModelInfo() { }
+	~CLoadedModelInfo();
+
+	std::string pFilePath;
+	std::shared_ptr<CObject> m_pModelRootObject = NULL;
+
+	//int m_nSkinnedMeshes = 0;
+	//std::vector<CSkinnedMesh*> m_ppSkinnedMeshes; //[SkinnedMeshes], Skinned Mesh Cache
+
+	//std::shared_ptr<CAnimationSets> m_pAnimationSets = NULL;
+public:
+	//void PrepareSkinning();
+
+};
