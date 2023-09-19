@@ -75,11 +75,20 @@ void RenderScene(void)
 	g_SunLight->BindShaderVariables(s_Program);
 	g_pMainCamera->BindShaderVariables(s_Program);
 
+	g_pTestObj2->BindShaderVariables(s_Program);
+	g_pTestObj2->Render();
+
+
+	s_Program = g_Renderer->CubeShader;
+	glUseProgram(s_Program);
+
+	g_SunLight->BindShaderVariables(s_Program);
+	g_pMainCamera->BindShaderVariables(s_Program);
+
 	g_pTestObj->BindShaderVariables(s_Program);
 	g_pTestObj->Render();
 
-	g_pTestObj2->BindShaderVariables(s_Program);
-	g_pTestObj2->Render();
+	
 
 
 	/*g_pMainCamera->BindShaderVariables(s_Program);
@@ -100,6 +109,10 @@ void Idle(void)
 
 void MouseInput(int button, int state, int x, int y)
 {
+	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
+
+	}
+
 	RenderScene();
 }
 
@@ -202,7 +215,7 @@ int main(int argc, char** argv)
 	g_pMainCamera = std::make_unique<CCamera>();
 
 	g_pMainCamera->RegenarationViewMatrix();
-	g_pMainCamera->GenerateProjectionMatrix(glm::radians(65.0f), (float)g_WindowSizeX / (float)g_WindowSizeY, 0.1f, 50.0f);
+	g_pMainCamera->GenerateProjectionMatrix(glm::radians(90.0f), (float)g_WindowSizeX / (float)g_WindowSizeY, 0.1f, 50.0f);
 
 	g_pTestObj = std::make_unique<CObject>();
 	g_pTestObj2 = std::make_unique<CObject>();
@@ -217,14 +230,18 @@ int main(int argc, char** argv)
 
 	std::shared_ptr<CMaterial> pMaterial = std::make_shared<CMaterial>();
 	std::shared_ptr<CTexture> pTexture = std::make_shared<CTexture>();
-	pTexture->LoadTextureFromPNG("./Textures/rgb.png", GL_NEAREST);
+	//pTexture->LoadTextureFromPNG("./Textures/rgb.png", GL_NEAREST);
+	pTexture->LoadTextureHDR("./Textures/poly_haven_studio_4k.hdr", GL_LINEAR);
 	pMaterial->SetBaseTexture(pTexture);
 
-	g_pTestObj->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+	//g_pTestObj->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+	g_pTestObj->SetMesh(testCubeMesh);
+	g_pTestObj->SetMaterial(pMaterial);
+
+
 	g_pTestObj2->LoadGeometryAndAnimationFromFile("./Objects/Plane.bin");
 	g_pTestObj2->GetMaterial(0)->RoughnessColor = 1.0f;
 	g_pTestObj2->GetMaterial(0)->FresnelColor = 1.3f;
-	//g_pTestObj->SetMaterial(pMaterial);
 
 	glutDisplayFunc(RenderScene);
 	glutIdleFunc(Idle);

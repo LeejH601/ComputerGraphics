@@ -13,5 +13,6 @@ public:
 	virtual void BindShaderVariables(GLuint s_Program, GLenum TextureSlo);
 
 	void LoadTextureFromPNG(std::string filePath, GLuint samplingMethod);
+	void LoadTextureHDR(std::string filePath, GLuint samplingMethod);
 };
 

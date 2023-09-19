@@ -18,6 +18,7 @@ public:
 	void DrawSolidRect(float x, float y, float z, float size, float r, float g, float b, float a);
 	
 	GLuint TestShader = -1;
+	GLuint CubeShader = -1;
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);

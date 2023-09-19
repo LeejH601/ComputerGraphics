@@ -1,5 +1,8 @@
 #include "Texture.h"
 #include "LoadPng.h"
+#define STB_IMAGE_IMPLEMENTATION
+
+#include "Dependencies/stb-master/stb_image.h"
 
 CTexture::CTexture()
 {
@@ -33,4 +36,28 @@ void CTexture::LoadTextureFromPNG(std::string filePath, GLuint samplingMethod)
 
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, samplingMethod);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, samplingMethod);
+}
+
+void CTexture::LoadTextureHDR(std::string filePath, GLuint samplingMethod)
+{
+	stbi_set_flip_vertically_on_load(true);
+	int width, height, nrComponents;
+	float* data = stbi_loadf(filePath.c_str(), &width, &height, &nrComponents, 0);
+	if (data)
+	{
+		glGenTextures(1, &m_TextureID);
+		glBindTexture(GL_TEXTURE_2D, m_TextureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		stbi_image_free(data);
+	}
+	else
+	{
+		std::cout << "Failed to load HDR image." << std::endl;
+	}
 }

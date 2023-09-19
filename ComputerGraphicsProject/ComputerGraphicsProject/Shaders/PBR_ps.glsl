@@ -66,7 +66,7 @@ float G_Schlick_GGX(float NdotV, float r)
 {
 	float a = pow(r, 2);
 
-	float k = a / 2;
+	float k = pow(r + 1, 2) / 8;
 
 	return NdotV / ( NdotV * (1 - k) + k );
 }

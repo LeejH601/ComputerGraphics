@@ -23,7 +23,7 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 		//"./Shaders/SolidRect.fs");
 
 	TestShader = CompileShaders((char*)"./Shaders/PBR_vs.glsl", (char*)"./Shaders/PBR_ps.glsl");
-
+	CubeShader = CompileShaders((char*)"./Shaders/Cube_vs.glsl", (char*)"./Shaders/Cube_ps.glsl");
 
 
 	m_Initialized = true;
