@@ -12,6 +12,7 @@
 CRenderer* g_Renderer = NULL;
 std::unique_ptr<CCamera> g_pMainCamera = nullptr;
 std::unique_ptr<CObject> g_pTestObj = nullptr;
+std::unique_ptr<CObject> g_pTestObj2 = nullptr;
 
 
 int g_WindowSizeX = 1280;
@@ -40,8 +41,13 @@ void RenderScene(void)
 
 	testLight.BindShaderVariables(s_Program);
 	g_pMainCamera->BindShaderVariables(s_Program);
+
 	g_pTestObj->BindShaderVariables(s_Program);
 	g_pTestObj->Render();
+
+	g_pTestObj2->BindShaderVariables(s_Program);
+	g_pTestObj2->Render();
+
 
 	/*g_pMainCamera->BindShaderVariables(s_Program);
 
@@ -130,6 +136,8 @@ int main(int argc, char** argv)
 	g_pMainCamera->GenerateProjectionMatrix(glm::radians(65.0f), (float)g_WindowSizeX / (float)g_WindowSizeY, 0.1f, 50.0f);
 
 	g_pTestObj = std::make_unique<CObject>();
+	g_pTestObj2 = std::make_unique<CObject>();
+
 	std::shared_ptr<CMesh> testCubeMesh;
 	testCubeMesh = CMesh::CreateCubeMesh(5.0f, 5.0f, 5.0f);
 	testCubeMesh->CreateShaderVariables();
@@ -138,14 +146,15 @@ int main(int argc, char** argv)
 	testSphereMesh = CMesh::CreateSphereMesh(20, 20);
 	testSphereMesh->CreateShaderVariables();
 
-	g_pTestObj->SetMesh(testSphereMesh);
-
 	std::shared_ptr<CMaterial> pMaterial = std::make_shared<CMaterial>();
 	std::shared_ptr<CTexture> pTexture = std::make_shared<CTexture>();
 	pTexture->LoadTextureFromPNG("./Textures/rgb.png", GL_NEAREST);
 	pMaterial->SetBaseTexture(pTexture);
 
 	g_pTestObj->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+	g_pTestObj2->LoadGeometryAndAnimationFromFile("./Objects/Plane.bin");
+	g_pTestObj2->GetMaterial(0)->RoughnessColor = 1.0f;
+	g_pTestObj2->GetMaterial(0)->FresnelColor = 1.3f
 	//g_pTestObj->SetMaterial(pMaterial);
 
 	glutDisplayFunc(RenderScene);

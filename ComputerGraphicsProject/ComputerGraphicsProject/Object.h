@@ -46,6 +46,12 @@ public:
 	void LoadFrameHierarchyFromFile(CObject* pParent, FILE* pInFile, int* pnSkinnedMeshes = nullptr);
 	void LoadMaterialsFromFile(CObject* pParent, FILE* pInFile);
 	void LoadGeometryAndAnimationFromFile(const char* pstrFileName);
+
+	std::shared_ptr<CMaterial> GetMaterial(int index) {
+		if (index < m_nMaterials)
+			return m_ppMaterials[index];
+		return nullptr;
+	}
 };
 
 class CLoadedModelInfo
