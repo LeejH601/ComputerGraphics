@@ -2,6 +2,12 @@
 
 CMaterial::CMaterial()
 {
+	TextureMask = 0;
+	BaseColor = glm::vec3(1, 0, 0);
+	SpecularColor = glm::vec3(1, 1, 1);
+	MetallicColor = 0.04f;
+	RoughnessColor = 0.2f;
+	FresnelColor = 1.46f;
 }
 
 CMaterial::~CMaterial()
@@ -10,6 +16,9 @@ CMaterial::~CMaterial()
 
 void CMaterial::BindShaderVariables(GLuint s_Program)
 {
+
+	GLuint TextureMaskLoc = glGetUniformLocation(s_Program, "gTextureMask");
+	glUniform1i(TextureMaskLoc, TextureMask);
 
 	GLuint BaseLoc = glGetUniformLocation(s_Program, "gBaseColor");
 	glUniform3fv(BaseLoc, 1, glm::value_ptr(BaseColor));
@@ -21,7 +30,11 @@ void CMaterial::BindShaderVariables(GLuint s_Program)
 	glUniform1f(MetallicLoc, MetallicColor);
 
 	GLuint RoughnessLoc = glGetUniformLocation(s_Program, "gRoughnessColor");
-	glUniform1f(RoughnessLoc, MetallicColor);
+	glUniform1f(RoughnessLoc, RoughnessColor);
+
+	GLuint FresnelLoc = glGetUniformLocation(s_Program, "gFresnel");
+	glUniform1f(FresnelLoc, FresnelColor);
+
 
 	if (TextureMask & MATERIAL_BASE_MAP) {
 
@@ -38,7 +51,4 @@ void CMaterial::BindShaderVariables(GLuint s_Program)
 	if (TextureMask & MATERIAL_EMISSION_MAP) {
 
 	}
-	GLuint worldLoc = glGetUniformLocation(s_Program, "worldTransform");
-
-	//glUniformMatrix4fv(worldLoc, 1, GL_FALSE, glm::value_ptr(m_mat4x4Wolrd));
 }

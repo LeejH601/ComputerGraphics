@@ -25,6 +25,7 @@ public:
 	glm::vec3 NormalColor;
 	glm::vec3 SpecularColor;
 	glm::float32 RoughnessColor;
+	glm::float32 FresnelColor;
 	glm::vec3 EmissiveColor;
 	glm::float32 Refraction;
 	glm::float32 Opacity;

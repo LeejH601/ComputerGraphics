@@ -67,6 +67,12 @@ void CObject::Render()
 
 void CObject::BindShaderVariables(GLuint s_Program)
 {
+	if (m_ppMaterials.size() > 0) {
+		for (std::shared_ptr<CMaterial>& pMt : m_ppMaterials) {
+			pMt->BindShaderVariables(s_Program);
+		}
+	}
+
 	GLuint worldLoc = glGetUniformLocation(s_Program, "worldTransform");
 
 	glUniformMatrix4fv(worldLoc, 1, GL_FALSE, glm::value_ptr(m_mat4x4Wolrd));
@@ -74,4 +80,9 @@ void CObject::BindShaderVariables(GLuint s_Program)
 	if (m_pMesh) {
 		m_pMesh->BindShaderVariables(s_Program);
 	}
+}
+
+void CObject::SetMaterial(std::shared_ptr<CMaterial>& pMaterial)
+{
+	m_ppMaterials.push_back(std::move(pMaterial));
 }

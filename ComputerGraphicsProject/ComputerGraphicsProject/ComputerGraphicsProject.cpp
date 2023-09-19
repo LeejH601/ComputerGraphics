@@ -140,6 +140,9 @@ int main(int argc, char** argv)
 
 	g_pTestObj->SetMesh(testSphereMesh.get());
 
+	std::shared_ptr<CMaterial> pMaterial = std::make_shared<CMaterial>();
+	g_pTestObj->SetMaterial(pMaterial);
+
 	glutDisplayFunc(RenderScene);
 	glutIdleFunc(Idle);
 	glutKeyboardFunc(KeyInput);

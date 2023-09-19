@@ -37,5 +37,6 @@ public:
 	virtual void BindShaderVariables(GLuint s_Program);
 
 	void SetMesh(CMesh* mesh) { m_pMesh = mesh; };
+	void SetMaterial(std::shared_ptr<CMaterial>& pMaterial);
 };
 
