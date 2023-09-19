@@ -7,6 +7,7 @@
 #include <memory>
 #include <iostream>
 #include <sstream>
+#include <chrono>
 
 #include "Dependencies/glew.h"
 #include "Dependencies/freeglut.h"

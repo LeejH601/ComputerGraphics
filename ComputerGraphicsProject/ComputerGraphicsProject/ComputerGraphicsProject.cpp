@@ -8,12 +8,24 @@
 #include "Object.h"
 #include "Mesh.h"
 #include "Light.h"
+#include "Timer.h"
 
 CRenderer* g_Renderer = NULL;
 std::unique_ptr<CCamera> g_pMainCamera = nullptr;
 std::unique_ptr<CObject> g_pTestObj = nullptr;
 std::unique_ptr<CObject> g_pTestObj2 = nullptr;
+std::unique_ptr<CGameTimer> g_Timer;
+CLight* g_SunLight = nullptr;
+UINT gDwDirection;
 
+
+#define DW_FRONT 0x01
+#define DW_BACK  0x02
+#define DW_RIGHT 0x04
+#define DW_LEFT	 0x08
+#define DW_UP	 0x10
+#define DW_DOWN  0x20
+#define DW_SHIFT 0x40
 
 int g_WindowSizeX = 1280;
 int g_WindowSizeY = 768;
@@ -28,18 +40,39 @@ void RenderScene(void)
 	glCullFace(GL_BACK);
 	glPolygonMode(GL_FRONT, GL_FILL);
 	//glPolygonMode(GL_BACK, GL_LINE);
+	g_Timer->Tick();
 
-	static CLight testLight;
-	static float d_time = 0.0f;
-	d_time += 0.01f;
-	testLight.m_vec3LightColor = glm::vec3(1, 1, 1);
-	testLight.m_vec3Direction = glm::normalize(glm::vec3(-1, -1, -1));
-	//testLight.m_vec3Direction = glm::vec3(sin(d_time), 0.0f, cos(d_time));
+	glm::vec3 cameraPosition = g_pMainCamera->GetPosition();
+	glm::vec3 cameraVelocity = glm::vec3(0);
+
+	if (gDwDirection != 0) {
+		if (gDwDirection & DW_FRONT)
+			cameraVelocity.z -= 1;
+		if (gDwDirection & DW_BACK)
+			cameraVelocity.z += 1;
+		if (gDwDirection & DW_RIGHT)
+			cameraVelocity.x += 1;
+		if (gDwDirection & DW_LEFT)
+			cameraVelocity.x -= 1;
+		if (gDwDirection & DW_UP)
+			cameraVelocity.y += 1;
+		if (gDwDirection & DW_DOWN)
+			cameraVelocity.y -= 1;
+		cameraVelocity = glm::normalize(cameraVelocity);
+	}
+
+	cameraPosition += cameraVelocity * g_Timer->GetFrameTimeElapsed();
+	g_pMainCamera->SetPosision(cameraPosition);
+
+	float fTime = g_Timer->GetTotalTime();
+	g_SunLight->m_vec3LightColor = glm::vec3(1, 1, 1);
+	g_SunLight->m_vec3Direction = glm::normalize(glm::vec3(-1, -1, -1));
+	g_SunLight->m_vec3Direction = glm::vec3(sin(fTime), cos(fTime), -1);
 
 	GLuint s_Program = g_Renderer->TestShader;
 	glUseProgram(s_Program);
 
-	testLight.BindShaderVariables(s_Program);
+	g_SunLight->BindShaderVariables(s_Program);
 	g_pMainCamera->BindShaderVariables(s_Program);
 
 	g_pTestObj->BindShaderVariables(s_Program);
@@ -70,33 +103,67 @@ void MouseInput(int button, int state, int x, int y)
 	RenderScene();
 }
 
+void MouseMotion(int x, int y)
+{
+	
+	RenderScene();
+}
+
 void KeyInput(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
 	case 'w':
-		g_pMainCamera->SetPosision(g_pMainCamera->GetPosition() + glm::vec3(0, 0, -0.1));
+		gDwDirection |= DW_FRONT;
 		break;
 	case 's':
-		g_pMainCamera->SetPosision(g_pMainCamera->GetPosition() + glm::vec3(0, 0, 0.1));
+		gDwDirection |= DW_BACK;
 		break;
 	case 'd':
-		g_pMainCamera->SetPosision(g_pMainCamera->GetPosition() + glm::vec3(0.1, 0, 0));
+		gDwDirection |= DW_RIGHT;
 		break;
 	case 'a':
-		g_pMainCamera->SetPosision(g_pMainCamera->GetPosition() + glm::vec3(-0.1, 0, 0));
+		gDwDirection |= DW_LEFT;
 		break;
 	case 'q':
-		g_pMainCamera->SetPosision(g_pMainCamera->GetPosition() + glm::vec3(0, -0.1, 0));
+		gDwDirection |= DW_DOWN;
 		break;
 	case 'e':
-		g_pMainCamera->SetPosision(g_pMainCamera->GetPosition() + glm::vec3(0, 0.1, 0));
+		gDwDirection |= DW_UP;
 		break;
 	default:
 		break;
 	}
 	glm::vec3 pos = g_pMainCamera->GetPosition();
 	std::cout << pos.x << " " << pos.y << " " << pos.z << std::endl;
+	RenderScene();
+}
+
+void KeyUpInput(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 'w':
+		gDwDirection &= (~DW_FRONT);
+		break;
+	case 's':
+		gDwDirection &= (~DW_BACK);
+		break;
+	case 'd':
+		gDwDirection &= (~DW_RIGHT);
+		break;
+	case 'a':
+		gDwDirection &= (~DW_LEFT);
+		break;
+	case 'q':
+		gDwDirection &= (~DW_DOWN);
+		break;
+	case 'e':
+		gDwDirection &= (~DW_UP);
+		break;
+	default:
+		break;
+	}
 	RenderScene();
 }
 
@@ -124,12 +191,14 @@ int main(int argc, char** argv)
 	}
 
 	// Initialize Renderer
+	g_Timer = std::make_unique<CGameTimer>();
 	g_Renderer = new CRenderer(g_WindowSizeX, g_WindowSizeY);
 	if (!g_Renderer->IsInitialized())
 	{
 		std::cout << "Renderer could not be initialized.. \n";
 	}
 
+	g_SunLight = new CLight();
 	g_pMainCamera = std::make_unique<CCamera>();
 
 	g_pMainCamera->RegenarationViewMatrix();
@@ -154,18 +223,22 @@ int main(int argc, char** argv)
 	g_pTestObj->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
 	g_pTestObj2->LoadGeometryAndAnimationFromFile("./Objects/Plane.bin");
 	g_pTestObj2->GetMaterial(0)->RoughnessColor = 1.0f;
-	g_pTestObj2->GetMaterial(0)->FresnelColor = 1.3f
+	g_pTestObj2->GetMaterial(0)->FresnelColor = 1.3f;
 	//g_pTestObj->SetMaterial(pMaterial);
 
 	glutDisplayFunc(RenderScene);
 	glutIdleFunc(Idle);
 	glutKeyboardFunc(KeyInput);
+	glutKeyboardUpFunc(KeyUpInput);
 	glutMouseFunc(MouseInput);
+	glutMotionFunc(MouseMotion);
 	glutSpecialFunc(SpecialKeyInput);
 
+	g_Timer->Start();
 	glutMainLoop();
 
 	delete g_Renderer;
+	delete g_SunLight;
 
 	return 0;
 }
