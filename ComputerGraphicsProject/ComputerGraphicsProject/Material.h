@@ -33,7 +33,9 @@ public:
 
 	// 텍스쳐 필요
 	std::shared_ptr<CTexture> m_pBaseTexture;
+	std::shared_ptr<CTexture> m_pNormalTexture;
 
 	void SetBaseTexture(std::shared_ptr<CTexture>& pTexture);
+	void SetNormalTexture(std::shared_ptr<CTexture>& pTexture);
 };
 

@@ -10,6 +10,8 @@
 in vec3 WorldPos;
 in vec3 Normal;
 in vec2 Texcoord0;
+in vec3 Tangent;
+in vec3 Bitangent;
 
 out vec4 FragColor;
 
@@ -36,6 +38,7 @@ uniform vec3 gSpecularColor;
 
 
 uniform sampler2D u_BaseTexture;
+uniform sampler2D u_NormalTexture;
 
 
 vec3 aces_approx(vec3 v)
@@ -142,12 +145,25 @@ void main()
 	//BaseColor = vec3(Texcoord0.x,Texcoord0.y,0);
 	//BaseColor.xyz *= 2;
 
+	
+	vec3 N = normalize(Normal);
+	vec3 T = normalize(Tangent);
+	vec3 B = normalize(Bitangent);
+
+	mat3 TBN = mat3(T, B, N);
+
+	vec3 normal = texture(u_NormalTexture, Texcoord0).xyz;
+	normal = (2.0f * normal) - 1.0f;
+
+	vec3 normalTBN =  TBN * normal;
+
+
 	float gamma = 2.2;
 
 	BaseColor = pow(BaseColor, vec3(gamma) );
 
-	vec3 LightColor = gMainLight.vec3LightColor * 4.0f;
-	cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, SpecularColor, normalize(Normal), vToLight, LightColor, Fresnel, Roughness, MetallicColor);
+	vec3 LightColor = gMainLight.vec3LightColor * 1.0f;
+	cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, SpecularColor, normalize(normalTBN), vToLight, LightColor, Fresnel, Roughness, MetallicColor);
 
 	float S = 1.0;
 	cColor.rgb = vec3(S * aces_approx(cColor.xyz * 0.8));
@@ -155,4 +171,5 @@ void main()
 	cColor.rgb = pow(cColor.rgb, vec3(1.0 / gamma));
 	
 	FragColor = cColor;
+	//FragColor = vec4(normalTBN, 1.0f);
 }

@@ -205,7 +205,7 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 			pTexture = std::make_shared<CTexture>();
 			if (strcmp(pstrTextureName, "null"))
 			{
-				pTexture->LoadTextureFromPNG(std::string("Textures/") + std::string(pstrTextureName), GL_LINEAR);
+				pTexture->LoadTextureFromPNG(std::string("Textures/") + std::string(pstrTextureName) + std::string(".png"), GL_LINEAR);
 			}
 		}
 		else if (!strcmp(pstrToken, "<NormalMap>:"))
@@ -218,8 +218,9 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 			pTexture = std::make_shared<CTexture>();
 			if (strcmp(pstrTextureName, "null"))
 			{
-				pTexture->LoadTextureFromPNG(std::string("Textures/") + std::string(pstrTextureName), GL_LINEAR);
+				pTexture->LoadTextureFromPNG(std::string("Textures/") + std::string(pstrTextureName) + std::string(".png"), GL_LINEAR);
 			}
+			pMaterial->SetNormalTexture(pTexture);
 		}
 		else if (!strcmp(pstrToken, "<MetallicMap>:"))
 		{
@@ -231,7 +232,7 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 			pTexture = std::make_shared<CTexture>();
 			if (strcmp(pstrTextureName, "null"))
 			{
-				pTexture->LoadTextureFromPNG(std::string("Textures/") + std::string(pstrTextureName), GL_LINEAR);
+				pTexture->LoadTextureFromPNG(std::string("Textures/") + std::string(pstrTextureName) + std::string(".png"), GL_LINEAR);
 			}
 		}
 		else if (!strcmp(pstrToken, "<EmissionMap>:"))
@@ -244,7 +245,7 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 			pTexture = std::make_shared<CTexture>();
 			if (strcmp(pstrTextureName, "null"))
 			{
-				pTexture->LoadTextureFromPNG(std::string("Textures/") + std::string(pstrTextureName), GL_LINEAR);
+				pTexture->LoadTextureFromPNG(std::string("Textures/") + std::string(pstrTextureName) + std::string(".png"), GL_LINEAR);
 			}
 		}
 		/*else if (!strcmp(pstrToken, "<DetailAlbedoMap>:"))

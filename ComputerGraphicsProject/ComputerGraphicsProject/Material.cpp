@@ -6,7 +6,7 @@ CMaterial::CMaterial()
 	BaseColor = glm::vec3(1, 0, 0);
 	SpecularColor = glm::vec3(1, 1, 1);
 	MetallicColor = 0.04f;
-	RoughnessColor = 0.02f;
+	RoughnessColor = 0.1f;
 	FresnelColor = 1.00f;
 }
 
@@ -43,7 +43,10 @@ void CMaterial::BindShaderVariables(GLuint s_Program)
 		m_pBaseTexture->BindShaderVariables(s_Program, GL_TEXTURE0);
 	}
 	if (TextureMask & MATERIAL_NORMAL_MAP) {
+		GLuint samplerULoc = glGetUniformLocation(s_Program, "u_NormalTexture");
+		glUniform1i(samplerULoc, 1);
 
+		m_pNormalTexture->BindShaderVariables(s_Program, GL_TEXTURE1);
 	}
 	if (TextureMask & MATERIAL_SPECULAR_MAP) {
 
@@ -60,4 +63,10 @@ void CMaterial::SetBaseTexture(std::shared_ptr<CTexture>& pTexture)
 {
 	m_pBaseTexture = pTexture;
 	TextureMask |= MATERIAL_BASE_MAP;
+}
+
+void CMaterial::SetNormalTexture(std::shared_ptr<CTexture>& pTexture)
+{
+	m_pNormalTexture = pTexture;
+	TextureMask |= MATERIAL_NORMAL_MAP;
 }

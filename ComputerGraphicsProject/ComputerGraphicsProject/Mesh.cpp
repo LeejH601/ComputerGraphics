@@ -487,11 +487,19 @@ void CMesh::BindShaderVariables(GLuint s_Program)
 	glEnableVertexAttribArray(normalLoc);
 	GLuint tex0Loc = glGetAttribLocation(s_Program, "v_texcoord0");
 	glEnableVertexAttribArray(tex0Loc);
+	GLuint TangentLoc = glGetAttribLocation(s_Program, "v_Tangent");
+	glEnableVertexAttribArray(TangentLoc);
+	GLuint BiTangentLoc = glGetAttribLocation(s_Program, "v_Bitangent");
+	glEnableVertexAttribArray(BiTangentLoc);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 	glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(CMesh::Vertex), 0);
 	glVertexAttribPointer(normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(CMesh::Vertex),
 		(GLvoid*)(sizeof(float) * 3));
+	glVertexAttribPointer(TangentLoc, 3, GL_FLOAT, GL_FALSE, sizeof(CMesh::Vertex),
+		(GLvoid*)(sizeof(float) * 6));
+	glVertexAttribPointer(BiTangentLoc, 3, GL_FLOAT, GL_FALSE, sizeof(CMesh::Vertex),
+		(GLvoid*)(sizeof(float) * 9));
 	glVertexAttribPointer(tex0Loc, 2, GL_FLOAT, GL_FALSE, sizeof(CMesh::Vertex),
 		(GLvoid*)(sizeof(float) * 12));
 }
