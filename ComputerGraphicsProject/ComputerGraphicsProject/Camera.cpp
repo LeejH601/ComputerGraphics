@@ -1,11 +1,17 @@
 #include "Camera.h"
+#include "Dependencies/glm/common.hpp"
+#include "Dependencies/glm/gtc/quaternion.hpp"
+#include "Dependencies/glm/gtc/matrix_transform.hpp"
+#include "Dependencies/glm/gtc/type_ptr.hpp"
 
 CCamera::CCamera()
 {
 	m_vec3Position = { 0,0, 0 };
-	m_vec3Look = { 0,0,1 };
+	m_vec3Look = { 0,0,-1 };
 	m_vec3Up = { 0,1, 0 };
-	m_vec3Right = { -1,0,0 };
+	m_vec3Right = { 1,0,0 };
+
+	m_vec4Rotation = glm::identity<glm::highp_quat>();
 
 	/*m_vec3Look = glm::normalize(glm::vec3(1,0,1));
 	m_vec3Up = { 0,1, 0 };
@@ -22,9 +28,16 @@ CCamera::~CCamera()
 
 void CCamera::RegenarationViewMatrix()
 {
-	m_vec3Look = glm::normalize(m_vec3Look);
-	m_vec3Right = glm::cross(m_vec3Up, m_vec3Look);
-	m_vec3Up = glm::cross(m_vec3Look, m_vec3Right);
+	glm::mat3 rotateMat = glm::mat3_cast(m_vec4Rotation);
+	//m_vec4Rotation = glm::normalize(m_vec4Rotation);
+	m_vec3Look = m_vec4Rotation * glm::vec3(0,0,-1);
+	m_vec3Up = m_vec4Rotation * glm::vec3(0, 1, 0);
+	m_vec3Right = m_vec4Rotation * glm::vec3(1, 0, 0);
+
+
+	//m_vec3Look = glm::normalize(m_vec3Look);
+	//m_vec3Right = glm::cross(m_vec3Up, m_vec3Look);
+	//m_vec3Up = glm::cross(m_vec3Look, m_vec3Right);
 
 	m_mat4x4View = {
 		m_vec3Right.x, m_vec3Up.x, m_vec3Look.x, 0,
@@ -32,6 +45,14 @@ void CCamera::RegenarationViewMatrix()
 		m_vec3Right.z, m_vec3Up.z, m_vec3Look.z, 0,
 		-glm::dot(m_vec3Position, m_vec3Right), -glm::dot(m_vec3Position, m_vec3Up), -glm::dot(m_vec3Position, m_vec3Look),1
 	};
+
+	/*m_mat4x4View[3][0] = -glm::dot(m_vec3Position, m_vec3Right);
+	m_mat4x4View[3][1] = -glm::dot(m_vec3Position, m_vec3Up);
+	m_mat4x4View[3][2] = -glm::dot(m_vec3Position, m_vec3Look);*/
+
+
+
+	//std::cout << std::endl;
 
 	/*m_mat4x4View[0][0] = m_vec3Right.x; m_mat4x4View[0][1] = m_vec3Up.x; m_mat4x4View[0][2] = m_vec3Look.x;
 	m_mat4x4View[1][0] = m_vec3Right.y; m_mat4x4View[1][1] = m_vec3Up.y; m_mat4x4View[1][2] = m_vec3Look.y;

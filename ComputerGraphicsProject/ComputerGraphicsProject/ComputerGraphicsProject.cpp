@@ -18,6 +18,15 @@ std::unique_ptr<CGameTimer> g_Timer;
 CLight* g_SunLight = nullptr;
 UINT gDwDirection;
 
+enum class MOUSE_STATE {
+	MOUSE_CILCK_LEFT,
+	MOUSE_CILCK_RIGHT,
+	MOUSE_CILCK_NONE,
+};
+
+MOUSE_STATE g_eMouseState = MOUSE_STATE::MOUSE_CILCK_NONE;
+POINT g_ptOldMouseCursor;
+POINT g_ptCurrMouseCuror;
 
 #define DW_FRONT 0x01
 #define DW_BACK  0x02
@@ -41,6 +50,8 @@ void RenderScene(void)
 	glPolygonMode(GL_FRONT, GL_FILL);
 	//glPolygonMode(GL_BACK, GL_LINE);
 	g_Timer->Tick();
+	float fTime = g_Timer->GetTotalTime();
+	float fElapesdTime = g_Timer->GetFrameTimeElapsed();
 
 	glm::vec3 cameraPosition = g_pMainCamera->GetPosition();
 	glm::vec3 cameraVelocity = glm::vec3(0);
@@ -64,7 +75,10 @@ void RenderScene(void)
 	cameraPosition += cameraVelocity * g_Timer->GetFrameTimeElapsed();
 	g_pMainCamera->SetPosision(cameraPosition);
 
-	float fTime = g_Timer->GetTotalTime();
+	glm::qua<float> qResult = glm::rotate(g_pMainCamera->m_vec4Rotation, glm::radians(90.f) * fElapesdTime, glm::normalize(glm::vec3(0, 1, 0)));
+	g_pMainCamera->m_vec4Rotation = qResult;
+	//g_pMainCamera->m_vec4Rotation = glm::normalize(qResult);
+
 	g_SunLight->m_vec3LightColor = glm::vec3(1, 1, 1);
 	g_SunLight->m_vec3Direction = glm::normalize(glm::vec3(-1, -1, -1));
 	g_SunLight->m_vec3Direction = glm::vec3(sin(fTime), cos(fTime), -1);
@@ -112,7 +126,7 @@ void Idle(void)
 void MouseInput(int button, int state, int x, int y)
 {
 	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-
+		g_eMouseState = MOUSE_STATE::MOUSE_CILCK_RIGHT;
 	}
 
 	RenderScene();
@@ -120,7 +134,19 @@ void MouseInput(int button, int state, int x, int y)
 
 void MouseMotion(int x, int y)
 {
-	
+	switch (g_eMouseState)
+	{
+	case MOUSE_STATE::MOUSE_CILCK_LEFT:
+		break;
+	case MOUSE_STATE::MOUSE_CILCK_RIGHT:
+		g_ptCurrMouseCuror = { x,y };
+
+		break;
+	case MOUSE_STATE::MOUSE_CILCK_NONE:
+		break;
+	default:
+		break;
+	}
 	RenderScene();
 }
 

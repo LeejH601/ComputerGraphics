@@ -5,6 +5,15 @@
 #include "Material.h"
 #include <memory>
 
+class IMoveContext
+{
+public:
+	IMoveContext();
+	virtual ~IMoveContext();
+
+	virtual void Rotate(glm::vec4 Quaternion);
+};
+
 class CMesh;
 class CObject
 {

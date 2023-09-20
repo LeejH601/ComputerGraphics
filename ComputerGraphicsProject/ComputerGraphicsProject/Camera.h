@@ -4,7 +4,7 @@
 class CCamera
 {
 public:
-	glm::vec4 m_vec4Rotation;
+	glm::qua<float> m_vec4Rotation;
 	glm::vec3 m_vec3Position;
 
 	glm::vec3 m_vec3Look;
