@@ -9,10 +9,6 @@ std::shared_ptr<CMesh> CMesh::CreateCubeMesh(float fWidth, float fHeight, float 
 
 	static unsigned int cubeShapeindex[] = {
 		// ¿∞∏È√º
-		0, 1, 2, // +z
-		0, 2, 3,
-		7, 6, 5, // -z
-		7, 5, 4,
 		3, 2, 6, // +x
 		3, 6, 7,
 		4, 5, 1, // -x
@@ -20,7 +16,11 @@ std::shared_ptr<CMesh> CMesh::CreateCubeMesh(float fWidth, float fHeight, float 
 		4, 0, 3, // +y
 		4, 3, 7,
 		1, 5, 6, // -y
-		1, 6, 2
+		1, 6, 2,
+		0, 1, 2, // +z
+		0, 2, 3,
+		7, 6, 5, // -z
+		7, 5, 4
 	};
 
 
@@ -35,10 +35,6 @@ std::shared_ptr<CMesh> CMesh::CreateCubeMesh(float fWidth, float fHeight, float 
 
 	static unsigned int cubeNormalindex[] = {
 		// ¿∞∏È√º
-		0, 0, 0,
-		0, 0, 0,
-		1, 1, 1,
-		1, 1, 1,
 		2, 2, 2,
 		2, 2, 2,
 		3, 3, 3,
@@ -46,7 +42,11 @@ std::shared_ptr<CMesh> CMesh::CreateCubeMesh(float fWidth, float fHeight, float 
 		4, 4, 4,
 		4, 4, 4,
 		5, 5, 5,
-		5, 5, 5
+		5, 5, 5,
+		0, 0, 0,
+		0, 0, 0,
+		1, 1, 1,
+		1, 1, 1
 	};
 
 
@@ -285,12 +285,12 @@ void CMesh::LoadMeshFromFile(FILE* pInFile)
 	::ReadStringFromFile(pInFile, pstrMeshName);
 	m_strMeshName = pstrMeshName;
 
-	std::wstring wMeshName;
+	/*std::wstring wMeshName;
 	size_t tmp = 0;
 	wMeshName.resize(strlen(pstrMeshName) + 1);
 	mbstowcs_s(&tmp, wMeshName.data(), (size_t)wMeshName.size(), pstrMeshName, (size_t)wMeshName.size());
 	OutputDebugString(wMeshName.c_str());
-	OutputDebugString(L"\n");
+	OutputDebugString(L"\n");*/
 
 	for (; ; )
 	{

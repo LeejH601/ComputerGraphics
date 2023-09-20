@@ -34,6 +34,8 @@ void CTexture::LoadTextureFromPNG(std::string filePath, GLuint samplingMethod)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
 		GL_UNSIGNED_BYTE, &image[0]);
 
+	m_TextureType = GL_TEXTURE_2D;
+
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, samplingMethod);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, samplingMethod);
 }
@@ -48,6 +50,8 @@ void CTexture::LoadTextureHDR(std::string filePath, GLuint samplingMethod)
 		glGenTextures(1, &m_TextureID);
 		glBindTexture(GL_TEXTURE_2D, m_TextureID);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data);
+
+		m_TextureType = GL_TEXTURE_2D;
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

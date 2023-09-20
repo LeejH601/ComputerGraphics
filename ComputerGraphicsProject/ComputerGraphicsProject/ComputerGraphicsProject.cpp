@@ -79,11 +79,13 @@ void RenderScene(void)
 	g_pTestObj2->Render();
 
 
-	s_Program = g_Renderer->CubeShader;
+	s_Program = g_Renderer->SkyBoxShader;
 	glUseProgram(s_Program);
 
 	g_SunLight->BindShaderVariables(s_Program);
 	g_pMainCamera->BindShaderVariables(s_Program);
+
+	glDepthFunc(GL_LEQUAL);
 
 	g_pTestObj->BindShaderVariables(s_Program);
 	g_pTestObj->Render();
@@ -143,6 +145,14 @@ void KeyInput(unsigned char key, int x, int y)
 		break;
 	case 'e':
 		gDwDirection |= DW_UP;
+		break;
+	case 'f':
+		g_pMainCamera->m_vec3Look.x += 0.1f;
+		g_pMainCamera->m_vec3Look = glm::normalize(g_pMainCamera->m_vec3Look);
+		break;
+	case 'g':
+		g_pMainCamera->m_vec3Look.x -= 0.1f;
+		g_pMainCamera->m_vec3Look = glm::normalize(g_pMainCamera->m_vec3Look);
 		break;
 	default:
 		break;
@@ -221,7 +231,7 @@ int main(int argc, char** argv)
 	g_pTestObj2 = std::make_unique<CObject>();
 
 	std::shared_ptr<CMesh> testCubeMesh;
-	testCubeMesh = CMesh::CreateCubeMesh(5.0f, 5.0f, 5.0f);
+	testCubeMesh = CMesh::CreateCubeMesh(1.0f, 1.0f, 1.0f);
 	testCubeMesh->CreateShaderVariables();
 
 	std::shared_ptr<CMesh> testSphereMesh;
@@ -229,12 +239,16 @@ int main(int argc, char** argv)
 	testSphereMesh->CreateShaderVariables();
 
 	std::shared_ptr<CMaterial> pMaterial = std::make_shared<CMaterial>();
-	std::shared_ptr<CTexture> pTexture = std::make_shared<CTexture>();
+	std::shared_ptr<CMaterial> pMaterial2 = std::make_shared<CMaterial>();
+	std::shared_ptr<CTexture> pTexture = std::make_shared<CTexture>(g_Renderer->m_tCubeMapTexture);
 	//pTexture->LoadTextureFromPNG("./Textures/rgb.png", GL_NEAREST);
-	pTexture->LoadTextureHDR("./Textures/poly_haven_studio_4k.hdr", GL_LINEAR);
+	//pTexture->LoadTextureHDR("./Textures/poly_haven_studio_4k.hdr", GL_LINEAR);
 	pMaterial->SetBaseTexture(pTexture);
 
 	//g_pTestObj->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+	//g_pTestObj->SetMesh(testCubeMesh);
+	//g_pTestObj->SetMaterial(pMaterial2);
+
 	g_pTestObj->SetMesh(testCubeMesh);
 	g_pTestObj->SetMaterial(pMaterial);
 

@@ -2,10 +2,15 @@
 
 CCamera::CCamera()
 {
-	m_vec3Position = { 0,0, 0.5 };
+	m_vec3Position = { 0,0, 0 };
 	m_vec3Look = { 0,0,1 };
 	m_vec3Up = { 0,1, 0 };
 	m_vec3Right = { -1,0,0 };
+
+	/*m_vec3Look = glm::normalize(glm::vec3(1,0,1));
+	m_vec3Up = { 0,1, 0 };
+	m_vec3Right = glm::normalize(glm::cross(m_vec3Look, m_vec3Up));*/
+
 
 	m_vec4ViewPort = { 0,0,1280,768 };
 }
@@ -41,7 +46,7 @@ void CCamera::RegenarationViewMatrix()
 void CCamera::GenerateProjectionMatrix(float fov, float aspect, float zNear, float zFar)
 {
 	m_mat4x4Projection = glm::perspective(fov, aspect, zNear, zFar);
-	m_mat4x4Projection = glm::translate(m_mat4x4Projection, glm::vec3(0.0, 0.0, -5.0));
+	//m_mat4x4Projection = glm::translate(m_mat4x4Projection, glm::vec3(0.0, 0.0, -5.0));
 }
 
 void CCamera::BindShaderVariables(GLuint s_Program)

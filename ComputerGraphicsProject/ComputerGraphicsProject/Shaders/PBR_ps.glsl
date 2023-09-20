@@ -141,21 +141,27 @@ void main()
 
 	MetallicColor = max(0.01f, MetallicColor);
 	
-	BaseColor = texture(u_BaseTexture, Texcoord0).xyz;
+	if((gTextureMask &MATERIAL_BASE_MAP) != 0){
+		BaseColor = texture(u_BaseTexture, Texcoord0).xyz;
+	}
 	//BaseColor = vec3(Texcoord0.x,Texcoord0.y,0);
 	//BaseColor.xyz *= 2;
 
+	vec3 normalTBN = Normal;
 	
-	vec3 N = normalize(Normal);
-	vec3 T = normalize(Tangent);
-	vec3 B = normalize(Bitangent);
 
-	mat3 TBN = mat3(T, B, N);
+	if((gTextureMask & MATERIAL_NORMAL_MAP) != 0){
+		vec3 N = normalize(Normal);
+		vec3 T = normalize(Tangent);
+		vec3 B = normalize(Bitangent);
 
-	vec3 normal = texture(u_NormalTexture, Texcoord0).xyz;
-	normal = (2.0f * normal) - 1.0f;
+		mat3 TBN = mat3(T, B, N);
 
-	vec3 normalTBN =  TBN * normal;
+		vec3 normal = texture(u_NormalTexture, Texcoord0).xyz;
+		normal = (2.0f * normal) - 1.0f;
+
+		normalTBN =  TBN * normal;
+	}
 
 
 	float gamma = 2.2;

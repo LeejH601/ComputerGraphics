@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Renderer.h"
 #include "assert.h"
+#include "Object.h"
+#include "Mesh.h"
 
 CRenderer::CRenderer(int windowSizeX, int windowSizeY)
 {
@@ -24,6 +26,74 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 
 	TestShader = CompileShaders((char*)"./Shaders/PBR_vs.glsl", (char*)"./Shaders/PBR_ps.glsl");
 	CubeShader = CompileShaders((char*)"./Shaders/Cube_vs.glsl", (char*)"./Shaders/Cube_ps.glsl");
+	MakeCubeMapShader = CompileShaders((char*)"./Shaders/Cube_vs.glsl", (char*)"./Shaders/Cube_ps.glsl");
+	SkyBoxShader = CompileShaders((char*)"./Shaders/environmentMake_vs.glsl", (char*)"./Shaders/environmentMake_ps.glsl");
+
+	GLuint cubeFBO, cubeRBO;
+	GLuint cubeMapWidth = 1024, cubeMapHeight = 1024;
+	glGenFramebuffers(1, &cubeFBO);
+	glGenRenderbuffers(1, &cubeRBO);
+
+	glBindBuffer(GL_FRAMEBUFFER, cubeFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, cubeRBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, cubeRBO, cubeMapWidth, cubeMapHeight);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, cubeRBO);
+
+	GLuint& cubeMapID = m_tCubeMapTexture.m_TextureID;
+	glGenTextures(1, &cubeMapID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMapID);
+	for (GLuint i = 0; i < 6; ++i) {
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, cubeMapWidth, cubeMapHeight, 0, GL_RGB, GL_FLOAT, nullptr);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glm::mat4 tempCaptureProjection = glm::perspective(glm::radians(90.f), 1.0f, 0.1f, 10.0f);
+	glm::mat4 tempCaptureViews[6] = {
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+	};
+
+	glUseProgram(MakeCubeMapShader);
+
+	GLuint samplerULoc = glGetUniformLocation(MakeCubeMapShader, "u_BaseTexture");
+	glUniform1i(samplerULoc, 0);
+
+	//m_tCubeMapTexture.BindShaderVariables(MakeCubeMapShader, GL_TEXTURE_CUBE_MAP);
+
+	GLuint projectionLocation;
+	projectionLocation = glGetUniformLocation(MakeCubeMapShader, "projectionTransform");	// ProjMatrix
+	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &tempCaptureProjection[0][0]);
+
+	std::shared_ptr<CTexture> pTexture = std::make_shared<CTexture>();
+	//pTexture->LoadTextureFromPNG("./Textures/rgb.png", GL_NEAREST);
+	pTexture->LoadTextureHDR("./Textures/poly_haven_studio_4k.hdr", GL_LINEAR);
+	pTexture->BindShaderVariables(MakeCubeMapShader, GL_TEXTURE0);
+
+	std::shared_ptr<CMesh> pCubeMesh = std::make_shared<CMesh>();
+	pCubeMesh = CMesh::CreateCubeMesh(1.f, 1.f, 1.f);
+	pCubeMesh->CreateShaderVariables();
+
+	glViewport(0, 0, cubeMapWidth, cubeMapHeight);
+	glBindFramebuffer(GL_FRAMEBUFFER, cubeFBO);
+	for (GLuint i = 0; i < 6; ++i) {
+		GLuint viewLocation;
+		viewLocation = glGetUniformLocation(MakeCubeMapShader, "viewTransform");	// ViewMatrix
+		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &tempCaptureViews[i][0][0]);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, cubeMapID, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		pCubeMesh->BindShaderVariables(MakeCubeMapShader);
+		pCubeMesh->Render();
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
 	m_Initialized = true;

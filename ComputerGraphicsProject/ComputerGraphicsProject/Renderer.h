@@ -5,7 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include "stdafx.h"
-
+#include "Texture.h"
 
 
 class CRenderer
@@ -19,6 +19,10 @@ public:
 	
 	GLuint TestShader = -1;
 	GLuint CubeShader = -1;
+	GLuint MakeCubeMapShader = -1;
+	GLuint SkyBoxShader = -1;
+
+	CTexture m_tCubeMapTexture;
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);

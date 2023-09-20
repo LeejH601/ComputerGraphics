@@ -3,7 +3,7 @@
 
 class CCamera
 {
-private:
+public:
 	glm::vec4 m_vec4Rotation;
 	glm::vec3 m_vec3Position;
 

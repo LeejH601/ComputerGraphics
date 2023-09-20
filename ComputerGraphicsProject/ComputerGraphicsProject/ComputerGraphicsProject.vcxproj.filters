@@ -86,5 +86,7 @@
     <None Include="Shaders\PBR_vs.glsl" />
     <None Include="Shaders\Cube_ps.glsl" />
     <None Include="Shaders\Cube_vs.glsl" />
+    <None Include="Shaders\environmentMake_ps.glsl" />
+    <None Include="Shaders\environmentMake_vs.glsl" />
   </ItemGroup>
 </Project>
