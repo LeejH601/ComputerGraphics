@@ -1,0 +1,23 @@
+#pragma once
+
+#include <gl/glew.h>
+#include <gl/freeglut.h>
+#include <gl/freeglut_ext.h>
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
+#include <array>
+#include <random>
+#include <chrono>
+
+#define DECLARE_SINGLE(MYType)\
+public:\
+	static MYType* GetInst()\
+	{\
+		static MYType m_pInst;\
+		return &m_pInst;\
+	}
+
+extern std::random_device rd;
+extern std::default_random_engine dre;
