@@ -31,13 +31,16 @@ void CCamera::RegenarationViewMatrix()
 	glm::mat3 rotateMat = glm::mat3_cast(m_vec4Rotation);
 	//m_vec4Rotation = glm::normalize(m_vec4Rotation);
 	m_vec3Look = m_vec4Rotation * glm::vec3(0,0,-1);
-	m_vec3Up = m_vec4Rotation * glm::vec3(0, 1, 0);
-	m_vec3Right = m_vec4Rotation * glm::vec3(1, 0, 0);
+	m_vec3Look = glm::normalize(m_vec3Look);
+	/*m_vec3Up = m_vec4Rotation * glm::vec3(0, 1, 0);
+	m_vec3Right = m_vec4Rotation * glm::vec3(1, 0, 0);*/
 
 
 	//m_vec3Look = glm::normalize(m_vec3Look);
-	//m_vec3Right = glm::cross(m_vec3Up, m_vec3Look);
-	//m_vec3Up = glm::cross(m_vec3Look, m_vec3Right);
+	m_vec3Right = glm::cross(m_vec3Look, glm::vec3(0, 1, 0));
+	m_vec3Right = glm::normalize(m_vec3Right);
+	m_vec3Up = glm::cross(m_vec3Right, m_vec3Look);
+	m_vec3Up = glm::normalize(m_vec3Up);
 
 	m_mat4x4View = {
 		m_vec3Right.x, m_vec3Up.x, m_vec3Look.x, 0,
@@ -89,4 +92,19 @@ void CCamera::BindShaderVariables(GLuint s_Program)
 	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &m_mat4x4View[0][0]);
 	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &m_mat4x4Projection[0][0]);
 	glUniformMatrix3fv(PosLocation, 1, GL_FALSE, glm::value_ptr(m_vec3Position));
+}
+
+glm::quat CCamera::GetQauternion()
+{
+	return m_vec4Rotation;
+}
+
+glm::quat& CCamera::GetQauternionRef()
+{
+	return m_vec4Rotation;
+}
+
+void CCamera::SetQauternion(glm::quat rotation)
+{
+	m_vec4Rotation = rotation;
 }

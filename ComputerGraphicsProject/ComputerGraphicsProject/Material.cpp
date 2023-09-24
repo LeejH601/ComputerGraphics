@@ -57,6 +57,7 @@ void CMaterial::BindShaderVariables(GLuint s_Program)
 	if (TextureMask & MATERIAL_EMISSION_MAP) {
 
 	}
+		
 }
 
 void CMaterial::SetBaseTexture(std::shared_ptr<CTexture>& pTexture)

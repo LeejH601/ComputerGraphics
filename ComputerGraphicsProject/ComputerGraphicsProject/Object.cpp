@@ -1,6 +1,17 @@
 #include "Object.h"
 #include "Mesh.h"
 
+void CObject::UpdateTransform(glm::mat4x4* parent)
+{
+	m_mat4x4Transform[3][0] = m_vec3Position.x;
+	m_mat4x4Transform[3][1] = m_vec3Position.y;
+	m_mat4x4Transform[3][2] = m_vec3Position.z;
+	m_mat4x4Wolrd = (parent) ? m_mat4x4Transform * *parent : m_mat4x4Transform;
+
+	if (m_pSibling) m_pSibling->UpdateTransform(parent);
+	if (m_pChild) m_pChild->UpdateTransform(&m_mat4x4Wolrd);
+}
+
 void CObject::LoadFrameHierarchyFromFile(CObject* pParent, FILE* pInFile, int* pnSkinnedMeshes)
 {
 	char pstrToken[64] = { '\0' };
@@ -376,6 +387,7 @@ CObject& CObject::operator=(CObject&& other) noexcept
 
 void CObject::Render()
 {
+	UpdateTransform(nullptr);
 	if (m_pMesh)
 		m_pMesh->Render();
 }
@@ -410,4 +422,23 @@ void CObject::SetMaterial(int nMaterial, std::shared_ptr<CMaterial> pMaterial)
 
 CLoadedModelInfo::~CLoadedModelInfo()
 {
+}
+
+IMoveContext::IMoveContext()
+{
+}
+
+IMoveContext::~IMoveContext()
+{
+}
+
+void IMoveContext::Rotate(glm::vec4& Quaternion, float angle, glm::vec3 axis)
+{
+
+}
+
+void CRotateContext::Rotate(glm::vec4& Quaternion, float angle, glm::vec3 axis)
+{
+	glm::quat q = m_pObject->GetQauternion();
+	m_pObject->SetQauternion(glm::rotate(q, glm::radians(angle), axis));
 }

@@ -187,7 +187,7 @@ std::shared_ptr<CMesh> CMesh::CreateSphereMesh(int nStacks, int nSlices)
 	int k = 0;
 
 	static float m_PI = 3.141592f;
-	static float fRadius = 5.f; // 임시
+	static float fRadius = 0.5f; // 임시
 
 	float fDeltaPhi = float(m_PI / nStacks);
 	float fDeltaTheta = float((2.0f * m_PI) / nSlices);

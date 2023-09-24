@@ -3,16 +3,10 @@
 #include <vector>
 #include "stdafx.h"
 #include "Material.h"
+#include "Global.h"
 #include <memory>
 
-class IMoveContext
-{
-public:
-	IMoveContext();
-	virtual ~IMoveContext();
 
-	virtual void Rotate(glm::vec4 Quaternion);
-};
 
 class CMesh;
 class CObject
@@ -52,6 +46,10 @@ public:
 	void SetMaterial(int nMaterial, std::shared_ptr<CMaterial> pMaterial);
 	void SetChild(std::shared_ptr<CObject> child);
 
+	void SetPosition(glm::vec3 position) { m_vec3Position = position; };
+	glm::vec3 GetPosition() { return m_vec3Position; };
+	void UpdateTransform(glm::mat4x4* parent);
+
 	void LoadFrameHierarchyFromFile(CObject* pParent, FILE* pInFile, int* pnSkinnedMeshes = nullptr);
 	void LoadMaterialsFromFile(CObject* pParent, FILE* pInFile);
 	void LoadGeometryAndAnimationFromFile(const char* pstrFileName);
@@ -61,6 +59,24 @@ public:
 			return m_ppMaterials[index];
 		return nullptr;
 	}
+};
+
+class IMoveContext
+{
+protected:
+	IObject* m_pObject;
+public:
+	IMoveContext();
+	virtual ~IMoveContext();
+
+	virtual void SetTarget(IObject* pObject) { m_pObject = pObject; };
+	virtual void Rotate(glm::vec4& Quaternion, float angle, glm::vec3 axis);
+};
+
+class CRotateContext : public IMoveContext
+{
+public:
+	virtual void Rotate(glm::vec4& Quaternion, float angle, glm::vec3 axis);
 };
 
 class CLoadedModelInfo

@@ -14,9 +14,12 @@ CRenderer* g_Renderer = NULL;
 std::unique_ptr<CCamera> g_pMainCamera = nullptr;
 std::unique_ptr<CObject> g_pTestObj = nullptr;
 std::unique_ptr<CObject> g_pTestObj2 = nullptr;
+std::vector<std::shared_ptr<CObject>> g_TestObjects;
 std::unique_ptr<CGameTimer> g_Timer;
 CLight* g_SunLight = nullptr;
 UINT gDwDirection;
+float g_cxDelta, g_cyDelta;
+
 
 enum class MOUSE_STATE {
 	MOUSE_CILCK_LEFT,
@@ -25,7 +28,7 @@ enum class MOUSE_STATE {
 };
 
 MOUSE_STATE g_eMouseState = MOUSE_STATE::MOUSE_CILCK_NONE;
-POINT g_ptOldMouseCursor;
+POINT g_ptOldMouseCursor{ 0,0 };
 POINT g_ptCurrMouseCuror;
 
 #define DW_FRONT 0x01
@@ -49,6 +52,9 @@ void RenderScene(void)
 	glCullFace(GL_BACK);
 	glPolygonMode(GL_FRONT, GL_FILL);
 	//glPolygonMode(GL_BACK, GL_LINE);
+
+	
+
 	g_Timer->Tick();
 	float fTime = g_Timer->GetTotalTime();
 	float fElapesdTime = g_Timer->GetFrameTimeElapsed();
@@ -58,25 +64,38 @@ void RenderScene(void)
 
 	if (gDwDirection != 0) {
 		if (gDwDirection & DW_FRONT)
-			cameraVelocity.z -= 1;
+			cameraVelocity -= g_pMainCamera->m_vec3Look;
 		if (gDwDirection & DW_BACK)
-			cameraVelocity.z += 1;
+			cameraVelocity += g_pMainCamera->m_vec3Look;
 		if (gDwDirection & DW_RIGHT)
-			cameraVelocity.x += 1;
+			cameraVelocity += g_pMainCamera->m_vec3Right;
 		if (gDwDirection & DW_LEFT)
-			cameraVelocity.x -= 1;
+			cameraVelocity -= g_pMainCamera->m_vec3Right;
 		if (gDwDirection & DW_UP)
-			cameraVelocity.y += 1;
+			cameraVelocity += g_pMainCamera->m_vec3Up;
 		if (gDwDirection & DW_DOWN)
-			cameraVelocity.y -= 1;
+			cameraVelocity -= g_pMainCamera->m_vec3Up;
 		cameraVelocity = glm::normalize(cameraVelocity);
 	}
 
-	cameraPosition += cameraVelocity * g_Timer->GetFrameTimeElapsed();
+	if(!glm::all(glm::isnan(cameraVelocity)))
+		cameraPosition += cameraVelocity * g_Timer->GetFrameTimeElapsed();
 	g_pMainCamera->SetPosision(cameraPosition);
 
-	glm::qua<float> qResult = glm::rotate(g_pMainCamera->m_vec4Rotation, glm::radians(90.f) * fElapesdTime, glm::normalize(glm::vec3(0, 1, 0)));
-	g_pMainCamera->m_vec4Rotation = qResult;
+	if (g_eMouseState == MOUSE_STATE::MOUSE_CILCK_RIGHT) {
+		if (abs(g_cxDelta) > 0.0001f || abs(g_cyDelta > 0.0001f)) {
+			glm::vec3 axis = glm::vec3(0, 1, 0);
+			glm::qua<float> qResult = glm::rotate(g_pMainCamera->m_vec4Rotation, glm::radians(g_cxDelta * 180.0f) * fElapesdTime, glm::normalize(axis));
+			axis = glm::vec3(1, 0, 0);
+			qResult = glm::rotate(qResult, glm::radians(g_cyDelta * 180.0f) * fElapesdTime, glm::normalize(axis));
+
+			g_pMainCamera->m_vec4Rotation = qResult;
+
+			g_cxDelta = 0;
+			g_cyDelta = 0;
+		}
+	}
+	
 	//g_pMainCamera->m_vec4Rotation = glm::normalize(qResult);
 
 	g_SunLight->m_vec3LightColor = glm::vec3(1, 1, 1);
@@ -86,12 +105,25 @@ void RenderScene(void)
 	GLuint s_Program = g_Renderer->TestShader;
 	glUseProgram(s_Program);
 
+	
+	GLuint samplerULoc = glGetUniformLocation(s_Program, "u_IrradianceTexture");
+	glUniform1i(samplerULoc, 2);
+
+
 	g_SunLight->BindShaderVariables(s_Program);
 	g_pMainCamera->BindShaderVariables(s_Program);
 
 	g_pTestObj2->BindShaderVariables(s_Program);
+	g_Renderer->m_tIrradianceTexture->BindShaderVariables(s_Program, GL_TEXTURE2);
+
 	g_pTestObj2->Render();
 
+	for (std::shared_ptr<CObject>& obj : g_TestObjects) {
+		obj->BindShaderVariables(s_Program);
+		g_Renderer->m_tIrradianceTexture->BindShaderVariables(s_Program, GL_TEXTURE2);
+
+		obj->Render();
+	}
 
 	s_Program = g_Renderer->SkyBoxShader;
 	glUseProgram(s_Program);
@@ -127,8 +159,13 @@ void MouseInput(int button, int state, int x, int y)
 {
 	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
 		g_eMouseState = MOUSE_STATE::MOUSE_CILCK_RIGHT;
+		g_ptOldMouseCursor = { x,y };
+		g_ptOldMouseCursor.x -= g_WindowSizeX / 2;
+		g_ptOldMouseCursor.y -= g_WindowSizeY / 2;
 	}
-
+	if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP) {
+		g_eMouseState = MOUSE_STATE::MOUSE_CILCK_NONE;
+	}
 	RenderScene();
 }
 
@@ -140,6 +177,11 @@ void MouseMotion(int x, int y)
 		break;
 	case MOUSE_STATE::MOUSE_CILCK_RIGHT:
 		g_ptCurrMouseCuror = { x,y };
+		g_ptCurrMouseCuror.x -= g_WindowSizeX / 2;
+		g_ptCurrMouseCuror.y -= g_WindowSizeY / 2;
+		g_cxDelta = (float)(g_ptCurrMouseCuror.x - g_ptOldMouseCursor.x);
+		g_cyDelta = (float)(g_ptCurrMouseCuror.y - g_ptOldMouseCursor.y);
+		g_ptOldMouseCursor = g_ptCurrMouseCuror;
 
 		break;
 	case MOUSE_STATE::MOUSE_CILCK_NONE:
@@ -266,7 +308,7 @@ int main(int argc, char** argv)
 
 	std::shared_ptr<CMaterial> pMaterial = std::make_shared<CMaterial>();
 	std::shared_ptr<CMaterial> pMaterial2 = std::make_shared<CMaterial>();
-	std::shared_ptr<CTexture> pTexture = std::make_shared<CTexture>(g_Renderer->m_tCubeMapTexture);
+	std::shared_ptr<CTexture> pTexture = g_Renderer->m_tIrradianceTexture;
 	//pTexture->LoadTextureFromPNG("./Textures/rgb.png", GL_NEAREST);
 	//pTexture->LoadTextureHDR("./Textures/poly_haven_studio_4k.hdr", GL_LINEAR);
 	pMaterial->SetBaseTexture(pTexture);
@@ -282,6 +324,24 @@ int main(int argc, char** argv)
 	g_pTestObj2->LoadGeometryAndAnimationFromFile("./Objects/Plane.bin");
 	g_pTestObj2->GetMaterial(0)->RoughnessColor = 1.0f;
 	g_pTestObj2->GetMaterial(0)->FresnelColor = 1.3f;
+
+	g_TestObjects.resize(10);
+	glm::vec3 basePos{ 0,1.5,0 };
+	/*for (int i = 0; i < 10; ++i) {
+		g_TestObjects[i] = std::make_shared<CObject>();
+		g_TestObjects[i]->SetMesh(testSphereMesh);
+		g_TestObjects[i]->SetPosition(basePos);
+		std::shared_ptr<CMaterial> Material = std::make_shared<CMaterial>();
+		Material->RoughnessColor = (0.1f + (i * 0.1f));
+		g_TestObjects[i]->SetMaterial(Material);
+		basePos.x += 2.0f;
+	}*/
+	for (int i = 0; i < 10; ++i) {
+		g_TestObjects[i] = std::make_shared<CObject>();
+		g_TestObjects[i]->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+		g_TestObjects[i]->SetPosition(basePos);
+		basePos.x += 2.0f;
+	}
 
 	glutDisplayFunc(RenderScene);
 	glutIdleFunc(Idle);

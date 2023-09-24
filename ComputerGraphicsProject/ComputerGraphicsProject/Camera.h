@@ -1,7 +1,8 @@
 #pragma once
 #include "stdafx.h"
+#include "Global.h"
 
-class CCamera
+class CCamera : public IObject
 {
 public:
 	glm::qua<float> m_vec4Rotation;
@@ -25,6 +26,10 @@ public:
 	void GenerateProjectionMatrix(float fov, float aspect, float zNear, float zFar);
 
 	virtual void BindShaderVariables(GLuint s_Program);
+
+	virtual glm::quat GetQauternion();
+	virtual glm::quat& GetQauternionRef();
+	virtual void SetQauternion(glm::quat rotation);
 
 	glm::vec3 GetPosition() { return m_vec3Position; };
 	void SetPosision(glm::vec3 pos) { m_vec3Position = pos; };

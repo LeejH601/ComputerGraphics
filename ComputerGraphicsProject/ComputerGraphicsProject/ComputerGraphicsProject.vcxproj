@@ -132,6 +132,7 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ComputerGraphicsProject.cpp" />
+    <ClCompile Include="Global.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="LoadPng.cpp" />
     <ClCompile Include="Material.cpp" />
@@ -147,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Global.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LoadPng.h" />
     <ClInclude Include="Material.h" />
@@ -162,6 +164,8 @@
     <None Include="Shaders\Cube_vs.glsl" />
     <None Include="Shaders\environmentMake_ps.glsl" />
     <None Include="Shaders\environmentMake_vs.glsl" />
+    <None Include="Shaders\irradianceMake_ps.glsl" />
+    <None Include="Shaders\irradianceMake_vs.glsl" />
     <None Include="Shaders\PBR_ps.glsl" />
     <None Include="Shaders\PBR_vs.glsl" />
   </ItemGroup>

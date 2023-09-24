@@ -39,6 +39,7 @@ uniform vec3 gSpecularColor;
 
 uniform sampler2D u_BaseTexture;
 uniform sampler2D u_NormalTexture;
+uniform samplerCube u_IrradianceTexture;
 
 
 vec3 aces_approx(vec3 v)
@@ -98,7 +99,8 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 sColor, vec3 norma
 	float NdotV = max(0.00001f, dot(normal, view));
 
 	float Lambert = max(NdotL / c_PI, 0.0f);
-	Diffuse = Lambert * BaseColor * LightColor;
+	vec3 irradiance = pow(texture(u_IrradianceTexture, normal).rgb, vec3(2.2f));
+	Diffuse = Lambert * BaseColor * LightColor * irradiance;
 	
 
 	vec3 halfv = normalize(ToLight + normal);

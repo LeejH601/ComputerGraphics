@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{bb8e51cf-9bc8-448c-b71d-39f6540cf2ab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ComputerGraphicsProject.cpp">
@@ -48,6 +51,9 @@
     <ClCompile Include="Timer.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Global.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderer.h">
@@ -80,13 +86,34 @@
     <ClInclude Include="Timer.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Global.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\PBR_ps.glsl" />
-    <None Include="Shaders\PBR_vs.glsl" />
-    <None Include="Shaders\Cube_ps.glsl" />
-    <None Include="Shaders\Cube_vs.glsl" />
-    <None Include="Shaders\environmentMake_ps.glsl" />
-    <None Include="Shaders\environmentMake_vs.glsl" />
+    <None Include="Shaders\Cube_ps.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\Cube_vs.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\environmentMake_ps.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\environmentMake_vs.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\PBR_ps.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\PBR_vs.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\irradianceMake_ps.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\irradianceMake_vs.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -21,8 +21,10 @@ public:
 	GLuint CubeShader = -1;
 	GLuint MakeCubeMapShader = -1;
 	GLuint SkyBoxShader = -1;
+	GLuint irradianceShader = -1;
 
 	CTexture m_tCubeMapTexture;
+	std::shared_ptr<CTexture> m_tIrradianceTexture;
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);

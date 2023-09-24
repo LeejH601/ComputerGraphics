@@ -28,7 +28,9 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 	CubeShader = CompileShaders((char*)"./Shaders/Cube_vs.glsl", (char*)"./Shaders/Cube_ps.glsl");
 	MakeCubeMapShader = CompileShaders((char*)"./Shaders/Cube_vs.glsl", (char*)"./Shaders/Cube_ps.glsl");
 	SkyBoxShader = CompileShaders((char*)"./Shaders/environmentMake_vs.glsl", (char*)"./Shaders/environmentMake_ps.glsl");
+	irradianceShader = CompileShaders((char*)"./Shaders/irradianceMake_vs.glsl", (char*)"./Shaders/irradianceMake_ps.glsl");
 
+	// HDRI 로부터 큐브 환경 맵 생성
 	GLuint cubeFBO, cubeRBO;
 	GLuint cubeMapWidth = 1024, cubeMapHeight = 1024;
 	glGenFramebuffers(1, &cubeFBO);
@@ -42,6 +44,7 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 	GLuint& cubeMapID = m_tCubeMapTexture.m_TextureID;
 	glGenTextures(1, &cubeMapID);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMapID);
+	m_tCubeMapTexture.m_TextureType = GL_TEXTURE_CUBE_MAP;
 	for (GLuint i = 0; i < 6; ++i) {
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, cubeMapWidth, cubeMapHeight, 0, GL_RGB, GL_FLOAT, nullptr);
 	}
@@ -61,7 +64,7 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
 	};
 
-	glUseProgram(MakeCubeMapShader);
+	glUseProgram(MakeCubeMapShader); // 셰이더 설정
 
 	GLuint samplerULoc = glGetUniformLocation(MakeCubeMapShader, "u_BaseTexture");
 	glUniform1i(samplerULoc, 0);
@@ -95,6 +98,52 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	// 생성된 큐브 환경 맵에서 irradiance 큐브 맵 생성
+	m_tIrradianceTexture = std::make_shared<CTexture>();
+	GLuint& IrradianceID = m_tIrradianceTexture->m_TextureID;
+	GLuint IrradianceMapWidth = 64, IrradianceMapHeight = 64;
+	glGenTextures(1, &IrradianceID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, IrradianceID);
+	m_tIrradianceTexture->m_TextureType = GL_TEXTURE_CUBE_MAP;
+	for (GLuint i = 0; i < 6; ++i) {
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, IrradianceMapWidth, IrradianceMapHeight, 0, GL_RGB, GL_FLOAT, nullptr);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindBuffer(GL_FRAMEBUFFER, cubeFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, cubeRBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, cubeRBO, IrradianceMapWidth, IrradianceMapHeight);
+
+	glUseProgram(irradianceShader);
+
+	samplerULoc = glGetUniformLocation(irradianceShader, "u_BaseTexture");
+	glUniform1i(samplerULoc, 0);
+
+	//m_tCubeMapTexture.BindShaderVariables(MakeCubeMapShader, GL_TEXTURE_CUBE_MAP);
+
+	projectionLocation;
+	projectionLocation = glGetUniformLocation(irradianceShader, "projectionTransform");	// ProjMatrix
+	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &tempCaptureProjection[0][0]);
+
+	m_tCubeMapTexture.BindShaderVariables(irradianceShader, GL_TEXTURE0);
+
+	glViewport(0, 0, IrradianceMapWidth, IrradianceMapHeight);
+	glBindFramebuffer(GL_FRAMEBUFFER, cubeFBO);
+	for (GLuint i = 0; i < 6; ++i) {
+		GLuint viewLocation;
+		viewLocation = glGetUniformLocation(irradianceShader, "viewTransform");	// ViewMatrix
+		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &tempCaptureViews[i][0][0]);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, IrradianceID, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		pCubeMesh->BindShaderVariables(irradianceShader);
+		pCubeMesh->Render();
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	m_Initialized = true;
 
