@@ -111,7 +111,7 @@ bool CRenderer::init(int argc, char** argv)
 	else
 		std::cout << "GLEW Initialized\n";
 
-	g_CurrentScene = std::make_shared<CScene_5>();
+	g_CurrentScene = std::make_shared<CScene_6>();
 
 	glutDisplayFunc(drawScene);
 	glutIdleFunc(Idle);

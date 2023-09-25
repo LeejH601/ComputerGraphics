@@ -257,7 +257,7 @@ void CScene_5::drawScene()
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	for (int i = 0; i < Rects.size(); ++i) {
-		if(!Rects_Collided[i])
+		if (!Rects_Collided[i])
 			CRenderer::GetInst()->DrawRect(Rects[i].x, Rects[i].y, Rects[i].z, Rects[i].w, Colors[i].x, Colors[i].y, Colors[i].z);
 	}
 
@@ -334,6 +334,199 @@ bool CScene_5::intersect(glm::vec4 r1, glm::vec4 r2)
 	if (r1.z < r2.x)
 		return false;
 	if (r1.w < r2.y)
+		return false;
+
+	return true;
+}
+
+CScene_6::CScene_6()
+{
+	Init();
+}
+
+void CScene_6::Init()
+{
+	static std::uniform_real_distribution<float> urd_pos(-0.8f, 0.8f);
+	static std::uniform_real_distribution<float> urd_color(0.f, 1.f);
+
+
+	Rects.clear();
+
+	int nRects = 5;
+	for (int i = 0; i < nRects; ++i) {
+		glm::vec2 pos{ urd_pos(dre), urd_pos(dre) };
+		float extend = 0.2f;
+		Rects.emplace_back(pos.x - extend, pos.y - extend, pos.x + extend, pos.y + extend, PARTICLE_TYPE::TYPE0);
+		Rects.back().Colors = glm::vec4(urd_color(dre), urd_color(dre), urd_color(dre), 1.0f);
+	}
+}
+
+void CScene_6::drawScene()
+{
+	glClearColor(1, 1, 1, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	for (int i = 0; i < Rects.size(); ++i) {
+		if(!Rects[i].isDeleted)
+			CRenderer::GetInst()->DrawRect(Rects[i].rect.x, Rects[i].rect.y, Rects[i].rect.z, Rects[i].rect.w, Rects[i].Colors.x, Rects[i].Colors.y, Rects[i].Colors.z);
+	}
+}
+
+void CScene_6::Update(float fTimeElapsed)
+{
+	for (int i = 0; i < Rects.size(); ++i) {
+		Rects[i].rect.x += Rects[i].dir.x * fTimeElapsed / 2;
+		Rects[i].rect.z += Rects[i].dir.x * fTimeElapsed / 2;
+		Rects[i].rect.y += Rects[i].dir.y * fTimeElapsed / 2;
+		Rects[i].rect.w += Rects[i].dir.y * fTimeElapsed / 2;
+
+		if (Rects[i].type != PARTICLE_TYPE::TYPE0)
+			Rects[i].LifeTime -= fTimeElapsed;
+
+		switch (Rects[i].type)
+		{
+		case PARTICLE_TYPE::TYPE1:
+		{
+			glm::vec2 extend(deltaExtend, deltaExtend);
+			Rects[i].rect.x += extend.x * fTimeElapsed;
+			Rects[i].rect.y += extend.y * fTimeElapsed;
+			Rects[i].rect.z -= extend.x * fTimeElapsed;
+			Rects[i].rect.w -= extend.y * fTimeElapsed;
+		}
+			break;
+		case PARTICLE_TYPE::TYPE2:
+		{
+			glm::vec2 extend(deltaExtend, deltaExtend);
+			Rects[i].rect.x += extend.x * fTimeElapsed;
+			Rects[i].rect.y += extend.y * fTimeElapsed;
+			Rects[i].rect.z -= extend.x * fTimeElapsed;
+			Rects[i].rect.w -= extend.y * fTimeElapsed;
+		}
+			break;
+		case PARTICLE_TYPE::TYPE3:
+		{
+			glm::vec2 extend(deltaExtend, deltaExtend);
+			if (Rects[i].dir.x < 0.0f && Rects[i].dir.y < 0.0f)
+				extend.y = 0.0f;
+			if (Rects[i].dir.x > 0.0f && Rects[i].dir.y < 0.0f)
+				extend.x = 0.0f;
+			if (Rects[i].dir.x > 0.0f && Rects[i].dir.y > 0.0f)
+				extend.y = 0.0f;
+			if (Rects[i].dir.x < 0.0f && Rects[i].dir.y > 0.0f)
+				extend.x = 0.0f;
+			Rects[i].rect.x += extend.x * fTimeElapsed;
+			Rects[i].rect.y += extend.y * fTimeElapsed;
+			Rects[i].rect.z -= extend.x * fTimeElapsed;
+			Rects[i].rect.w -= extend.y * fTimeElapsed;
+		}
+			break;
+		case  PARTICLE_TYPE::TYPE3_1:
+			glm::vec2 extend(deltaExtend, deltaExtend);
+			Rects[i].rect.x += extend.x * fTimeElapsed;
+			Rects[i].rect.y += extend.y * fTimeElapsed;
+			Rects[i].rect.z -= extend.x * fTimeElapsed;
+			Rects[i].rect.w -= extend.y * fTimeElapsed;
+			break;
+		default:
+			break;
+		}
+
+		if (Rects[i].rect.x >= Rects[i].rect.z || Rects[i].rect.y >= Rects[i].rect.w)
+			Rects[i].isDeleted = true;
+
+		if (Rects[i].type == PARTICLE_TYPE::TYPE3 && Rects[i].LifeTime < 0.5f) {
+
+		}
+	}
+
+	
+}
+
+void CScene_6::MouseInput(int button, int state, int x, int y)
+{
+	static std::uniform_int_distribution<int> uid_type(1, 3);
+
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		mouse_X = (float)x / CRenderer::GetInst()->GetWidth();
+		mouse_X = mouse_X * 2.0f - 1.0f;
+		mouse_Y = (float)y / CRenderer::GetInst()->GetHeight();
+		mouse_Y = mouse_Y * 2.0f - 1.0f;
+		mouse_Y *= -1;
+		Curr_x = mouse_X;
+		Curr_Y = mouse_Y;
+
+		for (int i = 0; i < Rects.size(); ++i) {
+			if (intersect(glm::vec2(mouse_X, mouse_Y), Rects[i].rect) && PARTICLE_TYPE::TYPE0 == Rects[i].type && Rects[i].isDeleted == false) {
+				Rects[i].isDeleted = true;
+				glm::vec4 particleRect;
+				PARTICLE_TYPE type = (PARTICLE_TYPE)uid_type(dre);
+				glm::vec2 extend((Rects[i].rect.z - Rects[i].rect.x), (Rects[i].rect.w - Rects[i].rect.y));
+
+				Rects.emplace_back(Rects[i].rect.x, Rects[i].rect.y, 
+					Rects[i].rect.x + extend.x / 2, Rects[i].rect.y + extend.y / 2, type);
+				Rects.back().Colors = Rects[i].Colors;
+
+				Rects.emplace_back(Rects[i].rect.x + extend.x / 2, Rects[i].rect.y, 
+					Rects[i].rect.z, Rects[i].rect.y + extend.y / 2, type);
+				Rects.back().Colors = Rects[i].Colors;
+
+				Rects.emplace_back(Rects[i].rect.x + extend.x / 2, Rects[i].rect.y + extend.y / 2, 
+					Rects[i].rect.z, Rects[i].rect.w, type);
+				Rects.back().Colors = Rects[i].Colors;
+
+				Rects.emplace_back(Rects[i].rect.x, Rects[i].rect.y + extend.y / 2, 
+					Rects[i].rect.x + extend.x / 2, Rects[i].rect.w, type);
+				Rects.back().Colors = Rects[i].Colors;
+				auto r = Rects.rbegin();
+				switch (r->type)
+				{
+				case PARTICLE_TYPE::TYPE1:
+					r->dir = glm::vec2(-1.0, 0.0f); r++;
+					r->dir = glm::vec2(0.0f, 1.0f); r++;
+					r->dir = glm::vec2(1.0, 0.0f); r++;
+					r->dir = glm::vec2(0.f, -1.0f);
+					break;
+				case PARTICLE_TYPE::TYPE2:
+					r->dir = glm::normalize(glm::vec2(-1.f, 1.0f)); r++;
+					r->dir = glm::normalize(glm::vec2(1.0f, 1.0f)); r++;
+					r->dir = glm::normalize(glm::vec2(1.0f, -1.0f)); r++;
+					r->dir = glm::normalize(glm::vec2(-1.0f, -1.0f));
+					break;
+				case PARTICLE_TYPE::TYPE3:
+					r->dir = glm::normalize(glm::vec2(-1.f, 1.0f)); r++;
+					r->dir = glm::normalize(glm::vec2(1.0f, 1.0f)); r++;
+					r->dir = glm::normalize(glm::vec2(1.0f, -1.0f)); r++;
+					r->dir = glm::normalize(glm::vec2(-1.0f, -1.0f));
+					break;
+					break;
+				default:
+					break;
+				}
+
+			}
+		}
+	}
+
+
+}
+
+void CScene_6::MouseMotion(int x, int y)
+{
+}
+
+void CScene_6::KeyInput(unsigned char key, int x, int y)
+{
+}
+
+bool CScene_6::intersect(glm::vec2 pos, glm::vec4 r2)
+{
+	if (pos.x > r2.z)
+		return false;
+	if (pos.y > r2.w)
+		return false;
+	if (pos.x < r2.x)
+		return false;
+	if (pos.y < r2.y)
 		return false;
 
 	return true;
