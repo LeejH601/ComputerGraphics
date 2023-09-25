@@ -135,6 +135,7 @@
   <ItemGroup>
     <ClCompile Include="CRenderer.cpp" />
     <ClCompile Include="FrameWork.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="소스.cpp" />
@@ -142,6 +143,7 @@
   <ItemGroup>
     <ClInclude Include="CRenderer.h" />
     <ClInclude Include="FrameWork.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Timer.h" />
   </ItemGroup>
