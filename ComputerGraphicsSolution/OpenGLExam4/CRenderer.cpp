@@ -57,6 +57,9 @@ void KeyInput(unsigned char key, int x, int y)
 	case '5':
 		g_CurrentScene = std::make_shared<CScene_5>();
 		break;
+	case '6':
+		g_CurrentScene = std::make_shared<CScene_6>();
+		break;
 	case 'q':
 		glutLeaveMainLoop();
 		break;

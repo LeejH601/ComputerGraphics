@@ -375,10 +375,10 @@ void CScene_6::drawScene()
 void CScene_6::Update(float fTimeElapsed)
 {
 	for (int i = 0; i < Rects.size(); ++i) {
-		Rects[i].rect.x += Rects[i].dir.x * fTimeElapsed / 2;
-		Rects[i].rect.z += Rects[i].dir.x * fTimeElapsed / 2;
-		Rects[i].rect.y += Rects[i].dir.y * fTimeElapsed / 2;
-		Rects[i].rect.w += Rects[i].dir.y * fTimeElapsed / 2;
+		Rects[i].rect.x += Rects[i].dir.x * fTimeElapsed / 3;
+		Rects[i].rect.z += Rects[i].dir.x * fTimeElapsed / 3;
+		Rects[i].rect.y += Rects[i].dir.y * fTimeElapsed / 3;
+		Rects[i].rect.w += Rects[i].dir.y * fTimeElapsed / 3;
 
 		if (Rects[i].type != PARTICLE_TYPE::TYPE0)
 			Rects[i].LifeTime -= fTimeElapsed;
@@ -462,23 +462,59 @@ void CScene_6::MouseInput(int button, int state, int x, int y)
 				PARTICLE_TYPE type = (PARTICLE_TYPE)uid_type(dre);
 				glm::vec2 extend((Rects[i].rect.z - Rects[i].rect.x), (Rects[i].rect.w - Rects[i].rect.y));
 
-				Rects.emplace_back(Rects[i].rect.x, Rects[i].rect.y, 
-					Rects[i].rect.x + extend.x / 2, Rects[i].rect.y + extend.y / 2, type);
-				Rects.back().Colors = Rects[i].Colors;
+				if (type == PARTICLE_TYPE::TYPE1 || type == PARTICLE_TYPE::TYPE2) {
+					Rects.emplace_back(Rects[i].rect.x, Rects[i].rect.y,
+						Rects[i].rect.x + extend.x / 2, Rects[i].rect.y + extend.y / 2, type);
+					Rects.back().Colors = Rects[i].Colors;
 
-				Rects.emplace_back(Rects[i].rect.x + extend.x / 2, Rects[i].rect.y, 
-					Rects[i].rect.z, Rects[i].rect.y + extend.y / 2, type);
-				Rects.back().Colors = Rects[i].Colors;
+					Rects.emplace_back(Rects[i].rect.x + extend.x / 2, Rects[i].rect.y,
+						Rects[i].rect.z, Rects[i].rect.y + extend.y / 2, type);
+					Rects.back().Colors = Rects[i].Colors;
 
-				Rects.emplace_back(Rects[i].rect.x + extend.x / 2, Rects[i].rect.y + extend.y / 2, 
-					Rects[i].rect.z, Rects[i].rect.w, type);
-				Rects.back().Colors = Rects[i].Colors;
+					Rects.emplace_back(Rects[i].rect.x + extend.x / 2, Rects[i].rect.y + extend.y / 2,
+						Rects[i].rect.z, Rects[i].rect.w, type);
+					Rects.back().Colors = Rects[i].Colors;
 
-				Rects.emplace_back(Rects[i].rect.x, Rects[i].rect.y + extend.y / 2, 
-					Rects[i].rect.x + extend.x / 2, Rects[i].rect.w, type);
-				Rects.back().Colors = Rects[i].Colors;
+					Rects.emplace_back(Rects[i].rect.x, Rects[i].rect.y + extend.y / 2,
+						Rects[i].rect.x + extend.x / 2, Rects[i].rect.w, type);
+					Rects.back().Colors = Rects[i].Colors;
+				}
+				if(type == PARTICLE_TYPE::TYPE3) {
+					Rects.emplace_back(Rects[i].rect.x, Rects[i].rect.y,
+						Rects[i].rect.x + extend.x / 2, Rects[i].rect.y + extend.y / 2, PARTICLE_TYPE::TYPE1);
+					Rects.back().Colors = Rects[i].Colors;
+
+					Rects.emplace_back(Rects[i].rect.x + extend.x / 2, Rects[i].rect.y,
+						Rects[i].rect.z, Rects[i].rect.y + extend.y / 2, PARTICLE_TYPE::TYPE1);
+					Rects.back().Colors = Rects[i].Colors;
+
+					Rects.emplace_back(Rects[i].rect.x + extend.x / 2, Rects[i].rect.y + extend.y / 2,
+						Rects[i].rect.z, Rects[i].rect.w, PARTICLE_TYPE::TYPE1);
+					Rects.back().Colors = Rects[i].Colors;
+
+					Rects.emplace_back(Rects[i].rect.x, Rects[i].rect.y + extend.y / 2,
+						Rects[i].rect.x + extend.x / 2, Rects[i].rect.w, PARTICLE_TYPE::TYPE1);
+					Rects.back().Colors = Rects[i].Colors;
+
+					Rects.emplace_back(Rects[i].rect.x, Rects[i].rect.y,
+						Rects[i].rect.x + extend.x / 2, Rects[i].rect.y + extend.y / 2, PARTICLE_TYPE::TYPE2);
+					Rects.back().Colors = Rects[i].Colors;
+
+					Rects.emplace_back(Rects[i].rect.x + extend.x / 2, Rects[i].rect.y,
+						Rects[i].rect.z, Rects[i].rect.y + extend.y / 2, PARTICLE_TYPE::TYPE2);
+					Rects.back().Colors = Rects[i].Colors;
+
+					Rects.emplace_back(Rects[i].rect.x + extend.x / 2, Rects[i].rect.y + extend.y / 2,
+						Rects[i].rect.z, Rects[i].rect.w, PARTICLE_TYPE::TYPE2);
+					Rects.back().Colors = Rects[i].Colors;
+
+					Rects.emplace_back(Rects[i].rect.x, Rects[i].rect.y + extend.y / 2,
+						Rects[i].rect.x + extend.x / 2, Rects[i].rect.w, PARTICLE_TYPE::TYPE2);
+					Rects.back().Colors = Rects[i].Colors;
+				}
+				
 				auto r = Rects.rbegin();
-				switch (r->type)
+				switch (type)
 				{
 				case PARTICLE_TYPE::TYPE1:
 					r->dir = glm::vec2(-1.0, 0.0f); r++;
@@ -496,7 +532,11 @@ void CScene_6::MouseInput(int button, int state, int x, int y)
 					r->dir = glm::normalize(glm::vec2(-1.f, 1.0f)); r++;
 					r->dir = glm::normalize(glm::vec2(1.0f, 1.0f)); r++;
 					r->dir = glm::normalize(glm::vec2(1.0f, -1.0f)); r++;
-					r->dir = glm::normalize(glm::vec2(-1.0f, -1.0f));
+					r->dir = glm::normalize(glm::vec2(-1.0f, -1.0f)); r++;
+					r->dir = glm::vec2(-1.0, 0.0f) / glm::vec2(sqrt(2)); r++;
+					r->dir = glm::vec2(0.0f, 1.0f) / glm::vec2(sqrt(2)); r++;
+					r->dir = glm::vec2(1.0, 0.0f) / glm::vec2(sqrt(2)); r++;
+					r->dir = glm::vec2(0.f, -1.0f) / glm::vec2(sqrt(2));
 					break;
 					break;
 				default:
