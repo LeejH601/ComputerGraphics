@@ -13,6 +13,26 @@ public:
 	virtual void KeyUpInput(unsigned char key, int x, int y);
 };
 
+class CScene_3 : public CScene
+{
+	std::vector<glm::vec4> Colors;
+	std::vector<glm::vec4> Rects;
+	float mouse_X, mouse_Y;
+	float Curr_x, Curr_Y;
+	glm::vec4* selectedRect = nullptr;
+
+
+public:
+	CScene_3();
+	virtual void Init();
+	virtual void drawScene();
+	virtual void Update(float fTimeElapsed);
+	virtual void MouseInput(int button, int state, int x, int y);
+	virtual void MouseMotion(int x, int y);
+	virtual void KeyInput(unsigned char key, int x, int y);
+	bool intersect(glm::vec2 pos, glm::vec4 r2);
+};
+
 class CScene_4 : public CScene
 {
 	std::vector<glm::vec4> Colors;

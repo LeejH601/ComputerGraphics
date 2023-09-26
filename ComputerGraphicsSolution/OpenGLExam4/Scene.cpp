@@ -571,3 +571,106 @@ bool CScene_6::intersect(glm::vec2 pos, glm::vec4 r2)
 
 	return true;
 }
+
+CScene_3::CScene_3()
+{
+	Init();
+}
+
+void CScene_3::Init()
+{
+	
+	static std::uniform_real_distribution<float> urd_color(0.f, 1.f);
+
+	Rects.emplace_back(-0.1f, -0.1f, 0.1f, 0.1f);
+	Colors.emplace_back(urd_color(dre), urd_color(dre), urd_color(dre), 1.0f);
+}
+
+void CScene_3::drawScene()
+{
+	glClearColor(1, 1, 1, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	for (int i = 0; i < Rects.size(); ++i) {
+		CRenderer::GetInst()->DrawRect(Rects[i].x, Rects[i].y, Rects[i].z, Rects[i].w, Colors[i].x, Colors[i].y, Colors[i].z);
+	}
+}
+
+void CScene_3::Update(float fTimeElapsed)
+{
+
+}
+
+void CScene_3::MouseInput(int button, int state, int x, int y)
+{
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		mouse_X = (float)x / CRenderer::GetInst()->GetWidth();
+		mouse_X = mouse_X * 2.0f - 1.0f;
+		mouse_Y = (float)y / CRenderer::GetInst()->GetHeight();
+		mouse_Y = mouse_Y * 2.0f - 1.0f;
+		mouse_Y *= -1;
+		Curr_x = mouse_X;
+		Curr_Y = mouse_Y;
+
+		bool flag = false;
+		for (int i = Rects.size()-1; i >= 0 ; --i) {
+			if (intersect(glm::vec2(mouse_X, mouse_Y), Rects[i])) {
+				selectedRect = &Rects[i];
+				flag = true;
+				break;
+			}
+		}
+		if (!flag)
+			selectedRect = nullptr;
+	}
+}
+
+void CScene_3::MouseMotion(int x, int y)
+{
+	mouse_X = (float)x / CRenderer::GetInst()->GetWidth();
+	mouse_X = mouse_X * 2.0f - 1.0f;
+	mouse_Y = (float)y / CRenderer::GetInst()->GetHeight();
+	mouse_Y = mouse_Y * 2.0f - 1.0f;
+	mouse_Y *= -1;
+
+	if (selectedRect) {
+		selectedRect->x = mouse_X - 0.1f;
+		selectedRect->z = mouse_X + 0.1f;
+		selectedRect->y = mouse_Y - 0.1f;
+		selectedRect->w = mouse_Y + 0.1f;
+	}
+}
+
+void CScene_3::KeyInput(unsigned char key, int x, int y)
+{
+	static std::uniform_real_distribution<float> urd_pos(-0.8f, 0.8f);
+	static std::uniform_real_distribution<float> urd_color(0.f, 1.f);
+
+	switch (key)
+	{
+	case 'a':
+		if (Rects.size() < 5) {
+			glm::vec2 basePos{ urd_pos(dre), urd_pos(dre) };
+			Rects.emplace_back(basePos.x -0.1f, basePos.y -0.1f, basePos.x + 0.1f, basePos.y + 0.1f);
+			Colors.emplace_back(urd_color(dre), urd_color(dre), urd_color(dre), 1.0f);
+		}
+		break;
+	case 'q':
+		glutLeaveMainLoop();
+		break;
+	}
+}
+
+bool CScene_3::intersect(glm::vec2 pos, glm::vec4 r2)
+{
+	if (pos.x > r2.z)
+		return false;
+	if (pos.y > r2.w)
+		return false;
+	if (pos.x < r2.x)
+		return false;
+	if (pos.y < r2.y)
+		return false;
+
+	return true;
+}

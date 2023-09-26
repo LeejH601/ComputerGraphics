@@ -51,6 +51,9 @@ void KeyInput(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
+	case '3':
+		g_CurrentScene = std::make_shared<CScene_3>();
+		break;
 	case '4':
 		g_CurrentScene = std::make_shared<CScene_4>();
 		break;
@@ -114,7 +117,7 @@ bool CRenderer::init(int argc, char** argv)
 	else
 		std::cout << "GLEW Initialized\n";
 
-	g_CurrentScene = std::make_shared<CScene_6>();
+	g_CurrentScene = std::make_shared<CScene_3>();
 
 	glutDisplayFunc(drawScene);
 	glutIdleFunc(Idle);
