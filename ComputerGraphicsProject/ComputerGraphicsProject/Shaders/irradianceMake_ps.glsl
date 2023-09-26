@@ -30,7 +30,7 @@ void main()
     vec3 right = cross(up, normal);
     up = cross(normal, right);
 
-    float sampleDelta = 0.025f;
+    float sampleDelta = 0.008f;
     int nSamples = 0;
 
     for(float phi = 0.0f; phi < 2.0 * c_PI; phi += sampleDelta)
@@ -38,14 +38,15 @@ void main()
         for(float theta = 0.0f; theta < 0.5f * c_PI; theta += sampleDelta)
         {
             vec3 tangentSample = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
-            vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * cross(right, up);
+            vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal;
 
             irradiance += texture(u_BaseTexture, sampleVec).rgb * cos(theta) * sin(theta);
             nSamples++;
         }
     }
+    //irradiance = pow(irradiance, vec3(gamma));
     irradiance = c_PI * irradiance * (1.0f / float(nSamples));
-    irradiance = pow(irradiance, vec3(1.0f / gamma));
+    //irradiance = pow(irradiance, vec3(1.0f / gamma));
   
     FragColor = vec4(irradiance, 1.0);
     //FragColor = vec4(localPos, 1.0);

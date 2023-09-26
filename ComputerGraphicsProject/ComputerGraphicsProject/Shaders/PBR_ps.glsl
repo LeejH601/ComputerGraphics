@@ -99,8 +99,7 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 sColor, vec3 norma
 	float NdotV = max(0.00001f, dot(normal, view));
 
 	float Lambert = max(NdotL / c_PI, 0.0f);
-	vec3 irradiance = pow(texture(u_IrradianceTexture, normal).rgb, vec3(2.2f));
-	Diffuse = Lambert * BaseColor * LightColor * irradiance;
+	vec3 irradiance = texture(u_IrradianceTexture, normal).rgb;
 	
 
 	vec3 halfv = normalize(ToLight + normal);
@@ -109,7 +108,13 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 sColor, vec3 norma
 	float G = G_Schlick_GGX(NdotV, Roughness);
 
 	float F0 = pow( (Fresnel - 1) / (Fresnel + 1) ,2 );
-	float F = F_Cook_Torrance(view, halfv, F0) * NdotL;
+	float F = F_Cook_Torrance(view, halfv, F0);
+	F = F * NdotL;
+	float kd = 1.0 - F;
+	
+
+	Diffuse = Lambert * BaseColor * LightColor * irradiance;
+	//Diffuse = (kd * BaseColor * irradiance) * LightColor;
 
 
 	float Specular;

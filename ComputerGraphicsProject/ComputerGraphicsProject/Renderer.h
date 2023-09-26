@@ -25,6 +25,7 @@ public:
 
 	CTexture m_tCubeMapTexture;
 	std::shared_ptr<CTexture> m_tIrradianceTexture;
+	std::shared_ptr<CTexture> m_tFilteringedEnvironmentTexture;
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);

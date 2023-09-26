@@ -145,6 +145,24 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+
+	m_tFilteringedEnvironmentTexture = std::make_shared<CTexture>();
+	GLuint& FilteringedEnvironmentID = m_tFilteringedEnvironmentTexture->m_TextureID;
+	GLuint  FilteringedEnvironmentWidth = 256, FilteringedEnvironmentHeight = 256;
+	glGenTextures(1, &FilteringedEnvironmentID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, FilteringedEnvironmentID);
+	m_tIrradianceTexture->m_TextureType = GL_TEXTURE_CUBE_MAP;
+	for (int i = 0; i < 6; ++i) {
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, FilteringedEnvironmentWidth, FilteringedEnvironmentHeight, 0, GL_RGB, GL_FLOAT, nullptr);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
 	m_Initialized = true;
 
 }
