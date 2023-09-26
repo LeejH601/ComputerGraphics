@@ -72,7 +72,17 @@ float G_Schlick_GGX(float NdotV, float r)
 	return NdotV / ( NdotV * (1 - k) + k );
 }
 
-float F_Cook_Torrance(vec3 v, vec3 h, float F0)
+float GeometrySmith(vec3 n, vec3 v, vec3 l, float r)
+{
+	float NdotV = max(dot(n, v), 0.0);
+    float NdotL = max(dot(n, l), 0.0);
+    float ggx1 = G_Schlick_GGX(NdotV, r);
+    float ggx2 = G_Schlick_GGX(NdotL, r);
+	
+    return ggx1 * ggx2;
+}
+
+vec3 F_Cook_Torrance(vec3 v, vec3 h, vec3 F0)
 {
 	float VdotH = dot(v, h);
 	return F0 + (1 - F0) * pow( 1 - VdotH , 5);
@@ -105,29 +115,28 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 sColor, vec3 norma
 	vec3 halfv = normalize(ToLight + normal);
 
 	float D = GGX_Trowbridge_Reitz(normal, halfv, Roughness);
-	float G = G_Schlick_GGX(NdotV, Roughness);
+	float G = GeometrySmith(normal, view, ToLight, Roughness);
 
-	float F0 = pow( (Fresnel - 1) / (Fresnel + 1) ,2 );
-	float F = F_Cook_Torrance(view, halfv, F0);
-	F = F * NdotL;
-	float kd = 1.0 - F;
+	//float F0 = pow( (Fresnel - 1) / (Fresnel + 1) ,2 );
+	vec3 F0 = mix(vec3(Fresnel), BaseColor, MetallicColor);
+	vec3 F = F_Cook_Torrance(view, normal, F0);
+	//F = F * NdotL;
 	
 
 	Diffuse = Lambert * BaseColor * LightColor * irradiance;
-	//Diffuse = (kd * BaseColor * irradiance) * LightColor;
 
 
-	float Specular;
+	vec3 Specular;
 
 	#ifdef USE_VIS
 	Specular = D * Vis_SmithJoint(Roughness, NdotV ,NdotL) * F;
 	#else 
-	Specular = (D * G * F) / (4 * NdotL * NdotV);
+	Specular = ((D * G * F) / (4 * NdotL * NdotV)) * NdotL;
 	#endif 
 	
-	FinalColor += mix(Diffuse, vec3(Specular) * sColor * LightColor, MetallicColor) ;
+	FinalColor += mix(Diffuse, Specular * sColor * LightColor, MetallicColor) ; // 에너지 보존 법칙
 	FinalColor = max(vec3(0.0f), FinalColor);
-
+	//FinalColor = vec3(G);
 
 	return FinalColor;
 };

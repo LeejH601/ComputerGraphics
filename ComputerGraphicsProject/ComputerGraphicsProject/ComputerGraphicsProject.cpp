@@ -290,6 +290,7 @@ int main(int argc, char** argv)
 	}
 
 	g_SunLight = new CLight();
+	g_SunLight->m_vec3LightColor *= 2.0f;
 	g_pMainCamera = std::make_unique<CCamera>();
 
 	g_pMainCamera->RegenarationViewMatrix();
@@ -327,7 +328,7 @@ int main(int argc, char** argv)
 
 	g_TestObjects.resize(10);
 	glm::vec3 basePos{ 0,1.5,0 };
-	for (int i = 0; i < 10; ++i) {
+	/*for (int i = 0; i < 10; ++i) {
 		g_TestObjects[i] = std::make_shared<CObject>();
 		g_TestObjects[i]->SetMesh(testSphereMesh);
 		g_TestObjects[i]->SetPosition(basePos);
@@ -335,13 +336,13 @@ int main(int argc, char** argv)
 		Material->RoughnessColor = (0.1f + (i * 0.1f));
 		g_TestObjects[i]->SetMaterial(Material);
 		basePos.x += 2.0f;
-	}
-	/*for (int i = 0; i < 10; ++i) {
+	}*/
+	for (int i = 0; i < 10; ++i) {
 		g_TestObjects[i] = std::make_shared<CObject>();
 		g_TestObjects[i]->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
 		g_TestObjects[i]->SetPosition(basePos);
 		basePos.x += 2.0f;
-	}*/
+	}
 
 	glutDisplayFunc(RenderScene);
 	glutIdleFunc(Idle);

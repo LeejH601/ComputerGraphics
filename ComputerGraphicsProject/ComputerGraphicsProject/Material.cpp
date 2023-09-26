@@ -7,7 +7,7 @@ CMaterial::CMaterial()
 	SpecularColor = glm::vec3(1, 1, 1);
 	MetallicColor = 0.04f;
 	RoughnessColor = 0.1f;
-	FresnelColor = 1.00f;
+	FresnelColor = 0.04f;
 }
 
 CMaterial::~CMaterial()

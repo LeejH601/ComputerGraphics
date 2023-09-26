@@ -91,7 +91,7 @@ void CCamera::BindShaderVariables(GLuint s_Program)
 
 	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &m_mat4x4View[0][0]);
 	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &m_mat4x4Projection[0][0]);
-	glUniformMatrix3fv(PosLocation, 1, GL_FALSE, glm::value_ptr(m_vec3Position));
+	glUniform3fv(PosLocation, 1, glm::value_ptr(m_vec3Position));
 }
 
 glm::quat CCamera::GetQauternion()
