@@ -47,3 +47,4 @@ private:
 	bool							m_bStopped;
 };
 
+extern std::unique_ptr<CGameTimer> g_Timer;

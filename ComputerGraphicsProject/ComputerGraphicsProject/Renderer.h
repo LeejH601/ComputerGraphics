@@ -6,6 +6,8 @@
 #include <iostream>
 #include "stdafx.h"
 #include "Texture.h"
+#include "Material.h"
+#include "Mesh.h"
 
 
 class CRenderer
@@ -25,10 +27,15 @@ public:
 	GLuint preFilteringCubeMapShader = -1;
 	GLuint preComputingBRDFShader = -1;
 
-	CTexture m_tCubeMapTexture;
-	std::shared_ptr<CTexture> m_tIrradianceTexture;
-	std::shared_ptr<CTexture> m_tFilteringedEnvironmentTexture;
-	std::shared_ptr<CTexture> m_tPreCoumputedBRDFLUTexture;
+private:
+	std::vector<std::shared_ptr<CMaterial>> m_pMaterials;
+	std::vector<std::shared_ptr<CMesh>> m_pMeshs;
+
+public:
+	UINT RegisterMaterial(std::shared_ptr<CMaterial> material) { m_pMaterials.push_back(material); return m_pMaterials.end() - m_pMaterials.begin(); };
+	UINT RegisterMesh(std::shared_ptr<CMesh> mesh) { m_pMeshs.push_back(mesh); return m_pMeshs.end() - m_pMeshs.begin();};
+	std::shared_ptr<CMaterial> GetMaterialFromIndex(UINT index) { if (index < m_pMaterials.size()) return m_pMaterials[index]; return nullptr; };
+	std::shared_ptr<CMesh> GetMeshFromIndex(UINT index) { if (index < m_pMeshs.size()) return m_pMeshs[index]; return nullptr; };
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);
@@ -48,3 +55,5 @@ private:
 
 };
 
+
+extern CRenderer* g_Renderer;
