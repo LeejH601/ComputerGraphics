@@ -274,6 +274,41 @@ std::shared_ptr<CMesh> CMesh::CreateSphereMesh(int nStacks, int nSlices)
 	return mesh;
 }
 
+std::shared_ptr<CMesh> CMesh::CreateNDCMesh()
+{
+	static glm::vec3 vertexPos[] = {
+		// x, y, z
+		{-1.0f,  1.0f, 0.0f},
+		{-1.0f, -1.0f, 0.0f},
+		{ 1.0f,  1.0f, 0.0f},
+		{ 1.0f,  1.0f, 0.0f},
+		{ -1.0f,-1.0f, 0.0f},
+		{ 1.0f, -1.0f, 0.0f}
+	};
+
+	static glm::vec2 texcoord[] = {
+		// x, y, z
+		{0.0f, 1.0f},
+		{0.0f, 0.0f},
+		{1.0f,  1.0f},
+		{1.0f,  1.0f},
+		{0.0f, 0.0f},
+		{1.0f, 0.0f}
+	};
+
+	std::shared_ptr<CMesh> mesh = std::make_shared<CMesh>();
+
+	mesh->m_nVertices = 6;
+	mesh->m_pVertices.resize(mesh->m_nVertices);
+
+	for (int i = 0; i < mesh->m_nVertices; ++i) {
+		mesh->m_pVertices[i].position = vertexPos[i];
+		mesh->m_pVertices[i].texcoord0 = texcoord[i];
+	}
+
+	return mesh;
+}
+
 void CMesh::LoadMeshFromFile(FILE* pInFile)
 {
 	char pstrToken[64] = { '\0' };

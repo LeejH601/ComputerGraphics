@@ -121,5 +121,11 @@
     <None Include="Shaders\FilteringedEnvironmentMake_vs.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\preComputeBRDF_ps.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\RenderNDCQuad_vs.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -23,10 +23,12 @@ public:
 	GLuint SkyBoxShader = -1;
 	GLuint irradianceShader = -1;
 	GLuint preFilteringCubeMapShader = -1;
+	GLuint preComputingBRDFShader = -1;
 
 	CTexture m_tCubeMapTexture;
 	std::shared_ptr<CTexture> m_tIrradianceTexture;
 	std::shared_ptr<CTexture> m_tFilteringedEnvironmentTexture;
+	std::shared_ptr<CTexture> m_tPreCoumputedBRDFLUTexture;
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);

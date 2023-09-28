@@ -30,6 +30,7 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 	SkyBoxShader = CompileShaders((char*)"./Shaders/environmentMake_vs.glsl", (char*)"./Shaders/environmentMake_ps.glsl");
 	irradianceShader = CompileShaders((char*)"./Shaders/irradianceMake_vs.glsl", (char*)"./Shaders/irradianceMake_ps.glsl");
 	preFilteringCubeMapShader = CompileShaders((char*)"./Shaders/FilteringedEnvironmentMake_vs.glsl", (char*)"./Shaders/FilteringedEnvironmentMake_ps.glsl");
+	preComputingBRDFShader = CompileShaders((char*)"./Shaders/RenderNDCQuad_vs.glsl", (char*)"./Shaders/preComputeBRDF_ps.glsl");
 
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
@@ -211,6 +212,36 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 	}
 	m_tFilteringedEnvironmentTexture->BindShaderVariables(preFilteringCubeMapShader, GL_TEXTURE0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+	m_tPreCoumputedBRDFLUTexture = std::make_shared<CTexture>();
+	GLuint& PreCoumputedBRDFLUTID = m_tPreCoumputedBRDFLUTexture->m_TextureID;
+	GLuint  PreCoumputedBRDFLUTWidth = 512, PreCoumputedBRDFLUTHeight = 512;
+	glGenTextures(1, &PreCoumputedBRDFLUTID);
+	glBindTexture(GL_TEXTURE_2D, PreCoumputedBRDFLUTID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, PreCoumputedBRDFLUTWidth, PreCoumputedBRDFLUTHeight, 0, GL_RG, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glUseProgram(preComputingBRDFShader);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, cubeFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, cubeRBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, PreCoumputedBRDFLUTWidth, PreCoumputedBRDFLUTHeight);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, PreCoumputedBRDFLUTID, 0);
+
+	glViewport(0, 0, PreCoumputedBRDFLUTWidth, PreCoumputedBRDFLUTHeight);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	std::shared_ptr<CMesh> NDCMesh = CMesh::CreateNDCMesh();
+	NDCMesh->CreateShaderVariables();
+	NDCMesh->BindShaderVariables(preComputingBRDFShader);
+	NDCMesh->Render();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 
 	m_Initialized = true;
 
