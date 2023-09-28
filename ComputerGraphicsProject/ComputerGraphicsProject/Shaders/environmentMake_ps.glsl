@@ -18,7 +18,7 @@ vec3 aces_approx(vec3 v)
   
 void main()
 {
-    vec3 envColor = texture(u_BaseTexture, localPos).rgb;
+    vec3 envColor = textureLod(u_BaseTexture, localPos, 0.0).rgb;
     
     envColor = aces_approx(envColor);
     envColor = pow(envColor, vec3(1.0/2.2)); 

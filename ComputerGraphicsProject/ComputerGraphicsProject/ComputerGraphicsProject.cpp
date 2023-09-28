@@ -309,7 +309,7 @@ int main(int argc, char** argv)
 
 	std::shared_ptr<CMaterial> pMaterial = std::make_shared<CMaterial>();
 	std::shared_ptr<CMaterial> pMaterial2 = std::make_shared<CMaterial>();
-	std::shared_ptr<CTexture> pTexture = std::make_shared<CTexture>( g_Renderer->m_tCubeMapTexture);
+	std::shared_ptr<CTexture> pTexture =  g_Renderer->m_tFilteringedEnvironmentTexture;
 	//pTexture->LoadTextureFromPNG("./Textures/rgb.png", GL_NEAREST);
 	//pTexture->LoadTextureHDR("./Textures/poly_haven_studio_4k.hdr", GL_LINEAR);
 	pMaterial->SetBaseTexture(pTexture);
@@ -328,7 +328,7 @@ int main(int argc, char** argv)
 
 	g_TestObjects.resize(10);
 	glm::vec3 basePos{ 0,1.5,0 };
-	/*for (int i = 0; i < 10; ++i) {
+	for (int i = 0; i < 10; ++i) {
 		g_TestObjects[i] = std::make_shared<CObject>();
 		g_TestObjects[i]->SetMesh(testSphereMesh);
 		g_TestObjects[i]->SetPosition(basePos);
@@ -336,13 +336,13 @@ int main(int argc, char** argv)
 		Material->RoughnessColor = (0.1f + (i * 0.1f));
 		g_TestObjects[i]->SetMaterial(Material);
 		basePos.x += 2.0f;
-	}*/
-	for (int i = 0; i < 10; ++i) {
+	}
+	/*for (int i = 0; i < 10; ++i) {
 		g_TestObjects[i] = std::make_shared<CObject>();
 		g_TestObjects[i]->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
 		g_TestObjects[i]->SetPosition(basePos);
 		basePos.x += 2.0f;
-	}
+	}*/
 
 	glutDisplayFunc(RenderScene);
 	glutIdleFunc(Idle);

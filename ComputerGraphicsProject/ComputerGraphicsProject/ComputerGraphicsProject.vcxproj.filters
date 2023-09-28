@@ -115,5 +115,11 @@
     <None Include="Shaders\irradianceMake_vs.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\FilteringedEnvironmentMake_ps.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\FilteringedEnvironmentMake_vs.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

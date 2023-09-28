@@ -29,6 +29,9 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 	MakeCubeMapShader = CompileShaders((char*)"./Shaders/Cube_vs.glsl", (char*)"./Shaders/Cube_ps.glsl");
 	SkyBoxShader = CompileShaders((char*)"./Shaders/environmentMake_vs.glsl", (char*)"./Shaders/environmentMake_ps.glsl");
 	irradianceShader = CompileShaders((char*)"./Shaders/irradianceMake_vs.glsl", (char*)"./Shaders/irradianceMake_ps.glsl");
+	preFilteringCubeMapShader = CompileShaders((char*)"./Shaders/FilteringedEnvironmentMake_vs.glsl", (char*)"./Shaders/FilteringedEnvironmentMake_ps.glsl");
+
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
 	// HDRI 로부터 큐브 환경 맵 생성
 	GLuint cubeFBO, cubeRBO;
@@ -77,7 +80,7 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 
 	std::shared_ptr<CTexture> pTexture = std::make_shared<CTexture>();
 	//pTexture->LoadTextureFromPNG("./Textures/rgb.png", GL_NEAREST);
-	pTexture->LoadTextureHDR("./Textures/poly_haven_studio_4k.hdr", GL_LINEAR);
+	pTexture->LoadTextureHDR("./Textures/scythian_tombs_4k.hdr", GL_LINEAR);
 	pTexture->BindShaderVariables(MakeCubeMapShader, GL_TEXTURE0);
 
 	std::shared_ptr<CMesh> pCubeMesh = std::make_shared<CMesh>();
@@ -148,10 +151,10 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 
 	m_tFilteringedEnvironmentTexture = std::make_shared<CTexture>();
 	GLuint& FilteringedEnvironmentID = m_tFilteringedEnvironmentTexture->m_TextureID;
-	GLuint  FilteringedEnvironmentWidth = 256, FilteringedEnvironmentHeight = 256;
+	GLuint  FilteringedEnvironmentWidth = 512, FilteringedEnvironmentHeight = 512;
 	glGenTextures(1, &FilteringedEnvironmentID);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, FilteringedEnvironmentID);
-	m_tIrradianceTexture->m_TextureType = GL_TEXTURE_CUBE_MAP;
+	m_tFilteringedEnvironmentTexture->m_TextureType = GL_TEXTURE_CUBE_MAP;
 	for (int i = 0; i < 6; ++i) {
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, FilteringedEnvironmentWidth, FilteringedEnvironmentHeight, 0, GL_RGB, GL_FLOAT, nullptr);
 	}
@@ -161,7 +164,53 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+
+	glUseProgram(preFilteringCubeMapShader);
+
+	samplerULoc = glGetUniformLocation(preFilteringCubeMapShader, "u_BaseTexture");
+	glUniform1i(samplerULoc, 0);
+
+	projectionLocation = glGetUniformLocation(preFilteringCubeMapShader, "projectionTransform");	// ProjMatrix
+	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &tempCaptureProjection[0][0]);
+
+	m_tCubeMapTexture.BindShaderVariables(preFilteringCubeMapShader, GL_TEXTURE0);
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, cubeFBO);
+
+	UINT maxMipLevel = 5;
+	for (unsigned int mip = 0; mip < maxMipLevel; mip++) {
+		if (mip == 1) {
+			glBindTexture(GL_TEXTURE_CUBE_MAP, FilteringedEnvironmentID);
+			glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+			m_tCubeMapTexture.BindShaderVariables(preFilteringCubeMapShader, GL_TEXTURE0);
+		}
+
+		UINT mipWidth = FilteringedEnvironmentWidth * std::pow(0.5, mip);
+		UINT mipHeight = FilteringedEnvironmentHeight * std::pow(0.5, mip);
+
+		glBindFramebuffer(GL_RENDERBUFFER, cubeRBO);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
+		glViewport(0, 0, mipWidth, mipHeight);
+
+		float roughness = (float)mip / (float)(maxMipLevel - 1);
+		GLuint roughnessLoc = glGetUniformLocation(preFilteringCubeMapShader, "roughness");
+		glUniform1f(roughnessLoc, roughness);
+
+		for (GLuint i = 0; i < 6; ++i) {
+			GLuint viewLocation;
+			viewLocation = glGetUniformLocation(preFilteringCubeMapShader, "viewTransform");	// ViewMatrix
+			glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &tempCaptureViews[i][0][0]);	
+
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, FilteringedEnvironmentID, mip);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			pCubeMesh->BindShaderVariables(preFilteringCubeMapShader);
+			pCubeMesh->Render();
+		}
+	}
+	m_tFilteringedEnvironmentTexture->BindShaderVariables(preFilteringCubeMapShader, GL_TEXTURE0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	m_Initialized = true;
 

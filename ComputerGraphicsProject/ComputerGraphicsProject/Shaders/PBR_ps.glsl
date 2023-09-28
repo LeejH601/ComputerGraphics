@@ -136,7 +136,7 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 sColor, vec3 norma
 	
 	FinalColor += mix(Diffuse, Specular * sColor * LightColor, MetallicColor) ; // 에너지 보존 법칙
 	FinalColor = max(vec3(0.0f), FinalColor);
-	//FinalColor = vec3(G);
+	//FinalColor = irradiance;
 
 	return FinalColor;
 };

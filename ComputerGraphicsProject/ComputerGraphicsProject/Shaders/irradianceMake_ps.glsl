@@ -40,12 +40,12 @@ void main()
             vec3 tangentSample = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
             vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal;
 
-            irradiance += texture(u_BaseTexture, sampleVec).rgb * cos(theta) * sin(theta);
+            irradiance += pow(texture(u_BaseTexture, sampleVec).rgb, 1.0f / vec3(gamma)) * cos(theta) * sin(theta);
             nSamples++;
         }
     }
-    //irradiance = pow(irradiance, vec3(gamma));
     irradiance = c_PI * irradiance * (1.0f / float(nSamples));
+    irradiance = pow(irradiance, vec3(gamma));
     //irradiance = pow(irradiance, vec3(1.0f / gamma));
   
     FragColor = vec4(irradiance, 1.0);

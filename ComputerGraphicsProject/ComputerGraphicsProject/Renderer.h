@@ -22,6 +22,7 @@ public:
 	GLuint MakeCubeMapShader = -1;
 	GLuint SkyBoxShader = -1;
 	GLuint irradianceShader = -1;
+	GLuint preFilteringCubeMapShader = -1;
 
 	CTexture m_tCubeMapTexture;
 	std::shared_ptr<CTexture> m_tIrradianceTexture;
