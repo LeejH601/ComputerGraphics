@@ -309,6 +309,124 @@ std::shared_ptr<CMesh> CMesh::CreateNDCMesh()
 	return mesh;
 }
 
+std::shared_ptr<CMesh> CMesh::CreatePointMesh()
+{
+	std::shared_ptr<CMesh> pMesh = std::make_shared<CMesh>();
+
+	pMesh->m_PrimitiveTopology = GL_POINTS;
+
+	pMesh->m_nVertices = 1;
+	pMesh->m_pVertices.resize(pMesh->m_nVertices);
+	pMesh->m_pVertices[0].position = (glm::vec3(0, 0, 0));
+	pMesh->m_pVertices[0].normal = (glm::vec3(0, 1, 0));
+	pMesh->m_pVertices[0].tangent = (glm::vec3(1, 0, 0));
+	pMesh->m_pVertices[0].bitangent = (glm::vec3(0, 0, 1));
+	pMesh->m_pVertices[0].texcoord0 = glm::vec2(0, 0);
+
+	return pMesh;
+}
+
+std::shared_ptr<CMesh> CMesh::CreateLineMesh()
+{
+	std::shared_ptr<CMesh> pMesh = std::make_shared<CMesh>();
+
+	pMesh->m_PrimitiveTopology = GL_LINES;
+
+	pMesh->m_nVertices = 2;
+	pMesh->m_pVertices.resize(pMesh->m_nVertices);
+	pMesh->m_pVertices[0].position = (glm::vec3(0, 0, 0.0f));
+	pMesh->m_pVertices[0].normal = (glm::vec3(0, 1, 0));
+	pMesh->m_pVertices[0].tangent = (glm::vec3(1, 0, 0));
+	pMesh->m_pVertices[0].bitangent = (glm::vec3(0, 0, 1));
+	pMesh->m_pVertices[0].texcoord0 = glm::vec2(0, 0);
+
+	pMesh->m_pVertices[1].position = (glm::vec3(0, 0, 1.0));
+	pMesh->m_pVertices[1].normal = (glm::vec3(0, 1, 0));
+	pMesh->m_pVertices[1].tangent = (glm::vec3(1, 0, 0));
+	pMesh->m_pVertices[1].bitangent = (glm::vec3(0, 0, 1));
+	pMesh->m_pVertices[1].texcoord0 = glm::vec2(1, 0);
+
+	return pMesh;
+}
+
+std::shared_ptr<CMesh> CMesh::CreateTriangleMesh()
+{
+	std::shared_ptr<CMesh> pMesh = std::make_shared<CMesh>();
+
+	pMesh->m_PrimitiveTopology = GL_TRIANGLES;
+
+	pMesh->m_nVertices = 3;
+	pMesh->m_pVertices.resize(pMesh->m_nVertices);
+	pMesh->m_pVertices[0].position = (glm::vec3(0, 0, -1.0f));
+	pMesh->m_pVertices[0].normal = (glm::vec3(0, 1, 0));
+	pMesh->m_pVertices[0].tangent = (glm::vec3(1, 0, 0));
+	pMesh->m_pVertices[0].bitangent = (glm::vec3(0, 0, 1));
+	pMesh->m_pVertices[0].texcoord0 = glm::vec2(0.5, 0.5);
+
+	pMesh->m_pVertices[1].position = (glm::vec3(-0.5, 0, 1.0));
+	pMesh->m_pVertices[1].normal = (glm::vec3(0, 1, 0));
+	pMesh->m_pVertices[1].tangent = (glm::vec3(1, 0, 0));
+	pMesh->m_pVertices[1].bitangent = (glm::vec3(0, 0, 1));
+	pMesh->m_pVertices[1].texcoord0 = glm::vec2(0, 0);
+
+	pMesh->m_pVertices[2].position = (glm::vec3(0.5, 0, 1.0));
+	pMesh->m_pVertices[2].normal = (glm::vec3(0, 1, 0));
+	pMesh->m_pVertices[2].tangent = (glm::vec3(1, 0, 0));
+	pMesh->m_pVertices[2].bitangent = (glm::vec3(0, 0, 1));
+	pMesh->m_pVertices[2].texcoord0 = glm::vec2(1, 0);
+
+	return pMesh;
+}
+
+std::shared_ptr<CMesh> CMesh::CreateRectMesh()
+{
+	std::shared_ptr<CMesh> pMesh = std::make_shared<CMesh>();
+
+	pMesh->m_PrimitiveTopology = GL_TRIANGLES;
+
+	pMesh->m_nVertices = 6;
+	pMesh->m_pVertices.resize(pMesh->m_nVertices);
+
+	pMesh->m_pVertices[0].position = (glm::vec3(-0.5f, 0, -0.5f));
+	pMesh->m_pVertices[0].normal = (glm::vec3(0, 1, 0));
+	pMesh->m_pVertices[0].tangent = (glm::vec3(1, 0, 0));
+	pMesh->m_pVertices[0].bitangent = (glm::vec3(0, 0, 1));
+	pMesh->m_pVertices[0].texcoord0 = glm::vec2(0, 1);
+
+	pMesh->m_pVertices[1].position = (glm::vec3(-0.5, 0, 0.5));
+	pMesh->m_pVertices[1].normal = (glm::vec3(0, 1, 0));
+	pMesh->m_pVertices[1].tangent = (glm::vec3(1, 0, 0));
+	pMesh->m_pVertices[1].bitangent = (glm::vec3(0, 0, 1));
+	pMesh->m_pVertices[1].texcoord0 = glm::vec2(0, 0);
+
+	pMesh->m_pVertices[2].position = (glm::vec3(0.5, 0, -0.5));
+	pMesh->m_pVertices[2].normal = (glm::vec3(0, 1, 0));
+	pMesh->m_pVertices[2].tangent = (glm::vec3(1, 0, 0));
+	pMesh->m_pVertices[2].bitangent = (glm::vec3(0, 0, 1));
+	pMesh->m_pVertices[2].texcoord0 = glm::vec2(1, 1);
+
+
+	pMesh->m_pVertices[3].position = (glm::vec3(0.5, 0, -0.5));
+	pMesh->m_pVertices[3].normal = (glm::vec3(0, 1, 0));
+	pMesh->m_pVertices[3].tangent = (glm::vec3(1, 0, 0));
+	pMesh->m_pVertices[3].bitangent = (glm::vec3(0, 0, 1));
+	pMesh->m_pVertices[3].texcoord0 = glm::vec2(1, 1);
+
+	pMesh->m_pVertices[4].position = (glm::vec3(-0.5, 0, 0.5));
+	pMesh->m_pVertices[4].normal = (glm::vec3(0, 1, 0));
+	pMesh->m_pVertices[4].tangent = (glm::vec3(1, 0, 0));
+	pMesh->m_pVertices[4].bitangent = (glm::vec3(0, 0, 1));
+	pMesh->m_pVertices[4].texcoord0 = glm::vec2(0, 0);
+
+	pMesh->m_pVertices[5].position = (glm::vec3(0.5, 0, 0.5));
+	pMesh->m_pVertices[5].normal = (glm::vec3(0, 1, 0));
+	pMesh->m_pVertices[5].tangent = (glm::vec3(1, 0, 0));
+	pMesh->m_pVertices[5].bitangent = (glm::vec3(0, 0, 1));
+	pMesh->m_pVertices[5].texcoord0 = glm::vec2(1, 0);
+
+	return pMesh;
+}
+
 void CMesh::LoadMeshFromFile(FILE* pInFile)
 {
 	char pstrToken[64] = { '\0' };
@@ -545,10 +663,10 @@ void CMesh::Render()
 		for (int i = 0; i < m_nSubMeshes; ++i) {
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBOs[i]);
 			//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, m_ppnSubSetIndices[i].data());
-			glDrawElements(GL_TRIANGLES, m_pnSubSetIndices[i] * sizeof(UINT), GL_UNSIGNED_INT, NULL);
+			glDrawElements(m_PrimitiveTopology, m_pnSubSetIndices[i] * sizeof(UINT), GL_UNSIGNED_INT, NULL);
 		}
 	}
 	else {
-		glDrawArrays(GL_TRIANGLES, 0, m_nVertices);
+		glDrawArrays(m_PrimitiveTopology, 0, m_nVertices);
 	}
 }

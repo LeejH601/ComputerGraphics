@@ -1,22 +1,24 @@
-#include "Scene.h"
-#include "Global.h"
-#include "Renderer.h"
+#include "ExamScene.h"
 #include "Mesh.h"
-#include "Timer.h"
+#include "Renderer.h"
 
-CScene::CScene()
+CExamScene_7::CExamScene_7()
 {
 }
 
-CScene::~CScene()
+CExamScene_7::~CExamScene_7()
 {
 }
 
-void CScene::Init()
+void CExamScene_7::Init()
 {
+	CExamScene::Init();
+
 	m_pLights.emplace_back();
 	m_pSunLight = &m_pLights.back();
 	m_pSunLight->m_vec3LightColor *= 2.0f;
+	m_pSunLight->m_vec3Direction = glm::vec3(0.0f, -1.0f, 0.0f);
+
 	m_sptrMainCamera = std::make_unique<CCamera>();
 
 	m_sptrMainCamera->RegenarationViewMatrix();
@@ -27,60 +29,136 @@ void CScene::Init()
 	rotate = glm::rotate(rotate, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	m_pMainCamera->SetQauternion(rotate);
 	m_pMainCamera->SetPosision(m_pMainCamera->GetPosition() + glm::vec3(0, 5.0f, 0.0f));
+
+	std::shared_ptr<CMesh> testCubeMesh;
+	testCubeMesh = CMesh::CreateCubeMesh(1.0f, 1.0f, 1.0f);
+	testCubeMesh->CreateShaderVariables();
+
+	std::shared_ptr<CMaterial> pMaterial = std::make_shared<CMaterial>();
+
+	m_pSkyBoxObject = std::make_shared<CObject>();
+	m_pSkyBoxObject->SetMesh(testCubeMesh);
+	m_pSkyBoxObject->SetMaterial(pMaterial);
 }
 
-void CScene::RenderScene()
+void CExamScene_7::RenderScene()
 {
+	GLuint s_Program = g_Renderer->TestShader;
+	glUseProgram(s_Program);
+
+
+	GLuint samplerULoc = glGetUniformLocation(s_Program, "u_IrradianceTexture");
+	glUniform1i(samplerULoc, 5);
+	m_tIrradianceTexture->BindShaderVariables(s_Program, GL_TEXTURE5);
+
+	samplerULoc = glGetUniformLocation(s_Program, "u_BrdfLUT");
+	glUniform1i(samplerULoc, 6);
+	m_tPreCoumputedBRDFLUTexture->BindShaderVariables(s_Program, GL_TEXTURE6);
+
+	samplerULoc = glGetUniformLocation(s_Program, "u_PreFilterMap");
+	glUniform1i(samplerULoc, 7);
+	m_tFilteringedEnvironmentTexture->BindShaderVariables(s_Program, GL_TEXTURE7);
+
+
+	m_pSunLight->BindShaderVariables(s_Program);
+	m_pMainCamera->BindShaderVariables(s_Program);
+
+
+
+	for (std::shared_ptr<CObject>& obj : m_pObjects) {
+		obj->BindShaderVariables(s_Program);
+
+		obj->Render();
+	}
+
+	s_Program = g_Renderer->SkyBoxShader;
+	glUseProgram(s_Program);
+
+	m_pSunLight->BindShaderVariables(s_Program);
+	m_pMainCamera->BindShaderVariables(s_Program);
+
+	glDepthFunc(GL_LEQUAL);
+
+	m_pSkyBoxObject->BindShaderVariables(s_Program);
+	m_pSkyBoxObject->Render();
 }
 
-void CScene::MouseInput(int button, int state, int x, int y)
+void CExamScene_7::KeyInput(unsigned char key, int x, int y)
 {
+	static std::uniform_real_distribution<float> urd_color(0.0f, 1.0f);
+	static std::uniform_real_distribution<float> urd_pos(-3.0f, 3.0f);
+	switch (key)
+	{
+	case 'p':
+	case 'l':
+	case 't':
+	case 'r':
+
+		if (m_pObjects.size() < 10) {
+			std::shared_ptr<CObject> obj = std::make_shared<CObject>();
+			std::shared_ptr<CMaterial> material = std::make_shared<CMaterial>();
+			material->BaseColor = glm::vec3(urd_color(dre), urd_color(dre), urd_color(dre));
+			material->RoughnessColor = 0.0f;
+
+			std::shared_ptr<CMesh> mesh;
+			if (key == 'p')
+				mesh = CMesh::CreateCubeMesh(0.1,0.1,0.1);
+			else if (key == 'l')
+				mesh = CMesh::CreateLineMesh();
+			else if (key == 't')
+				mesh = CMesh::CreateTriangleMesh();
+			else if (key == 'r')
+				mesh = CMesh::CreateRectMesh();
+
+			mesh->CreateShaderVariables();
+			obj->SetMesh(mesh);
+			obj->SetMaterial(material);
+			obj->SetPosition(glm::vec3(urd_pos(dre), 0.0f, urd_pos(dre)));
+			
+			
+			m_pObjects.push_back(obj);
+		}
+		break;
+	case 'w':
+		m_AimbientMoveDir = glm::vec3(0.0f, 0.0f, -1.0f);
+		break;
+	case 'a':
+		m_AimbientMoveDir = glm::vec3(-1.0f, 0.0f, 0.0f);
+		break;
+	case 's':
+		m_AimbientMoveDir = glm::vec3(0.0f, 0.0f, 1.0f);
+		break;
+	case 'd':
+		m_AimbientMoveDir = glm::vec3(1.0f, 0.0f, 0.0f);
+		break;
+	case 'c':
+		m_pObjects.clear();
+		break;
+	default:
+		break;
+	}
 }
 
-void CScene::MouseMotion(int x, int y)
+void CExamScene_7::Update(float fElapsedTime)
 {
+	for (std::shared_ptr<CObject>& obj : m_pObjects) {
+		glm::vec3 pos = obj->GetPosition();
+		pos = pos + m_AimbientMoveDir * fElapsedTime;
+
+		if (pos.x > 3.0f)
+			pos.x -= 6.0f;
+		if (pos.z > 3.0f)
+			pos.z -= 6.0f;
+		if (pos.x < -3.0f)
+			pos.x += 6.0f;
+		if (pos.z < -3.0f)
+			pos.z += 6.0f;
+		obj->SetPosition(pos);
+	}
 }
 
-void CScene::KeyInput(unsigned char key, int x, int y)
+void CExamScene::Init()
 {
-}
-
-void CScene::KeyUpInput(unsigned char key, int x, int y)
-{
-}
-
-void CScene::SpecialKeyInput(int key, int x, int y)
-{
-}
-
-
-
-void CScene::Update(float fElapsedTime)
-{
-}
-
-void CScene::Enter()
-{
-	if (!m_bInitialized)
-		Init();
-}
-
-void CScene::Exit()
-{
-}
-
-CPBR_TestScene::CPBR_TestScene()
-{
-}
-
-CPBR_TestScene::~CPBR_TestScene()
-{
-}
-
-void CPBR_TestScene::Init()
-{
-	CScene::Init();
-	// HDRI 로부터 큐브 환경 맵 생성
 	GLuint cubeFBO, cubeRBO;
 	GLuint cubeMapWidth = 1024, cubeMapHeight = 1024;
 	glGenFramebuffers(1, &cubeFBO);
@@ -291,244 +369,5 @@ void CPBR_TestScene::Init()
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
-
-
-	std::shared_ptr<CMesh> testCubeMesh;
-	testCubeMesh = CMesh::CreateCubeMesh(1.0f, 1.0f, 1.0f);
-	testCubeMesh->CreateShaderVariables();
-	g_Renderer->RegisterMesh(testCubeMesh);
-
-	std::shared_ptr<CMesh> testSphereMesh;
-	testSphereMesh = CMesh::CreateSphereMesh(20, 20);
-	testSphereMesh->CreateShaderVariables();
-	g_Renderer->RegisterMesh(testSphereMesh);
-
-	m_pSkyBoxObject = std::make_shared<CObject>();
-
-	std::shared_ptr<CMaterial> pMaterial = std::make_shared<CMaterial>();
-	std::shared_ptr<CMaterial> pMaterial2 = std::make_shared<CMaterial>();
-	pTexture = m_tFilteringedEnvironmentTexture;
-	pMaterial->SetBaseTexture(pTexture);
-	g_Renderer->RegisterMaterial(pMaterial);
-
-	m_pSkyBoxObject->SetMesh(testCubeMesh);
-	m_pSkyBoxObject->SetMaterial(pMaterial);
-
-	std::shared_ptr<CObject> planeObj = std::make_shared<CObject>();
-	planeObj->LoadGeometryAndAnimationFromFile("./Objects/Plane.bin");
-	planeObj->GetMaterial(0)->RoughnessColor = 1.0f;
-
-	m_pObjects.resize(10);
-	glm::vec3 basePos{ 0,1.5,0 };
-	for (int i = 0; i < 10; ++i) {
-		m_pObjects[i] = std::make_shared<CObject>();
-		m_pObjects[i]->SetMesh(testSphereMesh);
-		m_pObjects[i]->SetPosition(basePos);
-		std::shared_ptr<CMaterial> Material = std::make_shared<CMaterial>();
-		Material->RoughnessColor = (0.1f + (i * 0.1f));
-		g_Renderer->RegisterMaterial(Material);
-		m_pObjects[i]->SetMaterial(Material);
-		basePos.x += 2.0f;
-	}
-
-	m_pObjects.push_back(planeObj);
-
 	m_bInitialized = true;
-}
-
-void CPBR_TestScene::RenderScene()
-{
-	GLuint s_Program = g_Renderer->TestShader;
-	glUseProgram(s_Program);
-
-
-	GLuint samplerULoc = glGetUniformLocation(s_Program, "u_IrradianceTexture");
-	glUniform1i(samplerULoc, 5);
-	m_tIrradianceTexture->BindShaderVariables(s_Program, GL_TEXTURE5);
-
-	samplerULoc = glGetUniformLocation(s_Program, "u_BrdfLUT");
-	glUniform1i(samplerULoc, 6);
-	m_tPreCoumputedBRDFLUTexture->BindShaderVariables(s_Program, GL_TEXTURE6);
-
-	samplerULoc = glGetUniformLocation(s_Program, "u_PreFilterMap");
-	glUniform1i(samplerULoc, 7);
-	m_tFilteringedEnvironmentTexture->BindShaderVariables(s_Program, GL_TEXTURE7);
-
-
-	m_pSunLight->BindShaderVariables(s_Program);
-	m_pMainCamera->BindShaderVariables(s_Program);
-
-
-
-	for (std::shared_ptr<CObject>& obj : m_pObjects) {
-		obj->BindShaderVariables(s_Program);
-
-		obj->Render();
-	}
-
-	s_Program = g_Renderer->SkyBoxShader;
-	glUseProgram(s_Program);
-
-	m_pSunLight->BindShaderVariables(s_Program);
-	m_pMainCamera->BindShaderVariables(s_Program);
-
-	glDepthFunc(GL_LEQUAL);
-
-	m_pSkyBoxObject->BindShaderVariables(s_Program);
-	m_pSkyBoxObject->Render();
-
-}
-
-void CPBR_TestScene::MouseInput(int button, int state, int x, int y)
-{
-	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-		m_eMouseState = MOUSE_STATE::MOUSE_CILCK_RIGHT;
-		m_ptOldMouseCursor = { x,y };
-		m_ptOldMouseCursor.x -= g_WindowSizeX / 2;
-		m_ptOldMouseCursor.y -= g_WindowSizeY / 2;
-	}
-	if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP) {
-		m_eMouseState = MOUSE_STATE::MOUSE_CILCK_NONE;
-	}
-}
-
-void CPBR_TestScene::MouseMotion(int x, int y)
-{
-	switch (m_eMouseState)
-	{
-	case MOUSE_STATE::MOUSE_CILCK_LEFT:
-		break;
-	case MOUSE_STATE::MOUSE_CILCK_RIGHT:
-		m_ptCurrMouseCuror = { x,y };
-		m_ptCurrMouseCuror.x -= g_WindowSizeX / 2;
-		m_ptCurrMouseCuror.y -= g_WindowSizeY / 2;
-		cxDelta = (float)(m_ptCurrMouseCuror.x - m_ptOldMouseCursor.x);
-		cyDelta = (float)(m_ptCurrMouseCuror.y - m_ptOldMouseCursor.y);
-		m_ptOldMouseCursor = m_ptCurrMouseCuror;
-
-		break;
-	case MOUSE_STATE::MOUSE_CILCK_NONE:
-		break;
-	default:
-		break;
-	}
-}
-
-void CPBR_TestScene::KeyInput(unsigned char key, int x, int y)
-{
-	switch (key)
-	{
-	case 'w':
-		DwDirection |= DW_FRONT;
-		break;
-	case 's':
-		DwDirection |= DW_BACK;
-		break;
-	case 'd':
-		DwDirection |= DW_RIGHT;
-		break;
-	case 'a':
-		DwDirection |= DW_LEFT;
-		break;
-	case 'q':
-		DwDirection |= DW_DOWN;
-		break;
-	case 'e':
-		DwDirection |= DW_UP;
-		break;
-	case 'f':
-		m_pMainCamera->m_vec3Look.x += 0.1f;
-		m_pMainCamera->m_vec3Look = glm::normalize(m_pMainCamera->m_vec3Look);
-		break;
-	case 'g':
-		m_pMainCamera->m_vec3Look.x -= 0.1f;
-		m_pMainCamera->m_vec3Look = glm::normalize(m_pMainCamera->m_vec3Look);
-		break;
-	default:
-		break;
-	}
-	glm::vec3 pos = m_pMainCamera->GetPosition();
-	std::cout << pos.x << " " << pos.y << " " << pos.z << std::endl;
-}
-
-void CPBR_TestScene::KeyUpInput(unsigned char key, int x, int y)
-{
-	switch (key)
-	{
-	case 'w':
-		DwDirection &= (~DW_FRONT);
-		break;
-	case 's':
-		DwDirection &= (~DW_BACK);
-		break;
-	case 'd':
-		DwDirection &= (~DW_RIGHT);
-		break;
-	case 'a':
-		DwDirection &= (~DW_LEFT);
-		break;
-	case 'q':
-		DwDirection &= (~DW_DOWN);
-		break;
-	case 'e':
-		DwDirection &= (~DW_UP);
-		break;
-	default:
-		break;
-	}
-}
-
-void CPBR_TestScene::SpecialKeyInput(int key, int x, int y)
-{
-}
-
-
-
-void CPBR_TestScene::Update(float fElapsedTime)
-{
-	glm::vec3 cameraPosition = m_pMainCamera->GetPosition();
-	glm::vec3 cameraVelocity = glm::vec3(0);
-
-	if (DwDirection != 0) {
-		if (DwDirection & DW_FRONT)
-			cameraVelocity -= m_pMainCamera->m_vec3Look;
-		if (DwDirection & DW_BACK)
-			cameraVelocity += m_pMainCamera->m_vec3Look;
-		if (DwDirection & DW_RIGHT)
-			cameraVelocity += m_pMainCamera->m_vec3Right;
-		if (DwDirection & DW_LEFT)
-			cameraVelocity -= m_pMainCamera->m_vec3Right;
-		if (DwDirection & DW_UP)
-			cameraVelocity += m_pMainCamera->m_vec3Up;
-		if (DwDirection & DW_DOWN)
-			cameraVelocity -= m_pMainCamera->m_vec3Up;
-		cameraVelocity = glm::normalize(cameraVelocity);
-	}
-
-	if (!glm::all(glm::isnan(cameraVelocity)))
-		cameraPosition += cameraVelocity * g_Timer->GetFrameTimeElapsed();
-	m_pMainCamera->SetPosision(cameraPosition);
-
-	if (m_eMouseState == MOUSE_STATE::MOUSE_CILCK_RIGHT) {
-		if (abs(cxDelta) > 0.0001f || abs(cyDelta > 0.0001f)) {
-			glm::vec3 axis = glm::vec3(0, 1, 0);
-			glm::qua<float> qResult = glm::rotate(m_pMainCamera->m_vec4Rotation, glm::radians(cxDelta * 180.0f) * fElapsedTime, glm::normalize(axis));
-			axis = glm::vec3(1, 0, 0);
-			qResult = glm::rotate(qResult, glm::radians(cyDelta * 180.0f) * fElapsedTime, glm::normalize(axis));
-
-			m_pMainCamera->m_vec4Rotation = qResult;
-
-			cxDelta = 0;
-			cyDelta = 0;
-		}
-	}
-
-	float fTime = g_Timer->GetTotalTime();
-
-	m_pSunLight->m_vec3LightColor = glm::vec3(1, 1, 1);
-	m_pSunLight->m_vec3Direction = glm::normalize(glm::vec3(-1, -1, -1));
-	m_pSunLight->m_vec3Direction = glm::vec3(sin(fTime), cos(fTime), -1);
-
-
 }

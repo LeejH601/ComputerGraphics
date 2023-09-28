@@ -11,6 +11,10 @@
 #include "Light.h"
 #include "Timer.h"
 #include "Scene.h"
+#include "ExamScene.h"
+
+std::random_device rd;
+std::default_random_engine dre(rd());
 
 CRenderer* g_Renderer = NULL;
 std::unique_ptr<CObject> g_pTestObj = nullptr;
@@ -24,7 +28,7 @@ int g_WindowSizeX = 1280;
 int g_WindowSizeY = 768;
 
 
-
+std::vector<std::shared_ptr<CScene>> g_pSceneCache;
 
 
 
@@ -81,6 +85,16 @@ void MouseMotion(int x, int y)
 
 void KeyInput(unsigned char key, int x, int y)
 {
+	switch (key)
+	{
+	case '1':
+		g_currentScene->Exit();
+		g_currentScene = g_pSceneCache[0].get();
+		g_currentScene->Enter();
+		break;
+	default:
+		break;
+	}
 	g_currentScene->KeyInput(key, x, y);
 	RenderScene();
 }
@@ -122,7 +136,9 @@ int main(int argc, char** argv)
 		std::cout << "Renderer could not be initialized.. \n";
 	}
 
-	g_currentScene = new CPBR_TestScene;
+	std::shared_ptr<CScene> scene = std::make_shared<CExamScene_7>();
+	g_pSceneCache.push_back(scene);
+	g_currentScene = g_pSceneCache.back().get();
 	g_currentScene->Enter();
 	
 	/*for (int i = 0; i < 10; ++i) {

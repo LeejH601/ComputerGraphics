@@ -7,6 +7,7 @@
 #include <memory>
 #include <iostream>
 #include <sstream>
+#include <random>
 #include <chrono>
 
 
@@ -21,3 +22,6 @@
 extern int ReadIntegerFromFile(FILE* pInFile);
 extern float ReadFloatFromFile(FILE* pInFile);
 extern BYTE ReadStringFromFile(FILE* pInFile, char* pstrToken);
+
+extern std::random_device rd;
+extern std::default_random_engine dre;

@@ -63,6 +63,10 @@ public:
 	static std::shared_ptr<CMesh> CreateCubeMeshForIndex(float dx, float dy, float dz);
 	static std::shared_ptr<CMesh> CreateSphereMesh(int n_slices, int n_stacks);
 	static std::shared_ptr<CMesh> CreateNDCMesh();
+	static std::shared_ptr<CMesh> CreatePointMesh();
+	static std::shared_ptr<CMesh> CreateLineMesh();
+	static std::shared_ptr<CMesh> CreateTriangleMesh();
+	static std::shared_ptr<CMesh> CreateRectMesh();
 	void LoadMeshFromFile(FILE* pInFile);
 
 	virtual void CreateShaderVariables();
@@ -89,6 +93,8 @@ private:
 
 	glm::vec3 m_vec3AABBCenter;
 	glm::vec3 m_vec3AABBExtents;
+
+	GLenum m_PrimitiveTopology = GL_TRIANGLES;
 
 	// 사용할지는 모름
 	UINT                            m_nSlot = 0;

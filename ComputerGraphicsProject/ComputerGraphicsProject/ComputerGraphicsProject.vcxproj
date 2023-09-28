@@ -132,6 +132,7 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ComputerGraphicsProject.cpp" />
+    <ClCompile Include="ExamScene.cpp" />
     <ClCompile Include="Global.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="LoadPng.cpp" />
@@ -149,6 +150,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="ExamScene.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LoadPng.h" />
