@@ -6,6 +6,7 @@
 
 CTexture::CTexture()
 {
+
 }
 
 CTexture::~CTexture()

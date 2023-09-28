@@ -39,7 +39,13 @@ uniform vec3 gSpecularColor;
 
 uniform sampler2D u_BaseTexture;
 uniform sampler2D u_NormalTexture;
+uniform samplerCube u_SpecularTexture;
+uniform samplerCube u_MetallicTexture;
+uniform samplerCube u_EmissionTexture;
 uniform samplerCube u_IrradianceTexture;
+uniform sampler2D u_BrdfLUT;
+uniform samplerCube u_PreFilterMap;
+
 
 
 vec3 aces_approx(vec3 v)
@@ -88,6 +94,11 @@ vec3 F_Cook_Torrance(vec3 v, vec3 h, vec3 F0)
 	return F0 + (1 - F0) * pow( 1 - VdotH , 5);
 }
 
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float Roughness)
+{
+    return F0 + (max(vec3(1.0 - Roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}  
+
 float Vis_SmithJoint(float a, float NdotV, float NdotL) 
 {
 	float a2 = pow(a , 2);
@@ -98,6 +109,7 @@ float Vis_SmithJoint(float a, float NdotV, float NdotL)
 }
 
 //#define USE_VIS
+#define USE_PRECOMPUTED_BRDF
 
 vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 sColor, vec3 normal, vec3 ToLight, vec3 LightColor, float Fresnel, float Roughness, float MetallicColor)
 {
@@ -105,38 +117,31 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 sColor, vec3 norma
 
 	vec3 view = normalize(CameraPosition - WorldPos);
 
-	float NdotL = dot(normal, ToLight);
-	float NdotV = max(0.00001f, dot(normal, view));
+	float NdotL = max(0.0f, dot(normal, ToLight));
+	float NdotV = max(0.0f, dot(normal, view));
 
-	float Lambert = max(NdotL / c_PI, 0.0f);
-	vec3 irradiance = texture(u_IrradianceTexture, normal).rgb;
+	vec3 R =  -view + 2 * normal * dot(view,normal);
+
 	
-
-	vec3 halfv = normalize(ToLight + normal);
-
-	float D = GGX_Trowbridge_Reitz(normal, halfv, Roughness);
-	float G = GeometrySmith(normal, view, ToLight, Roughness);
-
-	//float F0 = pow( (Fresnel - 1) / (Fresnel + 1) ,2 );
 	vec3 F0 = mix(vec3(Fresnel), BaseColor, MetallicColor);
-	vec3 F = F_Cook_Torrance(view, normal, F0);
-	//F = F * NdotL;
-	
+	vec3 F        = fresnelSchlickRoughness(NdotV, F0, Roughness);
 
-	Diffuse = Lambert * BaseColor * LightColor * irradiance;
+	vec3 kS = F;
+	vec3 kD = 1.0 - kS;
+	kD *= 1.0 - MetallicColor;
 
+	vec3 irradiance = texture(u_IrradianceTexture, normal).rgb;
+	Diffuse =  BaseColor * irradiance;
+
+
+	const float MAX_REFLECTION_LOD = 4.0;
+    vec3 prefilteredColor = textureLod(u_PreFilterMap, R,  Roughness * MAX_REFLECTION_LOD).rgb;    
 
 	vec3 Specular;
+	vec2 envBRDF  = texture(u_BrdfLUT, vec2(NdotV, Roughness)).rg;
+	Specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
 
-	#ifdef USE_VIS
-	Specular = D * Vis_SmithJoint(Roughness, NdotV ,NdotL) * F;
-	#else 
-	Specular = ((D * G * F) / (4 * NdotL * NdotV)) * NdotL;
-	#endif 
-	
-	FinalColor += mix(Diffuse, Specular * sColor * LightColor, MetallicColor) ; // 에너지 보존 법칙
-	FinalColor = max(vec3(0.0f), FinalColor);
-	//FinalColor = irradiance;
+	FinalColor = (kD * Diffuse + Specular) * NdotL;
 
 	return FinalColor;
 };
@@ -145,11 +150,13 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 sColor, vec3 norma
 
 void main()
 {
+	float gamma = 2.2;
+	
 	vec3 vToLight = -normalize(gMainLight.vec3Direction);
 
 	vec4 cColor = vec4(0,0,0,1.0f);
 
-	vec3 BaseColor = gBaseColor;
+	vec3 BaseColor = pow(gBaseColor, vec3(gamma));
 	vec3 SpecularColor = gSpecularColor;
 	float Fresnel = gFresnel;
 	float Roughness = gRoughnessColor;
@@ -157,7 +164,7 @@ void main()
 
 	MetallicColor = max(0.01f, MetallicColor);
 	
-	if((gTextureMask &MATERIAL_BASE_MAP) != 0){
+	if((gTextureMask & MATERIAL_BASE_MAP) != 0){
 		BaseColor = texture(u_BaseTexture, Texcoord0).xyz;
 	}
 	//BaseColor = vec3(Texcoord0.x,Texcoord0.y,0);
@@ -180,7 +187,6 @@ void main()
 	}
 
 
-	float gamma = 2.2;
 
 	BaseColor = pow(BaseColor, vec3(gamma) );
 

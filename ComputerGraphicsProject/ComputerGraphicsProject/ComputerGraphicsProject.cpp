@@ -107,20 +107,27 @@ void RenderScene(void)
 
 	
 	GLuint samplerULoc = glGetUniformLocation(s_Program, "u_IrradianceTexture");
-	glUniform1i(samplerULoc, 2);
+	glUniform1i(samplerULoc, 5);
+	g_Renderer->m_tIrradianceTexture->BindShaderVariables(s_Program, GL_TEXTURE5);
+
+	samplerULoc = glGetUniformLocation(s_Program, "u_BrdfLUT");
+	glUniform1i(samplerULoc, 6);
+	g_Renderer->m_tPreCoumputedBRDFLUTexture->BindShaderVariables(s_Program, GL_TEXTURE6);
+
+	samplerULoc = glGetUniformLocation(s_Program, "u_PreFilterMap");
+	glUniform1i(samplerULoc, 7);
+	g_Renderer->m_tFilteringedEnvironmentTexture->BindShaderVariables(s_Program, GL_TEXTURE7);
 
 
 	g_SunLight->BindShaderVariables(s_Program);
 	g_pMainCamera->BindShaderVariables(s_Program);
 
 	g_pTestObj2->BindShaderVariables(s_Program);
-	g_Renderer->m_tIrradianceTexture->BindShaderVariables(s_Program, GL_TEXTURE2);
 
 	g_pTestObj2->Render();
 
 	for (std::shared_ptr<CObject>& obj : g_TestObjects) {
 		obj->BindShaderVariables(s_Program);
-		g_Renderer->m_tIrradianceTexture->BindShaderVariables(s_Program, GL_TEXTURE2);
 
 		obj->Render();
 	}

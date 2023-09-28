@@ -3,9 +3,9 @@
 CMaterial::CMaterial()
 {
 	TextureMask = 0;
-	BaseColor = glm::vec3(1, 0, 0);
+	BaseColor = glm::vec3(1, 0.86, 0.57);
 	SpecularColor = glm::vec3(1, 1, 1);
-	MetallicColor = 0.04f;
+	MetallicColor = 1.0f;
 	RoughnessColor = 0.1f;
 	FresnelColor = 0.04f;
 }
