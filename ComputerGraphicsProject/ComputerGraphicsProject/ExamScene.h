@@ -4,7 +4,7 @@ class CExamScene : public CScene
 {
 protected:
 	std::shared_ptr<CObject> m_pSkyBoxObject;
-	glm::vec3 m_AimbientMoveDir;
+	glm::vec3 m_AimbientMoveDir{ 0,0,0 };
 public:
 	CExamScene() = default;
 	virtual void Init();
@@ -21,13 +21,18 @@ public:
 	virtual void RenderScene();
 	virtual void KeyInput(unsigned char key, int x, int y);
 	virtual void Update(float fElapsedTime);
+};
 
-	/*virtual void MouseInput(int button, int state, int x, int y);
-	virtual void MouseMotion(int x, int y);
-	
-	virtual void KeyUpInput(unsigned char key, int x, int y);
-	virtual void SpecialKeyInput(int key, int x, int y);
+class CExamScene_8 : public CExamScene_7
+{
+	GLenum m_eFillmode = GL_FILL;
+public:
+	CExamScene_8();
+	virtual ~CExamScene_8();
 
-	virtual void Enter();
-	virtual void Exit();*/
+	virtual void Init();
+	virtual void RenderScene();
+	virtual void KeyInput(unsigned char key, int x, int y);
+	virtual void MouseInput(int button, int state, int x, int y);
+	virtual void Update(float fElapsedTime);
 };

@@ -1,12 +1,38 @@
 #include "Object.h"
 #include "Mesh.h"
 
-void CObject::UpdateTransform(glm::mat4x4* parent)
+void CObject::SetScale(glm::vec3 scale)
 {
+	m_vec3Scale = scale;
+	ReganerateTransform();
+}
+
+void CObject::RotationQuat(float radian, glm::vec3 axis)
+{
+	m_vec4Rotation = glm::rotate(m_vec4Rotation, radian, axis);
+}
+
+void CObject::ReganerateTransform()
+{
+	m_mat4x4Transform = glm::identity<glm::mat4x4>();
+
+	m_mat4x4Transform[0][0] = m_vec3Scale.x;
+	m_mat4x4Transform[1][1] = m_vec3Scale.y;
+	m_mat4x4Transform[2][2] = m_vec3Scale.z;
+
+	m_mat4x4Transform = glm::mat4_cast(m_vec4Rotation) * m_mat4x4Transform;
+
 	m_mat4x4Transform[3][0] = m_vec3Position.x;
 	m_mat4x4Transform[3][1] = m_vec3Position.y;
 	m_mat4x4Transform[3][2] = m_vec3Position.z;
+}
+
+void CObject::UpdateTransform(glm::mat4x4* parent)
+{	
+	if(parent == nullptr)
+		ReganerateTransform();
 	m_mat4x4Wolrd = (parent) ? m_mat4x4Transform * *parent : m_mat4x4Transform;
+
 
 	if (m_pSibling) m_pSibling->UpdateTransform(parent);
 	if (m_pChild) m_pChild->UpdateTransform(&m_mat4x4Wolrd);
@@ -107,6 +133,11 @@ void CObject::SetChild(std::shared_ptr<CObject> pChild)
 	{
 		pChild->m_pParent = this;
 	}
+}
+
+void CObject::SetPosition(glm::vec3 position)
+{
+	m_vec3Position = position;
 }
 
 
@@ -322,68 +353,77 @@ CObject::CObject()
 	m_mat4x4Wolrd = glm::identity<glm::mat4x4>();
 	m_vec3Position = { 0,0,0 };
 
-	m_vec4Rotation = glm::vec4(0, 0, 0, 1);
+	m_vec4Rotation = glm::quat(1, 0, 0, 0);
+	m_vec3Scale = glm::vec3(1);
 }
 
-CObject::CObject(const CObject& other)
-{
-	m_mat4x4Transform = other.m_mat4x4Transform;
-	m_mat4x4Wolrd = other.m_mat4x4Wolrd;
+//CObject::CObject(const CObject& other)
+//{
+//	m_vec3Position = other.m_vec3Position;
+//	m_mat4x4Transform = other.m_mat4x4Transform;
+//	m_mat4x4Wolrd = other.m_mat4x4Wolrd;
+//
+//	m_vec4Rotation = other.m_vec4Rotation;
+//	m_nMaterials = other.m_nMaterials;
+//	m_ppMaterials = other.m_ppMaterials;
+//	m_vec3Scale = other.m_vec3Scale;
+//}
 
-	m_vec4Rotation = other.m_vec4Rotation;
-	m_nMaterials = other.m_nMaterials;
-	m_ppMaterials = other.m_ppMaterials;
-}
-
-CObject::CObject(CObject&& other) noexcept
-{
-	m_mat4x4Transform = other.m_mat4x4Transform;
-	m_mat4x4Wolrd = other.m_mat4x4Wolrd;
-
-	m_vec4Rotation = other.m_vec4Rotation;
-	m_nMaterials = other.m_nMaterials;
-	m_ppMaterials = other.m_ppMaterials;
-	
-	// 할당 해제
-	other.m_mat4x4Transform = glm::identity<glm::mat4x4>();
-	other.m_mat4x4Wolrd = glm::identity<glm::mat4x4>();
-
-	other.m_vec4Rotation = glm::vec4(0, 0, 0, 1);
-	other.m_nMaterials = 0;
-	other.m_ppMaterials.clear();
-}
-
-CObject& CObject::operator=(const CObject& other)
-{
-	m_mat4x4Transform = other.m_mat4x4Transform;
-	m_mat4x4Wolrd = other.m_mat4x4Wolrd;
-
-	m_vec4Rotation = other.m_vec4Rotation;
-	m_nMaterials = other.m_nMaterials;
-	m_ppMaterials = other.m_ppMaterials;
-
-	return *this;
-}
-
-CObject& CObject::operator=(CObject&& other) noexcept
-{
-	m_mat4x4Transform = other.m_mat4x4Transform;
-	m_mat4x4Wolrd = other.m_mat4x4Wolrd;
-
-	m_vec4Rotation = other.m_vec4Rotation;
-	m_nMaterials = other.m_nMaterials;
-	m_ppMaterials = other.m_ppMaterials;
-
-	// 할당 해제
-	other.m_mat4x4Transform = glm::identity<glm::mat4x4>();
-	other.m_mat4x4Wolrd = glm::identity<glm::mat4x4>();
-
-	other.m_vec4Rotation = glm::vec4(0, 0, 0, 1);
-	other.m_nMaterials = 0;
-	other.m_ppMaterials.clear();
-
-	return *this;
-}
+//CObject::CObject(CObject&& other) noexcept
+//{
+//	m_vec3Position = other.m_vec3Position;
+//	m_mat4x4Transform = other.m_mat4x4Transform;
+//	m_mat4x4Wolrd = other.m_mat4x4Wolrd;
+//
+//	m_vec4Rotation = other.m_vec4Rotation;
+//	m_nMaterials = other.m_nMaterials;
+//	m_ppMaterials = other.m_ppMaterials;
+//	m_vec3Scale = other.m_vec3Scale;
+//	
+//	// 할당 해제
+//	other.m_mat4x4Transform = glm::identity<glm::mat4x4>();
+//	other.m_mat4x4Wolrd = glm::identity<glm::mat4x4>();
+//
+//	other.m_vec4Rotation = glm::quat(1, 0, 0, 0);
+//	other.m_nMaterials = 0;
+//	other.m_ppMaterials.clear();
+//}
+//
+//CObject& CObject::operator=(const CObject& other)
+//{
+//	m_vec3Position = other.m_vec3Position;
+//	m_mat4x4Transform = other.m_mat4x4Transform;
+//	m_mat4x4Wolrd = other.m_mat4x4Wolrd;
+//
+//	m_vec4Rotation = other.m_vec4Rotation;
+//	m_nMaterials = other.m_nMaterials;
+//	m_ppMaterials = other.m_ppMaterials;
+//	m_vec3Scale = other.m_vec3Scale;
+//
+//	return *this;
+//}
+//
+//CObject& CObject::operator=(CObject&& other) noexcept
+//{
+//	m_vec3Position = other.m_vec3Position;
+//	m_mat4x4Transform = other.m_mat4x4Transform;
+//	m_mat4x4Wolrd = other.m_mat4x4Wolrd;
+//
+//	m_vec4Rotation = other.m_vec4Rotation;
+//	m_nMaterials = other.m_nMaterials;
+//	m_ppMaterials = other.m_ppMaterials;
+//	m_vec3Scale = other.m_vec3Scale;
+//
+//	// 할당 해제
+//	other.m_mat4x4Transform = glm::identity<glm::mat4x4>();
+//	other.m_mat4x4Wolrd = glm::identity<glm::mat4x4>();
+//
+//	other.m_vec4Rotation = glm::quat(1, 0, 0, 0);
+//	other.m_nMaterials = 0;
+//	other.m_ppMaterials.clear();
+//
+//	return *this;
+//}
 
 void CObject::Render()
 {

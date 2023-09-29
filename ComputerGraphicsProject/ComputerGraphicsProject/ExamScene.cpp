@@ -371,3 +371,170 @@ void CExamScene::Init()
 
 	m_bInitialized = true;
 }
+
+CExamScene_8::CExamScene_8()
+{
+}
+
+CExamScene_8::~CExamScene_8()
+{
+}
+
+void CExamScene_8::Init()
+{
+	static std::uniform_real_distribution<float> urd_pos{ 0.0f, 3.0f };
+	static std::uniform_real_distribution<float> urd_color(0.0f, 1.0f);
+	static std::uniform_real_distribution<float> urd_scale(0.5f, 2.0f);
+
+	CExamScene_7::Init();
+
+	for (int i = 0; i < 4; ++i) {
+		std::shared_ptr<CObject> obj = std::make_shared<CObject>();
+		std::shared_ptr<CMaterial> material = std::make_shared<CMaterial>();
+		material->BaseColor = glm::vec3(urd_color(dre), urd_color(dre), urd_color(dre));
+		material->RoughnessColor = 0.0f;
+		material->MetallicColor = 1.0f;
+
+		std::shared_ptr<CMesh> mesh;
+		mesh = CMesh::CreateTriangleMesh();
+		mesh->CreateShaderVariables();
+
+		obj->SetMesh(mesh);
+		obj->SetMaterial(material);
+		float scale = urd_scale(dre);
+		obj->SetScale(glm::vec3(scale, 1.0f, scale));
+
+		m_pObjects.push_back(obj);
+	}
+
+	m_pObjects[0]->SetPosition(glm::vec3(urd_pos(dre), 0.0f, -urd_pos(dre)));
+	m_pObjects[1]->SetPosition(glm::vec3(-urd_pos(dre), 0.0f, -urd_pos(dre)));
+	m_pObjects[2]->SetPosition(glm::vec3(-urd_pos(dre), 0.0f, urd_pos(dre)));
+	m_pObjects[3]->SetPosition(glm::vec3(urd_pos(dre), 0.0f, urd_pos(dre)));
+
+	std::shared_ptr<CMesh> mesh = CMesh::CreateLineMesh();
+	mesh->CreateShaderVariables();
+
+	std::shared_ptr<CObject> obj = std::make_shared<CObject>();
+	std::shared_ptr<CMaterial> material = std::make_shared<CMaterial>();
+	material->BaseColor = glm::vec3(1,1,1);
+	material->RoughnessColor = 0.0f;
+	material->MetallicColor = 1.0f;
+
+	obj->SetMesh(mesh);
+	obj->SetMaterial(material);
+	obj->SetScale(glm::vec3(10.0f, 10.0f, 10.0f));
+	obj->SetPosition(glm::vec3(0, 0, -5));
+
+	m_pObjects.push_back(obj);
+
+	obj = std::make_shared<CObject>();
+	obj->SetMesh(mesh);
+	obj->SetMaterial(material);
+	obj->SetScale(glm::vec3(10.0f, 10.0f, 20.0f));
+	obj->SetPosition(glm::vec3(-10, 0, 0));
+	obj->RotationQuat(glm::radians(90.0f), glm::vec3(0, 1, 0));
+
+	m_pObjects.push_back(obj);
+}
+
+void CExamScene_8::RenderScene()
+{
+	glPolygonMode(GL_FRONT_AND_BACK, m_eFillmode);
+
+	GLuint s_Program = g_Renderer->TestShader;
+	glUseProgram(s_Program);
+
+
+	GLuint samplerULoc = glGetUniformLocation(s_Program, "u_IrradianceTexture");
+	glUniform1i(samplerULoc, 5);
+	m_tIrradianceTexture->BindShaderVariables(s_Program, GL_TEXTURE5);
+
+	samplerULoc = glGetUniformLocation(s_Program, "u_BrdfLUT");
+	glUniform1i(samplerULoc, 6);
+	m_tPreCoumputedBRDFLUTexture->BindShaderVariables(s_Program, GL_TEXTURE6);
+
+	samplerULoc = glGetUniformLocation(s_Program, "u_PreFilterMap");
+	glUniform1i(samplerULoc, 7);
+	m_tFilteringedEnvironmentTexture->BindShaderVariables(s_Program, GL_TEXTURE7);
+
+
+	m_pSunLight->BindShaderVariables(s_Program);
+	m_pMainCamera->BindShaderVariables(s_Program);
+
+
+
+	for (std::shared_ptr<CObject>& obj : m_pObjects) {
+		obj->BindShaderVariables(s_Program);
+
+		obj->Render();
+	}
+
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	s_Program = g_Renderer->SkyBoxShader;
+	glUseProgram(s_Program);
+
+	m_pSunLight->BindShaderVariables(s_Program);
+	m_pMainCamera->BindShaderVariables(s_Program);
+
+	glDepthFunc(GL_LEQUAL);
+
+	m_pSkyBoxObject->BindShaderVariables(s_Program);
+	m_pSkyBoxObject->Render();
+}
+
+void CExamScene_8::KeyInput(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 'a':
+		m_eFillmode = GL_FILL;
+		break;
+	case 'b':
+		m_eFillmode = GL_LINE;
+		break;
+	default:
+		break;
+	}
+}
+
+void CExamScene_8::MouseInput(int button, int state, int x, int y)
+{
+	static std::uniform_real_distribution<float> urd_color(0.0f, 1.0f);
+	static std::uniform_real_distribution<float> urd_scale(0.5f, 2.0f);
+
+	if (button == GLUT_LEFT && state == GLUT_DOWN) {
+		float mouse_X = x;
+		float mouse_Y = y;
+
+		glm::vec3 mousePos(x, y, 0.0f);
+		mousePos = glm::inverse(m_pMainCamera->m_mat4x4View) * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::inverse(viewPortMatrix) * glm::vec4(mousePos, 1.0f);
+		float scale = urd_scale(dre);
+		if (mousePos.x > 0.0f && mousePos.z < 0.0f) {
+			m_pObjects[0]->SetPosition(glm::vec3(mousePos.x * 5, 0.0f, mousePos.z * 5));
+			m_pObjects[0]->GetMaterial(0)->BaseColor = glm::vec3(urd_color(dre), urd_color(dre), urd_color(dre));
+			m_pObjects[0]->SetScale(glm::vec3(scale, 1.0f, scale));
+		}
+		if (mousePos.x < 0.0f && mousePos.z < 0.0f) {
+			m_pObjects[1]->SetPosition(glm::vec3(mousePos.x * 5, 0.0f, mousePos.z * 5));
+			m_pObjects[1]->GetMaterial(0)->BaseColor = glm::vec3(urd_color(dre), urd_color(dre), urd_color(dre));
+			m_pObjects[1]->SetScale(glm::vec3(scale, 1.0f, scale));
+		}
+		if (mousePos.x < 0.0f && mousePos.z  > 0.0f) {
+			m_pObjects[2]->SetPosition(glm::vec3(mousePos.x * 5, 0.0f, mousePos.z * 5));
+			m_pObjects[2]->GetMaterial(0)->BaseColor = glm::vec3(urd_color(dre), urd_color(dre), urd_color(dre));
+			m_pObjects[2]->SetScale(glm::vec3(scale, 1.0f, scale));
+		}
+		if (mousePos.x > 0.0f && mousePos.z > 0.0f) {
+			m_pObjects[3]->SetPosition(glm::vec3(mousePos.x * 5, 0.0f, mousePos.z * 5));
+			m_pObjects[3]->GetMaterial(0)->BaseColor = glm::vec3(urd_color(dre), urd_color(dre), urd_color(dre));
+			m_pObjects[3]->SetScale(glm::vec3(scale, 1.0f, scale));
+		}
+	}
+}
+
+void CExamScene_8::Update(float fElapsedTime)
+{
+}

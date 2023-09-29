@@ -26,3 +26,6 @@ enum class MOUSE_STATE {
 
 extern int g_WindowSizeX ;
 extern int g_WindowSizeY ;
+
+
+extern glm::mat4x4 viewPortMatrix;
