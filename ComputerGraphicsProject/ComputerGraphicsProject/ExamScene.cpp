@@ -1,6 +1,8 @@
 #include "ExamScene.h"
 #include "Mesh.h"
 #include "Renderer.h"
+#include "Timer.h"
+#include <cmath>
 
 CExamScene_7::CExamScene_7()
 {
@@ -537,4 +539,9 @@ void CExamScene_8::MouseInput(int button, int state, int x, int y)
 
 void CExamScene_8::Update(float fElapsedTime)
 {
+	/*float fTime = g_Timer->GetTotalTime();
+
+	m_pSunLight->m_vec3LightColor = glm::vec3(1, 1, 1);
+	m_pSunLight->m_vec3Direction = glm::normalize(glm::vec3(-1, -1, -1));
+	m_pSunLight->m_vec3Direction = glm::vec3(sin(fTime), cos(fTime), -1);*/
 }

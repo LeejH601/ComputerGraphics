@@ -3,11 +3,11 @@
 #include "Texture.h"
 
 #define MATERIAL_BASE_MAP			0x01
-#define MATERIAL_SPECULAR_MAP		0x02
+#define MATERIAL_ROUGHNESS_MAP		0x02
 #define MATERIAL_NORMAL_MAP			0x04
 #define MATERIAL_METALLIC_MAP		0x08
 #define MATERIAL_EMISSION_MAP		0x10
-#define MATERIAL_ROUGHNESS_MAP		0x20
+#define MATERIAL_SPECULAR_MAP		0x20
 
 
 class CMaterial
@@ -34,8 +34,12 @@ public:
 	// 텍스쳐 필요
 	std::shared_ptr<CTexture> m_pBaseTexture;
 	std::shared_ptr<CTexture> m_pNormalTexture;
+	std::shared_ptr<CTexture> m_pMetallicTexture;
+	std::shared_ptr<CTexture> m_pRoughnessTexture;
 
 	void SetBaseTexture(std::shared_ptr<CTexture>& pTexture);
 	void SetNormalTexture(std::shared_ptr<CTexture>& pTexture);
+	void SetMetallicTexture(std::shared_ptr<CTexture>& pTexture);
+	void SetRoughnessTexture(std::shared_ptr<CTexture>& pTexture);
 };
 

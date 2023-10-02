@@ -21,7 +21,7 @@ void main()
 	gl_Position = projectionTransform * viewTransform * worldTransform * vec4(v_Position, 1.0);
 	WorldPos = vec3(worldTransform * vec4(v_Position, 1.0));
 	Normal = mat3(transpose(inverse(worldTransform))) * v_Normal;
-	Texcoord0 = v_texcoord0;
+	Texcoord0 = v_texcoord0 * 5.0f;
 
 	mat3 mtxTangentToWorld;
 	mtxTangentToWorld[0] = normalize(worldTransform * vec4(v_Tangent, 0.0)).xyz;

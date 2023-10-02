@@ -17,6 +17,33 @@ void CScene::Init()
 	m_pLights.emplace_back();
 	m_pSunLight = &m_pLights.back();
 	m_pSunLight->m_vec3LightColor *= 2.0f;
+
+	memcpy(UBOLightData.lights, m_pLights.data(), sizeof(CLight) * m_pLights.size());
+	UBOLightData.nLights = m_pLights.size();
+
+	
+
+	glGenBuffers(1, &m_UBOLights);
+	glBindBuffer(GL_UNIFORM_BUFFER, m_UBOLights);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(UBO_LIGHT), &UBOLightData, GL_STATIC_DRAW);
+	if (glGetError())
+		std::cout << "error BufferData" << std::endl;
+
+	m_UBOLightIndex = glGetUniformBlockIndex(g_Renderer->TestShader, "Lights");
+	glUniformBlockBinding(g_Renderer->TestShader, m_UBOLightIndex, 0);
+	if (glGetError())
+		std::cout << "error glUniformBlockBinding" << std::endl;
+
+	glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_UBOLights, 0, sizeof(UBO_LIGHT));
+	if (glGetError())
+		std::cout << "error BufferRange" << std::endl;
+
+	
+	//glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_UBOLights, (GLintptr)0, (GLintptr)(sizeof(UBO_LIGHT)));
+	//glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+
+
 	m_sptrMainCamera = std::make_unique<CCamera>();
 
 	m_sptrMainCamera->RegenarationViewMatrix();
@@ -51,6 +78,22 @@ void CScene::KeyUpInput(unsigned char key, int x, int y)
 
 void CScene::SpecialKeyInput(int key, int x, int y)
 {
+}
+
+void CScene::BindShaderVariables(GLuint s_Program)
+{
+	memcpy(UBOLightData.lights, m_pLights.data(), sizeof(CLight) * m_pLights.size());
+	UBOLightData.nLights = m_pLights.size();
+
+	glBindBuffer(GL_UNIFORM_BUFFER, m_UBOLights);
+	//glBufferSubData(GL_UNIFORM_BUFFER, (GLintptr)0, (GLintptr)(sizeof(UBO_LIGHT)), &UBOLightData);
+	/*if (glGetError())
+		std::cout << "error glBufferSubData" << std::endl;*/
+
+	/*if(m_UBOLightIndex == -1)
+		m_UBOLightIndex = glGetUniformBlockIndex(s_Program, "Lights");*/
+
+	//glUniformBlockBinding(s_Program, 0, 0);
 }
 
 
@@ -319,16 +362,98 @@ void CPBR_TestScene::Init()
 	planeObj->LoadGeometryAndAnimationFromFile("./Objects/Plane.bin");
 	planeObj->GetMaterial(0)->RoughnessColor = 1.0f;
 
+	std::shared_ptr<CMaterial> testMaterial = std::make_shared<CMaterial>();
+	std::shared_ptr<CTexture> texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/rustediron2_basecolor.png", GL_LINEAR);
+	testMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/rustediron2_normal.png", GL_LINEAR);
+	testMaterial->SetNormalTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/rustediron2_metallic.png", GL_LINEAR);
+	testMaterial->SetMetallicTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/rustediron2_roughness.png", GL_LINEAR);
+	testMaterial->SetRoughnessTexture(texture);
+	g_Renderer->RegisterMaterial(testMaterial);
+
+	testMaterial = std::make_shared<CMaterial>();
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/Iron-Scuffed_basecolor.png", GL_LINEAR);
+	testMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/Iron-Scuffed_normal.png", GL_LINEAR);
+	testMaterial->SetNormalTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/Iron-Scuffed_metallic.png", GL_LINEAR);
+	testMaterial->SetMetallicTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/Iron-Scuffed_roughness.png", GL_LINEAR);
+	testMaterial->SetRoughnessTexture(texture);
+	g_Renderer->RegisterMaterial(testMaterial);
+
+	testMaterial = std::make_shared<CMaterial>();
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/older-padded-leather_albedo.png", GL_LINEAR);
+	testMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/older-padded-leather_normal-ogl.png", GL_LINEAR);
+	testMaterial->SetNormalTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/older-padded-leather_metallic.png", GL_LINEAR);
+	testMaterial->SetMetallicTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/older-padded-leather_roughness.png", GL_LINEAR);
+	testMaterial->SetRoughnessTexture(texture);
+	g_Renderer->RegisterMaterial(testMaterial);
+
+	testMaterial = std::make_shared<CMaterial>();
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/white-quilted-diamond_albedo.png", GL_LINEAR);
+	testMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/white-quilted-diamond_normal-ogl.png", GL_LINEAR);
+	testMaterial->SetNormalTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/white-quilted-diamond_metallic.png", GL_LINEAR);
+	testMaterial->SetMetallicTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/white-quilted-diamond_roughness.png", GL_LINEAR);
+	testMaterial->SetRoughnessTexture(texture);
+	g_Renderer->RegisterMaterial(testMaterial);
+
+	testMaterial = std::make_shared<CMaterial>();
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-albedo.png", GL_LINEAR);
+	testMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-metalness.png", GL_LINEAR);
+	testMaterial->SetNormalTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-normal-ogl.png", GL_LINEAR);
+	testMaterial->SetMetallicTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-roughness.png", GL_LINEAR);
+	testMaterial->SetRoughnessTexture(texture);
+	g_Renderer->RegisterMaterial(testMaterial);
+
 	m_pObjects.resize(10);
 	glm::vec3 basePos{ 0,1.5,0 };
-	for (int i = 0; i < 10; ++i) {
+	/*for (int i = 0; i < 10; ++i) {
 		m_pObjects[i] = std::make_shared<CObject>();
 		m_pObjects[i]->SetMesh(testSphereMesh);
 		m_pObjects[i]->SetPosition(basePos);
 		std::shared_ptr<CMaterial> Material = std::make_shared<CMaterial>();
 		Material->RoughnessColor = (0.1f + (i * 0.1f));
 		g_Renderer->RegisterMaterial(Material);
-		m_pObjects[i]->SetMaterial(Material);
+		m_pObjects[i]->SetMaterial(testMaterial);
+		basePos.x += 2.0f;
+	}*/
+	for (int i = 0; i < 10; ++i) {
+		m_pObjects[i] = std::make_shared<CObject>();
+		m_pObjects[i]->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+		m_pObjects[i]->SetMaterial(g_Renderer->GetMaterialFromIndex( i % 6));
+		m_pObjects[i]->SetPosition(basePos);
 		basePos.x += 2.0f;
 	}
 
@@ -342,6 +467,7 @@ void CPBR_TestScene::RenderScene()
 	GLuint s_Program = g_Renderer->TestShader;
 	glUseProgram(s_Program);
 
+	BindShaderVariables(s_Program);
 
 	GLuint samplerULoc = glGetUniformLocation(s_Program, "u_IrradianceTexture");
 	glUniform1i(samplerULoc, 5);
@@ -513,7 +639,7 @@ void CPBR_TestScene::Update(float fElapsedTime)
 	if (m_eMouseState == MOUSE_STATE::MOUSE_CILCK_RIGHT) {
 		if (abs(cxDelta) > 0.0001f || abs(cyDelta > 0.0001f)) {
 			glm::vec3 axis = glm::vec3(0, 1, 0);
-			glm::qua<float> qResult = glm::rotate(m_pMainCamera->m_vec4Rotation, glm::radians(cxDelta * 180.0f) * fElapsedTime, glm::normalize(axis));
+			glm::qua<float> qResult = glm::rotate(m_pMainCamera->m_vec4Rotation, glm::radians(-cxDelta * 180.0f) * fElapsedTime, glm::normalize(axis));
 			axis = glm::vec3(1, 0, 0);
 			qResult = glm::rotate(qResult, glm::radians(cyDelta * 180.0f) * fElapsedTime, glm::normalize(axis));
 

@@ -37,7 +37,7 @@ void CCamera::RegenarationViewMatrix()
 
 
 	//m_vec3Look = glm::normalize(m_vec3Look);
-	m_vec3Right = glm::cross(m_vec3Look, glm::vec3(0, 1, 0));
+	m_vec3Right = glm::cross(glm::vec3(0, 1, 0), m_vec3Look);
 	m_vec3Right = glm::normalize(m_vec3Right);
 	m_vec3Up = glm::cross(m_vec3Look, m_vec3Right);
 	m_vec3Up = glm::normalize(m_vec3Up);

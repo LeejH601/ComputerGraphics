@@ -135,18 +135,11 @@ int main(int argc, char** argv)
 		std::cout << "Renderer could not be initialized.. \n";
 	}
 
-	std::shared_ptr<CScene> scene = std::make_shared<CExamScene_8>();
+	std::shared_ptr<CScene> scene = std::make_shared<CPBR_TestScene>();
 	g_pSceneCache.push_back(scene);
 	g_currentScene = g_pSceneCache.back().get();
 	g_currentScene->Enter();
 	
-	/*for (int i = 0; i < 10; ++i) {
-		g_TestObjects[i] = std::make_shared<CObject>();
-		g_TestObjects[i]->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
-		g_TestObjects[i]->SetPosition(basePos);
-		basePos.x += 2.0f;
-	}*/
-
 	glutDisplayFunc(RenderScene);
 	glutIdleFunc(Idle);
 	glutKeyboardFunc(KeyInput);

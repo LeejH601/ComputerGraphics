@@ -5,8 +5,16 @@
 #include "Light.h"
 #include "Object.h"
 
+
+#define MAX_LIGHTS 8
+
 class CScene
 {
+	struct UBO_LIGHT
+	{
+		CLight lights[MAX_LIGHTS];
+		UINT nLights;
+	};
 protected:
 	CTexture m_tCubeMapTexture;
 	std::shared_ptr<CTexture> m_tIrradianceTexture;
@@ -19,12 +27,15 @@ protected:
 	CCamera* m_pMainCamera = nullptr;
 	std::vector<CLight> m_pLights;
 	CLight* m_pSunLight = nullptr;
+	GLuint m_UBOLights = -1;
+	GLuint m_UBOLightIndex = -1;
+	UBO_LIGHT UBOLightData;
 
 	MOUSE_STATE m_eMouseState = MOUSE_STATE::MOUSE_CILCK_NONE;
 	POINT m_ptOldMouseCursor{ 0,0 };
 	POINT m_ptCurrMouseCuror;
 
-	UINT DwDirection;
+	UINT DwDirection = 0;
 	float cxDelta, cyDelta;
 
 
@@ -41,6 +52,7 @@ public:
 	virtual void KeyInput(unsigned char key, int x, int y);
 	virtual void KeyUpInput(unsigned char key, int x, int y);
 	virtual void SpecialKeyInput(int key, int x, int y);
+	virtual void BindShaderVariables(GLuint s_Program);
 	virtual void Update(float fElapsedTime);
 
 	virtual void Enter();

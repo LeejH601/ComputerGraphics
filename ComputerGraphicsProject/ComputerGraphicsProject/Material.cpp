@@ -48,11 +48,17 @@ void CMaterial::BindShaderVariables(GLuint s_Program)
 
 		m_pNormalTexture->BindShaderVariables(s_Program, GL_TEXTURE1);
 	}
-	if (TextureMask & MATERIAL_SPECULAR_MAP) {
+	if (TextureMask & MATERIAL_ROUGHNESS_MAP) {
+		GLuint samplerULoc = glGetUniformLocation(s_Program, "u_RoughnessTexture");
+		glUniform1i(samplerULoc, 2);
 
+		m_pRoughnessTexture->BindShaderVariables(s_Program, GL_TEXTURE2);
 	}
 	if (TextureMask & MATERIAL_METALLIC_MAP) {
+		GLuint samplerULoc = glGetUniformLocation(s_Program, "u_MetallicTexture");
+		glUniform1i(samplerULoc, 3);
 
+		m_pMetallicTexture->BindShaderVariables(s_Program, GL_TEXTURE3);
 	}
 	if (TextureMask & MATERIAL_EMISSION_MAP) {
 
@@ -70,4 +76,16 @@ void CMaterial::SetNormalTexture(std::shared_ptr<CTexture>& pTexture)
 {
 	m_pNormalTexture = pTexture;
 	TextureMask |= MATERIAL_NORMAL_MAP;
+}
+
+void CMaterial::SetMetallicTexture(std::shared_ptr<CTexture>& pTexture)
+{
+	m_pMetallicTexture = pTexture;
+	TextureMask |= MATERIAL_METALLIC_MAP;
+}
+
+void CMaterial::SetRoughnessTexture(std::shared_ptr<CTexture>& pTexture)
+{
+	m_pRoughnessTexture = pTexture;
+	TextureMask |= MATERIAL_ROUGHNESS_MAP;
 }

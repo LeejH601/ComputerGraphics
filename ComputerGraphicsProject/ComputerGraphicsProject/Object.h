@@ -42,7 +42,7 @@ public:
 	virtual void BindShaderVariables(GLuint s_Program);
 
 	void SetMesh(std::shared_ptr<CMesh>& mesh) { m_pMesh = mesh; };
-	void SetMaterial(std::shared_ptr<CMaterial>& pMaterial);
+	void SetMaterial(std::shared_ptr<CMaterial> pMaterial);
 	void SetMaterial(int nMaterial, std::shared_ptr<CMaterial> pMaterial);
 	void SetChild(std::shared_ptr<CObject> child);
 

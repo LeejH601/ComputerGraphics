@@ -56,6 +56,7 @@ void CObject::LoadFrameHierarchyFromFile(CObject* pParent, FILE* pInFile, int* p
 			nTextures = ::ReadIntegerFromFile(pInFile);
 
 			int length = ::ReadStringFromFile(pInFile, pstrFrameName); //
+			m_strObjectName = pstrFrameName;
 		}
 		else if (!strcmp(pstrToken, "<Transform>:"))
 		{
@@ -315,6 +316,7 @@ void CObject::LoadGeometryAndAnimationFromFile(const char* pstrFileName)
 
 	pLoadedModel->pFilePath = pstrFileName;
 	pLoadedModel->m_pModelRootObject = std::make_shared<CObject>();
+	pLoadedModel->m_pModelRootObject->m_strObjectName = pstrFileName;
 
 	char pstrToken[64] = { '\0' };
 
@@ -449,7 +451,8 @@ void CObject::BindShaderVariables(GLuint s_Program)
 	}
 }
 
-void CObject::SetMaterial(std::shared_ptr<CMaterial>& pMaterial)
+
+void CObject::SetMaterial(std::shared_ptr<CMaterial> pMaterial)
 {
 	m_ppMaterials.push_back(pMaterial);
 }
