@@ -11,9 +11,11 @@
 class CMesh;
 class CObject
 {
+public:
 	glm::mat4x4 m_mat4x4Transform;
 	glm::mat4x4 m_mat4x4Wolrd;
 
+private:
 	glm::quat m_vec4Rotation{ 1,0,0,0 };
 	glm::vec3 m_vec3Position{ 0,0,0 };
 	glm::vec3 m_vec3Scale{ 1,1,1 };
@@ -49,6 +51,7 @@ public:
 	void SetPosition(glm::vec3 position);
 	glm::vec3 GetPosition() { return m_vec3Position; };
 	void SetScale(glm::vec3 scale);
+	void SetRotate(glm::quat rotate) { m_vec4Rotation = rotate; };
 	void RotationQuat(float radian, glm::vec3 axis);
 	void ReganerateTransform();
 	void UpdateTransform(glm::mat4x4* parent = nullptr);

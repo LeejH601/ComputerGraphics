@@ -204,11 +204,15 @@ void main()
 	BaseColor = pow(BaseColor, vec3(gamma) );
 
 
-	for(uint i = 0u; i < g_nLights;++i){
-		vec3 vToLight = -normalize(g_lights[i].vec3Direction);
-		vec3 lightColor = g_lights[i].vec3LightColor * 1.0f;
+		vec3 vToLight = -normalize(gMainLight.vec3Direction);
+		vec3 lightColor = gMainLight.vec3LightColor * 1.0f;
 		cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, SpecularColor, normalize(normalTBN), vToLight, lightColor, Fresnel, Roughness, MetallicColor);
-	}
+
+	//for(uint i = 0u; i < g_nLights;++i){
+		//vec3 vToLight = -normalize(g_lights[i].vec3Direction);
+		//vec3 lightColor = g_lights[i].vec3LightColor * 1.0f;
+		//cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, SpecularColor, normalize(normalTBN), vToLight, lightColor, Fresnel, Roughness, MetallicColor);
+	//}
 
 
 	float S = 1.0;

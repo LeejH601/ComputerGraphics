@@ -36,3 +36,20 @@ public:
 	virtual void MouseInput(int button, int state, int x, int y);
 	virtual void Update(float fElapsedTime);
 };
+
+class CExamScene_9 : public CExamScene_7
+{
+	float width = 1.67 * 5.0f, height = 1.0f * 5.0f;
+	int m_moveType = 0;
+	std::vector<glm::vec3> m_moveDir;
+	std::vector<float> m_collisionDelay;
+public:
+	CExamScene_9();
+	virtual ~CExamScene_9();
+
+	virtual void Init();
+	virtual void RenderScene();
+	virtual void KeyInput(unsigned char key, int x, int y);
+	virtual void MouseInput(int button, int state, int x, int y);
+	virtual void Update(float fElapsedTime);
+};

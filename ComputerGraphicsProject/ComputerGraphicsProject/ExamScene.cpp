@@ -104,7 +104,7 @@ void CExamScene_7::KeyInput(unsigned char key, int x, int y)
 
 			std::shared_ptr<CMesh> mesh;
 			if (key == 'p')
-				mesh = CMesh::CreateCubeMesh(0.1,0.1,0.1);
+				mesh = CMesh::CreateCubeMesh(0.1, 0.1, 0.1);
 			else if (key == 'l')
 				mesh = CMesh::CreateLineMesh();
 			else if (key == 't')
@@ -116,8 +116,8 @@ void CExamScene_7::KeyInput(unsigned char key, int x, int y)
 			obj->SetMesh(mesh);
 			obj->SetMaterial(material);
 			obj->SetPosition(glm::vec3(urd_pos(dre), 0.0f, urd_pos(dre)));
-			
-			
+
+
 			m_pObjects.push_back(obj);
 		}
 		break;
@@ -419,7 +419,7 @@ void CExamScene_8::Init()
 
 	std::shared_ptr<CObject> obj = std::make_shared<CObject>();
 	std::shared_ptr<CMaterial> material = std::make_shared<CMaterial>();
-	material->BaseColor = glm::vec3(1,1,1);
+	material->BaseColor = glm::vec3(1, 1, 1);
 	material->RoughnessColor = 0.0f;
 	material->MetallicColor = 1.0f;
 
@@ -544,4 +544,194 @@ void CExamScene_8::Update(float fElapsedTime)
 	m_pSunLight->m_vec3LightColor = glm::vec3(1, 1, 1);
 	m_pSunLight->m_vec3Direction = glm::normalize(glm::vec3(-1, -1, -1));
 	m_pSunLight->m_vec3Direction = glm::vec3(sin(fTime), cos(fTime), -1);*/
+}
+
+CExamScene_9::CExamScene_9()
+{
+	Init();
+}
+
+CExamScene_9::~CExamScene_9()
+{
+}
+
+void CExamScene_9::Init()
+{
+	CExamScene_7::Init();
+
+}
+
+void CExamScene_9::RenderScene()
+{
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	GLuint s_Program = g_Renderer->TestShader;
+	glUseProgram(s_Program);
+
+
+	GLuint samplerULoc = glGetUniformLocation(s_Program, "u_IrradianceTexture");
+	glUniform1i(samplerULoc, 5);
+	m_tIrradianceTexture->BindShaderVariables(s_Program, GL_TEXTURE5);
+
+	samplerULoc = glGetUniformLocation(s_Program, "u_BrdfLUT");
+	glUniform1i(samplerULoc, 6);
+	m_tPreCoumputedBRDFLUTexture->BindShaderVariables(s_Program, GL_TEXTURE6);
+
+	samplerULoc = glGetUniformLocation(s_Program, "u_PreFilterMap");
+	glUniform1i(samplerULoc, 7);
+	m_tFilteringedEnvironmentTexture->BindShaderVariables(s_Program, GL_TEXTURE7);
+
+
+	m_pSunLight->BindShaderVariables(s_Program);
+	m_pMainCamera->BindShaderVariables(s_Program);
+
+
+
+	for (std::shared_ptr<CObject>& obj : m_pObjects) {
+		obj->BindShaderVariables(s_Program);
+
+		obj->Render();
+	}
+
+
+	s_Program = g_Renderer->SkyBoxShader;
+	glUseProgram(s_Program);
+
+	m_pSunLight->BindShaderVariables(s_Program);
+	m_pMainCamera->BindShaderVariables(s_Program);
+
+	glDepthFunc(GL_LEQUAL);
+
+	m_pSkyBoxObject->BindShaderVariables(s_Program);
+	m_pSkyBoxObject->Render();
+}
+
+void CExamScene_9::KeyInput(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case '1':
+		for (int i = 0; i < m_moveDir.size(); ++i)
+			m_moveDir[i] = glm::normalize(glm::vec3(-1.0, 0.0, -1.0f));
+		m_moveType = 1;
+		break;
+	case '2':
+		for (int i = 0; i < m_moveDir.size(); ++i) {
+			glm::quat rotate{ 1,0,0,0 };
+			rotate = glm::rotate(rotate, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)); // 오른쪽을 보게
+			m_pObjects[i]->SetRotate(rotate);
+			m_moveDir[i] = glm::normalize(glm::vec3(-1.0f, 0.0f, 0.0f));
+		}
+		m_moveType = 2;
+		break;
+	default:
+		break;
+	}
+}
+
+void CExamScene_9::MouseInput(int button, int state, int x, int y)
+{
+	static std::uniform_real_distribution<float> urd_color(0.0f, 1.0f);
+	static std::uniform_real_distribution<float> urd_scale(0.5f, 2.0f);
+
+	if (button == GLUT_LEFT && state == GLUT_DOWN) {
+		if (m_pObjects.size() < 4) {
+			float mouse_X = x;
+			float mouse_Y = y;
+
+			glm::vec3 mousePos(x, y, 0.0f);
+			mousePos = glm::inverse(m_pMainCamera->m_mat4x4View) * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::inverse(viewPortMatrix) * glm::vec4(mousePos, 1.0f);
+
+			std::shared_ptr<CObject> obj = std::make_shared<CObject>();
+			std::shared_ptr<CMesh> mesh = CMesh::CreateTriangleMesh();
+			mesh->CreateShaderVariables();
+			std::shared_ptr<CMaterial> material = std::make_shared<CMaterial>();
+			material->BaseColor = glm::vec3(urd_color(dre), urd_color(dre), urd_color(dre));
+			obj->SetMesh(mesh);
+			obj->SetPosition(glm::vec3(mousePos.x * 5, 0.0f, mousePos.z * 5));
+			obj->SetMaterial(material);
+			obj->RotationQuat(glm::radians(180.f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+			m_pObjects.emplace_back(obj);
+			m_moveDir.emplace_back(glm::vec3(0));
+			m_collisionDelay.emplace_back(0.5f);
+		}
+	}
+}
+
+void CExamScene_9::Update(float fElapsedTime)
+{
+	auto checkInside = [&](glm::vec4& rect) {
+		if (rect.x < -width)
+			return false;
+		if (rect.y < -height)
+			return false;
+		if (rect.z > width)
+			return false;
+		if (rect.w > height)
+			return false;
+		return true;
+	};
+	static glm::vec4 rectColide{- 0.5, -1.0f, 0.5f, 1.0f  };
+	for (int i = 0; i < m_pObjects.size(); ++i) {
+		CObject* obj = m_pObjects[i].get();
+		if (m_moveType)
+			obj->SetPosition(obj->GetPosition() + m_moveDir[i] * fElapsedTime * 5.0f);
+		switch (m_moveType)
+		{
+		case 1:
+			glm::vec4 point1{ rectColide.x, 0.0f, rectColide.y,1.0f };
+			point1 = obj->m_mat4x4Wolrd * point1;
+			glm::vec4 point2{ rectColide.z, 0.0f,  rectColide.w, 1.0f };
+			point2 = obj->m_mat4x4Wolrd * point2;
+			
+			glm::vec3 pos = obj->GetPosition();
+			glm::vec4 rect{ point2.x, point2.z, point1.x , point1.z};
+			//rect += rectColide;
+			m_collisionDelay[i] -= fElapsedTime;
+			if (m_collisionDelay[i] < 0.0f) {
+				if (rect.x < -width) {
+					m_moveDir[i].x *= -1;
+					m_collisionDelay[i] = 0.5f;
+				}
+				if (rect.y < -height) {
+					m_moveDir[i].z *= -1;
+					m_collisionDelay[i] = 0.5f;
+				}
+				if (rect.z > width) {
+					m_moveDir[i].x *= -1;
+					m_collisionDelay[i] = 0.5f;
+				}
+				if (rect.w > height) {
+					m_moveDir[i].z *= -1;
+					m_collisionDelay[i] = 0.5f;
+				}
+			}
+			std::cout << rect.x << " " << rect.y << " " << rect.z << " " << rect.w << std::endl;
+			break;
+		case 2:
+			glm::vec4 point1{ rectColide.x, 0.0f, rectColide.y,1.0f };
+			point1 = obj->m_mat4x4Wolrd * point1;
+			glm::vec4 point2{ rectColide.z, 0.0f,  rectColide.w, 1.0f };
+			point2 = obj->m_mat4x4Wolrd * point2;
+
+			glm::vec4 rect{ point2.x, point2.z, point1.x , point1.z };
+
+			m_collisionDelay[i] -= fElapsedTime;
+			if (checkInside(rect) && m_collisionDelay[i] < 0.0f) {
+				if (rect.x < -width) {
+					m_moveDir[i].x *= -1;
+					m_collisionDelay[i] = 0.5f;
+				}
+				if (rect.z > width) {
+					m_moveDir[i].x *= -1;
+					m_collisionDelay[i] = 0.5f;
+				}
+			}
+			break;
+		default:
+			break;
+		}
+	
+	}
 }
