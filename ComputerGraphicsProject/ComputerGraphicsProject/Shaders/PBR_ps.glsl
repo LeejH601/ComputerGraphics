@@ -29,11 +29,11 @@ struct Light
 uniform int gTextureMask;
 
 uniform Light gMainLight;	
-layout(std140) uniform Lights
-{
-	Light g_lights[MAX_LIGHTS];
-	uint g_nLights;
-};
+//layout(std140) uniform Lights
+//{
+//	Light g_lights[MAX_LIGHTS];
+//	uint g_nLights;
+//};
 uniform vec3 CameraPosition;
 
 uniform vec3 gBaseColor;

@@ -680,13 +680,14 @@ void CExamScene_9::Update(float fElapsedTime)
 		switch (m_moveType)
 		{
 		case 1:
+		{
 			glm::vec4 point1{ rectColide.x, 0.0f, rectColide.y,1.0f };
 			point1 = obj->m_mat4x4Wolrd * point1;
 			glm::vec4 point2{ rectColide.z, 0.0f,  rectColide.w, 1.0f };
 			point2 = obj->m_mat4x4Wolrd * point2;
-			
+
 			glm::vec3 pos = obj->GetPosition();
-			glm::vec4 rect{ point2.x, point2.z, point1.x , point1.z};
+			glm::vec4 rect{ point2.x, point2.z, point1.x , point1.z };
 			//rect += rectColide;
 			m_collisionDelay[i] -= fElapsedTime;
 			if (m_collisionDelay[i] < 0.0f) {
@@ -708,8 +709,10 @@ void CExamScene_9::Update(float fElapsedTime)
 				}
 			}
 			std::cout << rect.x << " " << rect.y << " " << rect.z << " " << rect.w << std::endl;
+		}
 			break;
 		case 2:
+		{
 			glm::vec4 point1{ rectColide.x, 0.0f, rectColide.y,1.0f };
 			point1 = obj->m_mat4x4Wolrd * point1;
 			glm::vec4 point2{ rectColide.z, 0.0f,  rectColide.w, 1.0f };
@@ -728,6 +731,7 @@ void CExamScene_9::Update(float fElapsedTime)
 					m_collisionDelay[i] = 0.5f;
 				}
 			}
+		}
 			break;
 		default:
 			break;
