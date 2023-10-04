@@ -14,30 +14,56 @@ CScene::~CScene()
 
 void CScene::Init()
 {
+	m_pLights.reserve(MAX_LIGHTS);
 	m_pLights.emplace_back();
-	m_pSunLight = &m_pLights.back();
+	m_pSunLight = &m_pLights[0];
 	m_pSunLight->m_vec3LightColor *= 2.0f;
 
 	memcpy(UBOLightData.lights, m_pLights.data(), sizeof(CLight) * m_pLights.size());
 	UBOLightData.nLights = m_pLights.size();
-
 	
+
+
+	GLuint sizeVec = sizeof(glm::vec3);
+	GLuint size = sizeof(UBO_LIGHT);
+	GLuint lightSize = sizeof(CLight);
+	std::cout << lightSize << std::endl;
 
 	glGenBuffers(1, &m_UBOLights);
 	glBindBuffer(GL_UNIFORM_BUFFER, m_UBOLights);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(UBO_LIGHT), &UBOLightData, GL_STATIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, size, NULL, GL_STATIC_DRAW);
 	if (glGetError())
 		std::cout << "error BufferData" << std::endl;
 
-	m_UBOLightIndex = glGetUniformBlockIndex(g_Renderer->TestShader, "Lights");
-	glUniformBlockBinding(g_Renderer->TestShader, m_UBOLightIndex, 0);
-	if (glGetError())
-		std::cout << "error glUniformBlockBinding" << std::endl;
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_UBOLights);
 
-	glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_UBOLights, 0, sizeof(UBO_LIGHT));
+	glBindBuffer(GL_UNIFORM_BUFFER, m_UBOLights);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, lightSize * MAX_LIGHTS, UBOLightData.lights);
 	if (glGetError())
-		std::cout << "error BufferRange" << std::endl;
+		std::cout << "error BufferData" << std::endl;
+	glBufferSubData(GL_UNIFORM_BUFFER, lightSize * MAX_LIGHTS, sizeof(UINT), &UBOLightData.nLights);
+	if (glGetError())
+		std::cout << "error BufferData" << std::endl;
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
+	//glGetActiveUniformBlockiv(g_Renderer->TestShader, m_UBOLightIndex, GL_UNIFORM_BLOCK_DATA_SIZE, )
+
+	//glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	////glBindBufferBase(GL_UNIFORM_BUFFER, m_UBOLightIndex, m_UBOLights);
+	//
+	//glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_UBOLights, 0, size);
+	//if (glGetError())
+	//	std::cout << "error glBindBufferRange" << std::endl;
+
+	//glBindBuffer(GL_UNIFORM_BUFFER, m_UBOLights);
+	//if (glGetError())
+	//	std::cout << "error glBindBuffer" << std::endl;
+	//glBufferSubData(GL_UNIFORM_BUFFER, 0, size, &UBOLightData);
+	//if (glGetError())
+	//	std::cout << "error glBindBuffer" << std::endl;
+	//glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	//
+	
 	
 	//glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_UBOLights, (GLintptr)0, (GLintptr)(sizeof(UBO_LIGHT)));
 	//glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -85,15 +111,11 @@ void CScene::BindShaderVariables(GLuint s_Program)
 	memcpy(UBOLightData.lights, m_pLights.data(), sizeof(CLight) * m_pLights.size());
 	UBOLightData.nLights = m_pLights.size();
 
-	glBindBuffer(GL_UNIFORM_BUFFER, m_UBOLights);
-	//glBufferSubData(GL_UNIFORM_BUFFER, (GLintptr)0, (GLintptr)(sizeof(UBO_LIGHT)), &UBOLightData);
-	/*if (glGetError())
-		std::cout << "error glBufferSubData" << std::endl;*/
 
-	/*if(m_UBOLightIndex == -1)
-		m_UBOLightIndex = glGetUniformBlockIndex(s_Program, "Lights");*/
-
-	//glUniformBlockBinding(s_Program, 0, 0);
+	glBindBuffer(GL_UNIFORM_BUFFER, m_UBOLights); 
+	GLuint offset = 0u;
+	glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(UBOLightData), &UBOLightData);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 
@@ -123,17 +145,29 @@ CPBR_TestScene::~CPBR_TestScene()
 void CPBR_TestScene::Init()
 {
 	CScene::Init();
+
+	CLight light;
+	light.m_vec3Direction = glm::vec3(0, -1, 0);
+	m_pLights.emplace_back(light);
+
 	// HDRI 로부터 큐브 환경 맵 생성
 	GLuint cubeFBO, cubeRBO;
 	GLuint cubeMapWidth = 1024, cubeMapHeight = 1024;
 	glGenFramebuffers(1, &cubeFBO);
 	glGenRenderbuffers(1, &cubeRBO);
 
-	glBindBuffer(GL_FRAMEBUFFER, cubeFBO);
-	glBindRenderbuffer(GL_RENDERBUFFER, cubeRBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, cubeRBO, cubeMapWidth, cubeMapHeight);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, cubeRBO);
+	
 
+	glBindFramebuffer(GL_FRAMEBUFFER, cubeFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, cubeRBO);
+	
+	glRenderbufferStorage(GL_RENDERBUFFER, cubeRBO, cubeMapWidth, cubeMapHeight);
+	/*GLenum error = glGetError();
+	if (error)
+		std::cout << "error glBindBuffer" << std::endl;*/
+	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, cubeRBO);
+	
+	
 	GLuint& cubeMapID = m_tCubeMapTexture.m_TextureID;
 	glGenTextures(1, &cubeMapID);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMapID);
@@ -156,7 +190,7 @@ void CPBR_TestScene::Init()
 		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
 		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
 	};
-
+	
 	GLuint MakeCubeMapShader = g_Renderer->MakeCubeMapShader;
 	glUseProgram(MakeCubeMapShader); // 셰이더 설정
 
@@ -318,6 +352,7 @@ void CPBR_TestScene::Init()
 
 	GLuint preComputingBRDFShader = g_Renderer->preComputingBRDFShader;
 	glUseProgram(preComputingBRDFShader);
+	
 
 	glBindFramebuffer(GL_FRAMEBUFFER, cubeFBO);
 	glBindRenderbuffer(GL_RENDERBUFFER, cubeRBO);
@@ -437,7 +472,8 @@ void CPBR_TestScene::Init()
 	testMaterial->SetRoughnessTexture(texture);
 	g_Renderer->RegisterMaterial(testMaterial);
 
-	m_pObjects.resize(10);
+	int nObj = 1;
+	m_pObjects.resize(nObj);
 	glm::vec3 basePos{ 0,1.5,0 };
 	/*for (int i = 0; i < 10; ++i) {
 		m_pObjects[i] = std::make_shared<CObject>();
@@ -449,7 +485,7 @@ void CPBR_TestScene::Init()
 		m_pObjects[i]->SetMaterial(testMaterial);
 		basePos.x += 2.0f;
 	}*/
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 0; i < nObj; ++i) {
 		m_pObjects[i] = std::make_shared<CObject>();
 		m_pObjects[i]->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
 		m_pObjects[i]->SetMaterial(g_Renderer->GetMaterialFromIndex( i % 6));
@@ -467,6 +503,7 @@ void CPBR_TestScene::RenderScene()
 	GLuint s_Program = g_Renderer->TestShader;
 	glUseProgram(s_Program);
 
+	
 	BindShaderVariables(s_Program);
 
 	GLuint samplerULoc = glGetUniformLocation(s_Program, "u_IrradianceTexture");
@@ -482,7 +519,7 @@ void CPBR_TestScene::RenderScene()
 	m_tFilteringedEnvironmentTexture->BindShaderVariables(s_Program, GL_TEXTURE7);
 
 
-	m_pSunLight->BindShaderVariables(s_Program);
+	//m_pSunLight->BindShaderVariables(s_Program);
 	m_pMainCamera->BindShaderVariables(s_Program);
 
 
@@ -496,7 +533,7 @@ void CPBR_TestScene::RenderScene()
 	s_Program = g_Renderer->SkyBoxShader;
 	glUseProgram(s_Program);
 
-	m_pSunLight->BindShaderVariables(s_Program);
+	//m_pSunLight->BindShaderVariables(s_Program);
 	m_pMainCamera->BindShaderVariables(s_Program);
 
 	glDepthFunc(GL_LEQUAL);

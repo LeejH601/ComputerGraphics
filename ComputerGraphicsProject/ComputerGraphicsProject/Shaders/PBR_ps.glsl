@@ -1,4 +1,4 @@
-#version 330 core
+#version 440 core
 
 #define MATERIAL_BASE_MAP			0x01
 #define MATERIAL_ROUGHNESS_MAP		0x02
@@ -26,14 +26,16 @@ struct Light
 	uint nLightType;
 };
 
+layout(std140, binding = 0) uniform Lights
+{
+	Light g_lights[MAX_LIGHTS];
+	uint g_nLights;
+};
+
 uniform int gTextureMask;
 
 uniform Light gMainLight;	
-//layout(std140) uniform Lights
-//{
-//	Light g_lights[MAX_LIGHTS];
-//	uint g_nLights;
-//};
+
 uniform vec3 CameraPosition;
 
 uniform vec3 gBaseColor;
@@ -204,15 +206,15 @@ void main()
 	BaseColor = pow(BaseColor, vec3(gamma) );
 
 
-		vec3 vToLight = -normalize(gMainLight.vec3Direction);
-		vec3 lightColor = gMainLight.vec3LightColor * 1.0f;
-		cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, SpecularColor, normalize(normalTBN), vToLight, lightColor, Fresnel, Roughness, MetallicColor);
+//		vec3 vToLight = -normalize(gMainLight.vec3Direction);
+//		vec3 lightColor = gMainLight.vec3LightColor * 1.0f;
+//		cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, SpecularColor, normalize(normalTBN), vToLight, lightColor, Fresnel, Roughness, MetallicColor);
 
-	//for(uint i = 0u; i < g_nLights;++i){
-		//vec3 vToLight = -normalize(g_lights[i].vec3Direction);
-		//vec3 lightColor = g_lights[i].vec3LightColor * 1.0f;
-		//cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, SpecularColor, normalize(normalTBN), vToLight, lightColor, Fresnel, Roughness, MetallicColor);
-	//}
+	for(uint i = 0u; i < g_nLights;++i){
+		vec3 vToLight = -normalize(g_lights[i].vec3Direction);
+		vec3 lightColor = g_lights[i].vec3LightColor * 1.0f;
+		cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, SpecularColor, normalize(normalTBN), vToLight, lightColor, Fresnel, Roughness, MetallicColor);
+	}
 
 
 	float S = 1.0;

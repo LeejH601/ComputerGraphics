@@ -34,13 +34,19 @@ std::vector<std::shared_ptr<CScene>> g_pSceneCache;
 
 void RenderScene(void)
 {
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
 	glEnable(GL_DEPTH_TEST);
+
 	//glClear(GL_DEPTH_BUFFER_BIT);
 	//g_Renderer->DrawAlphaClear();
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	
 	glCullFace(GL_BACK);
+	
 	glPolygonMode(GL_FRONT, GL_FILL);
+
 	//glPolygonMode(GL_BACK, GL_LINE);
 
 	
@@ -91,6 +97,11 @@ void KeyInput(unsigned char key, int x, int y)
 		g_currentScene = g_pSceneCache[0].get();
 		g_currentScene->Enter();
 		break;
+	case '2':
+		g_currentScene->Exit();
+		g_currentScene = g_pSceneCache[1].get();
+		g_currentScene->Enter();
+		break;
 	default:
 		break;
 	}
@@ -139,6 +150,9 @@ int main(int argc, char** argv)
 	g_pSceneCache.push_back(scene);
 	g_currentScene = g_pSceneCache.back().get();
 	g_currentScene->Enter();
+
+	/*scene = std::make_shared<CExamScene_8>();
+	g_pSceneCache.push_back(scene);*/
 	
 	glutDisplayFunc(RenderScene);
 	glutIdleFunc(Idle);

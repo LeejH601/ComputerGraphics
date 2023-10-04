@@ -62,7 +62,6 @@ void CExamScene_7::RenderScene()
 	m_tFilteringedEnvironmentTexture->BindShaderVariables(s_Program, GL_TEXTURE7);
 
 
-	m_pSunLight->BindShaderVariables(s_Program);
 	m_pMainCamera->BindShaderVariables(s_Program);
 
 
@@ -76,7 +75,6 @@ void CExamScene_7::RenderScene()
 	s_Program = g_Renderer->SkyBoxShader;
 	glUseProgram(s_Program);
 
-	m_pSunLight->BindShaderVariables(s_Program);
 	m_pMainCamera->BindShaderVariables(s_Program);
 
 	glDepthFunc(GL_LEQUAL);
@@ -122,13 +120,13 @@ void CExamScene_7::KeyInput(unsigned char key, int x, int y)
 		}
 		break;
 	case 'w':
-		m_AimbientMoveDir = glm::vec3(0.0f, 0.0f, -1.0f);
+		m_AimbientMoveDir = glm::vec3(0.0f, 0.0f, 1.0f);
 		break;
 	case 'a':
 		m_AimbientMoveDir = glm::vec3(-1.0f, 0.0f, 0.0f);
 		break;
 	case 's':
-		m_AimbientMoveDir = glm::vec3(0.0f, 0.0f, 1.0f);
+		m_AimbientMoveDir = glm::vec3(0.0f, 0.0f, -1.0f);
 		break;
 	case 'd':
 		m_AimbientMoveDir = glm::vec3(1.0f, 0.0f, 0.0f);
@@ -461,7 +459,6 @@ void CExamScene_8::RenderScene()
 	m_tFilteringedEnvironmentTexture->BindShaderVariables(s_Program, GL_TEXTURE7);
 
 
-	m_pSunLight->BindShaderVariables(s_Program);
 	m_pMainCamera->BindShaderVariables(s_Program);
 
 
@@ -478,7 +475,6 @@ void CExamScene_8::RenderScene()
 	s_Program = g_Renderer->SkyBoxShader;
 	glUseProgram(s_Program);
 
-	m_pSunLight->BindShaderVariables(s_Program);
 	m_pMainCamera->BindShaderVariables(s_Program);
 
 	glDepthFunc(GL_LEQUAL);
@@ -582,7 +578,6 @@ void CExamScene_9::RenderScene()
 	m_tFilteringedEnvironmentTexture->BindShaderVariables(s_Program, GL_TEXTURE7);
 
 
-	m_pSunLight->BindShaderVariables(s_Program);
 	m_pMainCamera->BindShaderVariables(s_Program);
 
 
@@ -597,7 +592,6 @@ void CExamScene_9::RenderScene()
 	s_Program = g_Renderer->SkyBoxShader;
 	glUseProgram(s_Program);
 
-	m_pSunLight->BindShaderVariables(s_Program);
 	m_pMainCamera->BindShaderVariables(s_Program);
 
 	glDepthFunc(GL_LEQUAL);
