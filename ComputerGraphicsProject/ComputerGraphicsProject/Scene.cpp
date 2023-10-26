@@ -369,7 +369,26 @@ void CPBR_TestScene::Init()
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	// ¼¨µµ¿ì ¸Ê ÅØ½ºÃÄ »ý¼º
+	glGenFramebuffers(1, &m_FBOShadowDepth);
 
+	m_nShadowMapWidth = 1024; m_nShadowMapHeight = 1024;
+
+	m_tShadowDepthTexture = std::make_shared<CTexture>();
+	GLuint& shadowDepthMap = m_tShadowDepthTexture->m_TextureID;
+	glGenTextures(1, &shadowDepthMap);
+	glBindTexture(GL_TEXTURE_2D, shadowDepthMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_nShadowMapWidth, m_nShadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBOShadowDepth);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowDepthMap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
 	std::shared_ptr<CMesh> testCubeMesh;
@@ -377,21 +396,29 @@ void CPBR_TestScene::Init()
 	testCubeMesh->CreateShaderVariables();
 	g_Renderer->RegisterMesh(testCubeMesh);
 
-	std::shared_ptr<CMesh> testSphereMesh;
-	testSphereMesh = CMesh::CreateSphereMesh(20, 20);
-	testSphereMesh->CreateShaderVariables();
-	g_Renderer->RegisterMesh(testSphereMesh);
+	
 
 	m_pSkyBoxObject = std::make_shared<CObject>();
 
 	std::shared_ptr<CMaterial> pMaterial = std::make_shared<CMaterial>();
-	std::shared_ptr<CMaterial> pMaterial2 = std::make_shared<CMaterial>();
 	pTexture = m_tFilteringedEnvironmentTexture;
 	pMaterial->SetBaseTexture(pTexture);
 	g_Renderer->RegisterMaterial(pMaterial);
 
 	m_pSkyBoxObject->SetMesh(testCubeMesh);
 	m_pSkyBoxObject->SetMaterial(pMaterial);
+
+	BuildObjects();
+
+	m_bInitialized = true;
+}
+
+void CPBR_TestScene::BuildObjects()
+{
+	std::shared_ptr<CMesh> testSphereMesh;
+	testSphereMesh = CMesh::CreateSphereMesh(20, 20);
+	testSphereMesh->CreateShaderVariables();
+	g_Renderer->RegisterMesh(testSphereMesh);
 
 	std::shared_ptr<CObject> planeObj = std::make_shared<CObject>();
 	planeObj->LoadGeometryAndAnimationFromFile("./Objects/Plane.bin");
@@ -488,20 +515,46 @@ void CPBR_TestScene::Init()
 	for (int i = 0; i < nObj; ++i) {
 		m_pObjects[i] = std::make_shared<CObject>();
 		m_pObjects[i]->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
-		m_pObjects[i]->SetMaterial(g_Renderer->GetMaterialFromIndex( i % 6));
+		m_pObjects[i]->SetMaterial(g_Renderer->GetMaterialFromIndex(i % 6));
 		m_pObjects[i]->SetPosition(basePos);
 		basePos.x += 2.0f;
 	}
 
 	m_pObjects.push_back(planeObj);
-
-	m_bInitialized = true;
 }
 
 void CPBR_TestScene::RenderScene()
 {
 	GLuint s_Program = g_Renderer->TestShader;
 	glUseProgram(s_Program);
+
+
+
+	glViewport(0, 0, m_nShadowMapWidth, m_nShadowMapHeight);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBOShadowDepth);
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	// Render ShadowDepthMap
+	CShadowCamera shadowCamera;
+	//shadowCamera.GenerateProjectionMatrix(glm::radians(90.0f), (float)g_WindowSizeX / (float)g_WindowSizeY, 0.1f, 50.0f);
+	float fNear = 1.0f, fFar = 7.5f;
+	shadowCamera.m_mat4x4Projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, fNear, fFar);
+	shadowCamera.SetPosision(m_pSunLight->m_vec3Position);
+	shadowCamera.m_mat4x4View = glm::lookAt(m_pSunLight->m_vec3Position, m_pSunLight->m_vec3Direction, glm::vec3(0, 1, 0));
+	shadowCamera.BindShaderVariables(s_Program);
+	
+
+	for (std::shared_ptr<CObject>& obj : m_pObjects) {
+		obj->BindShaderVariables(s_Program);
+
+		obj->UpdateTransform(nullptr);
+		obj->Render();
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+	
 
 	
 	BindShaderVariables(s_Program);
@@ -519,6 +572,9 @@ void CPBR_TestScene::RenderScene()
 	m_tFilteringedEnvironmentTexture->BindShaderVariables(s_Program, GL_TEXTURE7);
 
 
+	
+
+
 	//m_pSunLight->BindShaderVariables(s_Program);
 	m_pMainCamera->BindShaderVariables(s_Program);
 
@@ -527,6 +583,7 @@ void CPBR_TestScene::RenderScene()
 	for (std::shared_ptr<CObject>& obj : m_pObjects) {
 		obj->BindShaderVariables(s_Program);
 
+		obj->UpdateTransform(nullptr);
 		obj->Render();
 	}
 
@@ -536,11 +593,13 @@ void CPBR_TestScene::RenderScene()
 	//m_pSunLight->BindShaderVariables(s_Program);
 	m_pMainCamera->BindShaderVariables(s_Program);
 
+
 	glDepthFunc(GL_LEQUAL);
 
 	m_pSkyBoxObject->BindShaderVariables(s_Program);
+	m_pSkyBoxObject->UpdateTransform(nullptr);
 	m_pSkyBoxObject->Render();
-
+	
 }
 
 void CPBR_TestScene::MouseInput(int button, int state, int x, int y)
@@ -692,6 +751,7 @@ void CPBR_TestScene::Update(float fElapsedTime)
 	m_pSunLight->m_vec3LightColor = glm::vec3(1, 1, 1);
 	m_pSunLight->m_vec3Direction = glm::normalize(glm::vec3(-1, -1, -1));
 	m_pSunLight->m_vec3Direction = glm::vec3(sin(fTime), cos(fTime), -1);
+	m_pSunLight->m_vec3Position = (-m_pSunLight->m_vec3Direction) * 10.0f;
 
 
 }

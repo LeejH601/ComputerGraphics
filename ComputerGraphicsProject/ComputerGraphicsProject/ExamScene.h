@@ -53,3 +53,25 @@ public:
 	virtual void MouseInput(int button, int state, int x, int y);
 	virtual void Update(float fElapsedTime);
 };
+
+
+class CExamScene_18 : public CPBR_TestScene
+{
+public:
+	CExamScene_18();
+	virtual ~CExamScene_18();
+
+	virtual void Init();
+	//virtual void RenderScene();
+	virtual void BuildObjects();
+	virtual void Update(float fElapsedTime);
+};
+
+class CSPScene : public CPBR_TestScene
+{
+public:
+	CSPScene();
+	virtual ~CSPScene();
+
+	virtual void Update(float fElapsedTime);
+};

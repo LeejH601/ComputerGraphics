@@ -22,7 +22,7 @@ public:
 	CCamera();
 	virtual ~CCamera();
 
-	void RegenarationViewMatrix();
+	virtual void RegenarationViewMatrix();
 	void GenerateProjectionMatrix(float fov, float aspect, float zNear, float zFar);
 
 	virtual void BindShaderVariables(GLuint s_Program);
@@ -35,3 +35,8 @@ public:
 	void SetPosision(glm::vec3 pos) { m_vec3Position = pos; };
 };
 
+class CShadowCamera : public CCamera
+{
+public:
+	virtual void BindShaderVariables(GLuint s_Program);
+};

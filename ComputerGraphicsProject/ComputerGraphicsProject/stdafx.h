@@ -22,6 +22,7 @@
 extern int ReadIntegerFromFile(FILE* pInFile);
 extern float ReadFloatFromFile(FILE* pInFile);
 extern BYTE ReadStringFromFile(FILE* pInFile, char* pstrToken);
+extern float Distance(glm::vec4 plane, glm::vec3 p);
 
 extern std::random_device rd;
 extern std::default_random_engine dre;

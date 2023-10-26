@@ -23,3 +23,14 @@ BYTE ReadStringFromFile(FILE* pInFile, char* pstrToken)
 
 	return(nStrLength);
 }
+
+float Distance(glm::vec4 plane, glm::vec3 p)
+{
+	float numer = plane.x * p.x + plane.y * p.y + plane.z * p.z + plane.w;
+	float denom = sqrt(plane.x * plane.x + plane.y * plane.y + plane.z * plane.z);
+	
+	if (denom > 0.000000001f)
+		return numer / denom;
+
+	return 0.0f;
+}

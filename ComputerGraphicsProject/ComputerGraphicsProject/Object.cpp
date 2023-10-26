@@ -429,9 +429,13 @@ CObject::CObject()
 
 void CObject::Render()
 {
-	UpdateTransform(nullptr);
 	if (m_pMesh)
 		m_pMesh->Render();
+
+	if (m_pSibling)
+		m_pSibling->Render();
+	if (m_pChild)
+		m_pChild->Render();
 }
 
 void CObject::BindShaderVariables(GLuint s_Program)

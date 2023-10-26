@@ -46,9 +46,6 @@
 class CMesh
 {
 public:
-
-
-
 	struct Vertex
 	{
 		glm::vec3 position;
@@ -59,6 +56,7 @@ public:
 		glm::vec2 texcoord1;
 	};
 
+
 	static std::shared_ptr<CMesh> CreateCubeMesh(float dx, float dy, float dz);
 	static std::shared_ptr<CMesh> CreateCubeMeshForIndex(float dx, float dy, float dz);
 	static std::shared_ptr<CMesh> CreateSphereMesh(int n_slices, int n_stacks);
@@ -68,6 +66,20 @@ public:
 	static std::shared_ptr<CMesh> CreateTriangleMesh();
 	static std::shared_ptr<CMesh> CreateRectMesh();
 	void LoadMeshFromFile(FILE* pInFile);
+
+	std::vector<Vertex> GetVertexs() { return m_pVertices; };
+	std::vector<UINT> GetSubSetIndice(UINT index) { 
+		if(m_nSubMeshes > index)
+			return m_ppnSubSetIndices[index];
+		return std::vector<UINT>();
+	};
+
+	void SetVertexs(std::vector<Vertex>& vertexs) {
+		if (m_nVertices == 0) {
+			m_pVertices = vertexs;
+			m_nVertices = m_pVertices.size();
+		}
+	}
 
 	virtual void CreateShaderVariables();
 	virtual void BindShaderVariables(GLuint s_Program);

@@ -24,6 +24,8 @@ struct Light
 	float fIntensity;
 	vec3 vec3Direction;
 	uint nLightType;
+	vec3 vec3Position;
+	float fPacking;
 };
 
 layout(std140, binding = 0) uniform Lights

@@ -20,6 +20,7 @@ protected:
 	std::shared_ptr<CTexture> m_tIrradianceTexture;
 	std::shared_ptr<CTexture> m_tFilteringedEnvironmentTexture;
 	std::shared_ptr<CTexture> m_tPreCoumputedBRDFLUTexture;
+	std::shared_ptr<CTexture> m_tShadowDepthTexture;
 
 	bool m_bInitialized = false;
 
@@ -30,6 +31,9 @@ protected:
 	GLuint m_UBOLights = -1;
 	GLuint m_UBOLightIndex = -1;
 	UBO_LIGHT UBOLightData;
+
+	UINT m_nShadowMapWidth, m_nShadowMapHeight;
+	GLuint m_FBOShadowDepth;
 
 	MOUSE_STATE m_eMouseState = MOUSE_STATE::MOUSE_CILCK_NONE;
 	POINT m_ptOldMouseCursor{ 0,0 };
@@ -46,6 +50,7 @@ public:
 	virtual ~CScene();
 
 	virtual void Init();
+	virtual void BuildObjects() {};
 	virtual void RenderScene();
 	virtual void MouseInput(int button, int state, int x, int y);
 	virtual void MouseMotion(int x, int y);
@@ -68,6 +73,7 @@ public:
 	virtual ~CPBR_TestScene();
 
 	virtual void Init();
+	virtual void BuildObjects();
 	virtual void RenderScene();
 	virtual void MouseInput(int button, int state, int x, int y);
 	virtual void MouseMotion(int x, int y);

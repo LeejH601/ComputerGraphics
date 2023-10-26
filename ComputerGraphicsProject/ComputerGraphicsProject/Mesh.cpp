@@ -424,6 +424,9 @@ std::shared_ptr<CMesh> CMesh::CreateRectMesh()
 	pMesh->m_pVertices[5].bitangent = (glm::vec3(0, 0, 1));
 	pMesh->m_pVertices[5].texcoord0 = glm::vec2(1, 0);
 
+
+
+
 	return pMesh;
 }
 

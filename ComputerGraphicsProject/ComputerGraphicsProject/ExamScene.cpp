@@ -3,6 +3,8 @@
 #include "Renderer.h"
 #include "Timer.h"
 #include <cmath>
+#include <vector>
+#include <set>
 
 CExamScene_7::CExamScene_7()
 {
@@ -732,4 +734,240 @@ void CExamScene_9::Update(float fElapsedTime)
 		}
 	
 	}
+}
+
+CExamScene_18::CExamScene_18()
+{
+}
+
+CExamScene_18::~CExamScene_18()
+{
+}
+
+void CExamScene_18::Init()
+{
+	CPBR_TestScene::Init();
+
+	std::shared_ptr<CMesh> mesh = CMesh::CreateRectMesh();
+	std::shared_ptr<CMaterial> material[6];
+	std::shared_ptr<CObject> child[6]; std::make_shared<CObject>();
+	std::shared_ptr<CObject> master; std::make_shared<CObject>();
+
+	for (int i = 0; i < 6; ++i) {
+		material[i] = std::make_shared<CMaterial>();
+		child[i] = std::make_shared<CObject>();
+		child[i]->SetMesh(mesh);
+		child[i]->SetMaterial(material[i]);
+	}
+
+	std::shared_ptr<CObject> obj = std::make_shared<CObject>();
+
+	for(int i = 0; i < 6; ++i)
+		obj->SetChild(child[i]);
+
+	//obj->RotationQuat(glm::radians(90.0f), glm::vec3(0, 0, 1));
+
+	m_pObjects.emplace_back(obj);
+}
+
+
+void CExamScene_18::BuildObjects()
+{
+}
+
+
+void CExamScene_18::Update(float fElapsedTime)
+{
+	CPBR_TestScene::Update(fElapsedTime);
+}
+
+CSPScene::CSPScene()
+{
+}
+
+CSPScene::~CSPScene()
+{
+}
+
+void CSPScene::Update(float fElapsedTime)
+{
+	static bool TestFlag = false;
+
+	if (TestFlag == false) {
+		if (m_pObjects.size() > 0) {
+			CObject* obj = m_pObjects[0].get();
+
+			CMesh* mesh = obj->GetMesh();
+
+			std::vector<CMesh::Vertex> vertexs = mesh->GetVertexs();
+			std::vector<UINT> indices = mesh->GetSubSetIndice(0);
+			int nIndices = indices.size();
+
+			std::vector<CMesh::Vertex> Upside;
+			std::vector<CMesh::Vertex> Underside;
+
+			std::vector<CMesh::Vertex> NewVertexs;
+			static class LessVertex
+			{
+				bool inited = false;
+				CMesh::Vertex KeyVertex;
+			public:
+				/*bool operator()(const CMesh::Vertex& lhs, const CMesh::Vertex& rhs) const {
+					if (lhs.position.x < rhs.position.x) {
+						return true;
+					}
+					if (abs(lhs.position.x - rhs.position.x) < 0.00001f) {
+						if (lhs.position.y < rhs.position.y) {
+							return true;
+						}
+
+						if (abs(lhs.position.y - rhs.position.y) < 0.00001f) {
+							if (lhs.position.z < rhs.position.z) {
+								return true;
+							}
+						}
+					}
+					return false;
+				};*/
+
+				bool operator()(const CMesh::Vertex& lhs, const CMesh::Vertex& rhs) const {
+
+					if (inited == false) {
+						CMesh::Vertex& Key = const_cast<CMesh::Vertex&>(KeyVertex);
+						Key = const_cast<CMesh::Vertex&>(lhs);
+						bool& flag = const_cast<bool&>(inited);
+						flag = true;
+					}
+
+					return glm::distance(KeyVertex.position, lhs.position) < glm::distance(KeyVertex.position, rhs.position);
+				};
+			};
+			std::set<CMesh::Vertex, LessVertex> NewVertexSet;
+
+			glm::vec4 testPlane = glm::vec4(0, 1, 0, 0.1f);
+
+			if (nIndices > 0) {
+				for (int i = 0; i < nIndices;) {
+					CMesh::Vertex v[3];
+					v[0] = vertexs[indices[i++]];
+					v[1] = vertexs[indices[i++]];
+					v[2] = vertexs[indices[i++]];
+
+					bool UpAndDowns[3];
+					int nDistribution = 0;
+					for (int j = 0; j < 3; ++j) {
+						UpAndDowns[j] = Distance(testPlane, v[j].position) >= 0.0f;
+						if (UpAndDowns[j]) {
+							nDistribution++;
+							Upside.emplace_back(v[j]);
+						}
+						else
+							Underside.emplace_back(v[j]);
+					}
+
+					if (nDistribution != 3 && nDistribution != 0) {
+						CMesh::Vertex v1, v2, v3;
+						CMesh::Vertex C1, C2;
+						if (nDistribution == 2) {
+							v2 = Upside[Upside.size() - 1];
+							v1 = Upside[Upside.size() - 2];
+							v3 = Underside[Underside.size() - 1];
+
+							float D = testPlane.w;
+							glm::vec3 N{ testPlane.x,testPlane.y, testPlane.z };
+							float t1 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v1.position - v3.position)));
+							C1.position = v3.position + t1 * (v1.position - v3.position);
+
+							float t2 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v2.position - v3.position)));
+							C2.position = v3.position + t2 * (v2.position - v3.position);
+
+							Upside.emplace_back(C1);
+							Upside.emplace_back(v2);
+							Upside.emplace_back(C1);
+							Upside.emplace_back(C2);
+
+							Underside.emplace_back(C1);
+							Underside.emplace_back(C2);
+
+							
+						}
+						else {
+							v2 = Underside[Underside.size() - 1];
+							v1 = Underside[Underside.size() - 2];
+							v3 = Upside[Upside.size() - 1];
+
+							float D = testPlane.w;
+							glm::vec3 N{ testPlane.x,testPlane.y, testPlane.z };
+							float t1 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v1.position - v3.position)));
+							C1.position = v3.position + t1 * (v1.position - v3.position);
+
+							float t2 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v2.position - v3.position)));
+							C2.position = v3.position + t2 * (v2.position - v3.position);
+
+							Underside.emplace_back(C1);
+							Underside.emplace_back(v2);
+							Underside.emplace_back(C1);
+							Underside.emplace_back(C2);
+
+							Upside.emplace_back(C1);
+							Upside.emplace_back(C2);
+						}
+						if( NewVertexs.size() > 0 && glm::distance(NewVertexs.back().position, C1.position) > 0.00001f)
+							NewVertexs.emplace_back(C1);
+						NewVertexs.emplace_back(C2);
+
+						NewVertexSet.emplace(C1);
+						NewVertexSet.emplace(C2);
+					}
+				}
+			}
+
+			std::set<CMesh::Vertex, LessVertex>::iterator p = NewVertexSet.begin();
+			while (true)
+			{
+				std::set<CMesh::Vertex, LessVertex>::iterator v1 = p++;
+				std::set<CMesh::Vertex, LessVertex>::iterator v2 = p++;
+				std::set<CMesh::Vertex, LessVertex>::iterator v3 = p++;
+
+				Upside.emplace_back(*v1);
+				Upside.emplace_back(*v2);
+				Upside.emplace_back(*v3);
+
+				Underside.emplace_back(*v1);
+				Underside.emplace_back(*v2);
+				Underside.emplace_back(*v3);
+
+				if (p == NewVertexSet.end())
+					break;
+
+				p = v2;
+			}
+
+			std::shared_ptr<CMesh> newMesh1 = std::make_shared<CMesh>();
+			newMesh1->SetVertexs(Upside);
+			newMesh1->CreateShaderVariables();
+
+			std::shared_ptr<CMesh> newMesh2 = std::make_shared<CMesh>();
+			newMesh2->SetVertexs(Underside);
+			newMesh2->CreateShaderVariables();
+
+			std::shared_ptr<CObject> newObj1 = std::make_shared<CObject>();
+			newObj1->SetMaterial(m_pObjects[0]->GetMaterial(0));
+
+			std::shared_ptr<CObject> newObj2 = std::make_shared<CObject>();
+			newObj2->SetMaterial(m_pObjects[0]->GetMaterial(0));
+
+			newObj1->SetMesh(newMesh1);
+			newObj2->SetMesh(newMesh2);
+
+			m_pObjects.clear();
+			m_pObjects.emplace_back(newObj1);
+			m_pObjects.emplace_back(newObj2);
+
+			std::cout << std::endl;
+		}
+		TestFlag = true;
+	}
+	
+
 }
