@@ -71,7 +71,7 @@ void CExamScene_7::RenderScene()
 	for (std::shared_ptr<CObject>& obj : m_pObjects) {
 		obj->BindShaderVariables(s_Program);
 
-		obj->Render();
+		obj->Render(s_Program);
 	}
 
 	s_Program = g_Renderer->SkyBoxShader;
@@ -82,7 +82,7 @@ void CExamScene_7::RenderScene()
 	glDepthFunc(GL_LEQUAL);
 
 	m_pSkyBoxObject->BindShaderVariables(s_Program);
-	m_pSkyBoxObject->Render();
+	m_pSkyBoxObject->Render(s_Program);
 }
 
 void CExamScene_7::KeyInput(unsigned char key, int x, int y)
@@ -468,7 +468,7 @@ void CExamScene_8::RenderScene()
 	for (std::shared_ptr<CObject>& obj : m_pObjects) {
 		obj->BindShaderVariables(s_Program);
 
-		obj->Render();
+		obj->Render(s_Program);
 	}
 
 
@@ -482,7 +482,7 @@ void CExamScene_8::RenderScene()
 	glDepthFunc(GL_LEQUAL);
 
 	m_pSkyBoxObject->BindShaderVariables(s_Program);
-	m_pSkyBoxObject->Render();
+	m_pSkyBoxObject->Render(s_Program);
 }
 
 void CExamScene_8::KeyInput(unsigned char key, int x, int y)
@@ -587,7 +587,7 @@ void CExamScene_9::RenderScene()
 	for (std::shared_ptr<CObject>& obj : m_pObjects) {
 		obj->BindShaderVariables(s_Program);
 
-		obj->Render();
+		obj->Render(s_Program);
 	}
 
 
@@ -599,7 +599,7 @@ void CExamScene_9::RenderScene()
 	glDepthFunc(GL_LEQUAL);
 
 	m_pSkyBoxObject->BindShaderVariables(s_Program);
-	m_pSkyBoxObject->Render();
+	m_pSkyBoxObject->Render(s_Program);
 }
 
 void CExamScene_9::KeyInput(unsigned char key, int x, int y)
@@ -668,7 +668,7 @@ void CExamScene_9::Update(float fElapsedTime)
 			return false;
 		return true;
 	};
-	static glm::vec4 rectColide{- 0.5, -1.0f, 0.5f, 1.0f  };
+	static glm::vec4 rectColide{ -0.5, -1.0f, 0.5f, 1.0f };
 	for (int i = 0; i < m_pObjects.size(); ++i) {
 		CObject* obj = m_pObjects[i].get();
 		if (m_moveType)
@@ -706,7 +706,7 @@ void CExamScene_9::Update(float fElapsedTime)
 			}
 			std::cout << rect.x << " " << rect.y << " " << rect.z << " " << rect.w << std::endl;
 		}
-			break;
+		break;
 		case 2:
 		{
 			glm::vec4 point1{ rectColide.x, 0.0f, rectColide.y,1.0f };
@@ -728,11 +728,11 @@ void CExamScene_9::Update(float fElapsedTime)
 				}
 			}
 		}
-			break;
+		break;
 		default:
 			break;
 		}
-	
+
 	}
 }
 
@@ -762,7 +762,7 @@ void CExamScene_18::Init()
 
 	std::shared_ptr<CObject> obj = std::make_shared<CObject>();
 
-	for(int i = 0; i < 6; ++i)
+	for (int i = 0; i < 6; ++i)
 		obj->SetChild(child[i]);
 
 	//obj->RotationQuat(glm::radians(90.0f), glm::vec3(0, 0, 1));
@@ -791,7 +791,7 @@ CSPScene::~CSPScene()
 
 void CSPScene::Update(float fElapsedTime)
 {
-	static bool TestFlag = false;
+	static bool TestFlag = true;
 
 	if (TestFlag == false) {
 		if (m_pObjects.size() > 0) {
@@ -889,7 +889,7 @@ void CSPScene::Update(float fElapsedTime)
 							Underside.emplace_back(C1);
 							Underside.emplace_back(C2);
 
-							
+
 						}
 						else {
 							v2 = Underside[Underside.size() - 1];
@@ -912,7 +912,7 @@ void CSPScene::Update(float fElapsedTime)
 							Upside.emplace_back(C1);
 							Upside.emplace_back(C2);
 						}
-						if( NewVertexs.size() > 0 && glm::distance(NewVertexs.back().position, C1.position) > 0.00001f)
+						if (NewVertexs.size() > 0 && glm::distance(NewVertexs.back().position, C1.position) > 0.00001f)
 							NewVertexs.emplace_back(C1);
 						NewVertexs.emplace_back(C2);
 
@@ -968,6 +968,400 @@ void CSPScene::Update(float fElapsedTime)
 		}
 		TestFlag = true;
 	}
-	
 
+
+}
+
+CExamScene_20::CExamScene_20()
+{
+}
+
+CExamScene_20::~CExamScene_20()
+{
+}
+
+void CExamScene_20::Init()
+{
+	CPBR_TestScene::Init();
+
+	cameraSpring = glm::vec3(1, 1, 1) * 2.0f;
+
+	m_pMainCamera->SetPosision(cameraSpring);
+	m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+
+	for (int i = 0; i < 3; ++i) {
+		std::shared_ptr<CObject> obj = std::make_shared<CObject>();
+		std::shared_ptr<CMaterial> material = std::make_shared<CMaterial>();
+
+		if (i == 0)
+			material->BaseColor = glm::vec3(1, 0, 0);
+
+		if (i == 1)
+			material->BaseColor = glm::vec3(0, 0, 1);
+
+		if (i == 2)
+			material->BaseColor = glm::vec3(0, 1, 0);
+
+		material->RoughnessColor = 0.0f;
+
+		std::shared_ptr<CMesh> mesh;
+
+		mesh = CMesh::CreateLineMesh();
+
+		mesh->CreateShaderVariables();
+		obj->SetMesh(mesh);
+		obj->SetMaterial(material);
+		obj->SetScale(glm::vec3(2, 2, 2));
+
+		if (i == 1) {
+			obj->RotationQuat(glm::radians(-90.f), glm::vec3(0, 1, 0));
+			obj->RotationQuat(glm::radians(-90.f), glm::vec3(1, 0, 0));
+		}
+		if (i == 2) {
+			obj->RotationQuat(glm::radians(90.f), glm::vec3(0, 1, 0));
+		}
+
+		m_pObjects.push_back(obj);
+	}
+
+	std::string name("Right_Arm_Joint");
+	CObject* obj = CObject::FindFrameByName(m_pObjects[0].get(), name);
+
+	posBarrel = obj->GetPosition();
+
+
+}
+
+void CExamScene_20::RenderScene()
+{
+	GLuint s_Program = g_Renderer->TestShader;
+	glUseProgram(s_Program);
+
+
+
+	glViewport(0, 0, m_nShadowMapWidth, m_nShadowMapHeight);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBOShadowDepth);
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	// Render ShadowDepthMap
+	CShadowCamera shadowCamera;
+	//shadowCamera.GenerateProjectionMatrix(glm::radians(90.0f), (float)g_WindowSizeX / (float)g_WindowSizeY, 0.1f, 50.0f);
+	float fNear = 1.0f, fFar = 7.5f;
+	shadowCamera.m_mat4x4Projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, fNear, fFar);
+	shadowCamera.SetPosision(m_pSunLight->m_vec3Position);
+	shadowCamera.m_mat4x4View = glm::lookAt(m_pSunLight->m_vec3Position, m_pSunLight->m_vec3Direction, glm::vec3(0, 1, 0));
+	shadowCamera.BindShaderVariables(s_Program);
+
+
+	for (std::shared_ptr<CObject>& obj : m_pObjects) {
+		obj->BindShaderVariables(s_Program);
+
+		obj->UpdateTransform(nullptr);
+		obj->Render(s_Program);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+
+
+	BindShaderVariables(s_Program);
+
+	GLuint samplerULoc = glGetUniformLocation(s_Program, "u_IrradianceTexture");
+	glUniform1i(samplerULoc, 5);
+	m_tIrradianceTexture->BindShaderVariables(s_Program, GL_TEXTURE5);
+
+	samplerULoc = glGetUniformLocation(s_Program, "u_BrdfLUT");
+	glUniform1i(samplerULoc, 6);
+	m_tPreCoumputedBRDFLUTexture->BindShaderVariables(s_Program, GL_TEXTURE6);
+
+	samplerULoc = glGetUniformLocation(s_Program, "u_PreFilterMap");
+	glUniform1i(samplerULoc, 7);
+	m_tFilteringedEnvironmentTexture->BindShaderVariables(s_Program, GL_TEXTURE7);
+
+
+
+
+
+	//m_pSunLight->BindShaderVariables(s_Program);
+	m_pMainCamera->BindShaderVariables(s_Program, false);
+
+
+
+	for (std::shared_ptr<CObject>& obj : m_pObjects) {
+		obj->BindShaderVariables(s_Program);
+
+		obj->UpdateTransform(nullptr);
+		obj->Render(s_Program);
+	}
+
+	s_Program = g_Renderer->SkyBoxShader;
+	glUseProgram(s_Program);
+
+	//m_pSunLight->BindShaderVariables(s_Program);
+	m_pMainCamera->BindShaderVariables(s_Program, false);
+
+
+	glDepthFunc(GL_LEQUAL);
+
+	m_pSkyBoxObject->BindShaderVariables(s_Program);
+	m_pSkyBoxObject->UpdateTransform(nullptr);
+	m_pSkyBoxObject->Render(s_Program);
+}
+
+void CExamScene_20::BuildObjects()
+{
+	m_pObjects.resize(1);
+	m_pObjects[0] = std::make_shared<CObject>();
+	m_pObjects[0]->LoadGeometryAndAnimationFromFile("./Objects/Crain.bin");
+}
+
+void CExamScene_20::KeyInput(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 'b':
+		MoveBase = MoveBase == 1 ? 0 : 1;
+		break;
+	case 'B':
+		MoveBase = MoveBase == -1 ? 0 : -1;
+		break;
+	case 'm':
+		MoveTop = MoveTop == 1 ? 0 : 1;
+		break;
+	case 'M':
+		MoveTop = MoveTop == -1 ? 0 : -1;
+		break;
+	case 'f':
+		RotateBarrel = RotateBarrel == 1 ? 0 : 1;
+		break;
+	case 'F':
+		RotateBarrel = RotateBarrel == -1 ? 0 : -1;
+		break;
+	case 'e':
+		MoveBarrel = MoveBarrel == 1 ? 0 : 1;
+		break;
+	case 'E':
+		MoveBarrel = MoveBarrel == -1 ? 0 : -1;
+		break;
+	case 't':
+		RotateArm = RotateArm == 1 ? 0 : 1;
+		break;
+	case 'T':
+		RotateArm = RotateArm == -1 ? 0 : -1;
+		break;
+	case 'x':
+		cameraLookAt = true;
+		cameraMoveX = cameraMoveX == 1 ? 0 : 1;
+		break;
+	case 'X':
+		cameraLookAt = true;
+		cameraMoveX = cameraMoveX == -1 ? 0 : -1;
+		break;
+	case 'y':
+		cameraLookAt = true;
+		cameraMoveY = cameraMoveY == 1 ? 0 : 1;
+		break;
+	case 'Y':
+		cameraLookAt = true;
+		cameraMoveY = cameraMoveY == -1 ? 0 : -1;
+		break;
+	case 'z':
+		cameraLookAt = true;
+		cameraMoveZ = cameraMoveZ == 1 ? 0 : 1;
+		break;
+	case 'Z':
+		cameraLookAt = true;
+		cameraMoveZ = cameraMoveZ == -1 ? 0 : -1;
+		break;
+	case 'r':
+		cameraLookAt = false;
+		cameraRevolution = cameraRevolution == 1 ? 0 : 1;
+		break;
+	case 'R':
+		cameraLookAt = false;
+		cameraRevolution = cameraRevolution == -1 ? 0 : -1;
+		break;
+	case 'a':
+	case 'A':
+		cameraLookAt = true;
+		break;
+	case 'c':
+	case 'C':
+	{
+		std::string name("Crain_Base");
+		CObject* obj = CObject::FindFrameByName(m_pObjects[0].get(), name);
+		obj->SetRotate(glm::quat(1, 0, 0, 0));
+
+		name = "Crain_Top";
+		obj = CObject::FindFrameByName(m_pObjects[0].get(), name);
+		obj->SetRotate(glm::quat(1, 0, 0, 0));
+
+		name = "Right_Arm_Joint";
+		obj = CObject::FindFrameByName(m_pObjects[0].get(), name);
+		obj->SetRotate(glm::quat(1, 0, 0, 0));
+		obj->SetPosition(posBarrel);
+
+		name = "Left_Arm_Joint";
+		obj = CObject::FindFrameByName(m_pObjects[0].get(), name);
+		obj->SetRotate(glm::quat(1, 0, 0, 0));
+		obj->SetPosition(glm::vec3(-posBarrel.x, posBarrel.y, posBarrel.z));
+
+		name = "Right_Top_Joint";
+		obj = CObject::FindFrameByName(m_pObjects[0].get(), name);
+		obj->SetRotate(glm::quat(1, 0, 0, 0));
+
+		name = "Left_Top_Joint";
+		obj = CObject::FindFrameByName(m_pObjects[0].get(), name);
+		obj->SetRotate(glm::quat(1, 0, 0, 0));
+
+		cameraSpring = glm::vec3(1, 1, 1) * 2.0f;
+	}
+	case 's':
+	case 'S':
+		MoveBase = 0;
+
+		MoveTop = 0;
+
+		RotateBarrel = 0;
+
+		MoveBarrel = 0;
+
+		RotateArm = 0;
+
+		cameraMoveX = 0;
+		cameraMoveY = 0;
+		cameraMoveZ = 0;
+
+		cameraRevolution = 0;
+		cameraLookAt = true;
+
+		break;
+	default:
+		break;
+	}
+}
+
+void CExamScene_20::Update(float fElapsedTime)
+{
+
+	m_pMainCamera->SetPosision(cameraSpring);
+	//if(cameraLookAt == true)
+	m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	/*else {
+		m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), m_pMainCamera->GetPosition() + glm::vec3(m_pMainCamera->m_mat4x4View[0][2],
+			m_pMainCamera->m_mat4x4View[1][2],
+			m_pMainCamera->m_mat4x4View[2][2])
+			, glm::vec3(0, 1, 0));
+	}*/
+
+	if (MoveBase != 0) {
+		std::string name("Crain_Base");
+		CObject* obj = CObject::FindFrameByName(m_pObjects[0].get(), name);
+
+		glm::vec3 axis(0, 1, 0);
+		float degree = 90.0f;
+		obj->RotationQuat(glm::radians(degree * MoveBase * fElapsedTime), axis);
+	}
+	if (MoveTop != 0) {
+		std::string name("Crain_Top");
+		CObject* obj = CObject::FindFrameByName(m_pObjects[0].get(), name);
+
+		glm::vec3 axis(0, 1, 0);
+		float degree = 90.0f;
+		obj->RotationQuat(glm::radians(degree * MoveTop * fElapsedTime), axis);
+	}
+
+	if (RotateBarrel != 0) {
+		std::string name("Right_Arm_Joint");
+		CObject* obj = CObject::FindFrameByName(m_pObjects[0].get(), name);
+
+		glm::vec3 axis(0, 1, 0);
+		float degree = 90.0f;
+		obj->RotationQuat(glm::radians(degree * RotateBarrel * fElapsedTime), axis);
+
+
+		name = std::string("Left_Arm_Joint");
+		obj = CObject::FindFrameByName(m_pObjects[0].get(), name);
+
+		obj->RotationQuat(glm::radians(degree * -RotateBarrel * fElapsedTime), axis);
+	}
+
+	if (MoveBarrel == 1) {
+		std::string name("Right_Arm_Joint");
+		CObject* obj1 = CObject::FindFrameByName(m_pObjects[0].get(), name);
+
+		glm::vec3 pos1 = obj1->GetPosition();
+		glm::vec3 dir{ 1,0,0 };
+
+		name = std::string("Left_Arm_Joint");
+		CObject* obj2 = CObject::FindFrameByName(m_pObjects[0].get(), name);
+		glm::vec3 pos2 = obj2->GetPosition();
+
+		if (pos1.x < 0.0f) {
+			MoveBarrel = 0;
+			pos1.x = 0;
+			pos2.x = 0;
+		}
+
+		obj1->SetPosition(pos1 + dir * glm::vec3(-MoveBarrel) * glm::vec3(fElapsedTime));
+		obj2->SetPosition(pos2 + dir * glm::vec3(MoveBarrel) * glm::vec3(fElapsedTime));
+	}
+
+	if (MoveBarrel == -1) {
+		std::string name("Right_Arm_Joint");
+		CObject* obj1 = CObject::FindFrameByName(m_pObjects[0].get(), name);
+
+		glm::vec3 pos1 = obj1->GetPosition();
+		glm::vec3 dir{ 1,0,0 };
+
+		name = std::string("Left_Arm_Joint");
+		CObject* obj2 = CObject::FindFrameByName(m_pObjects[0].get(), name);
+		glm::vec3 pos2 = obj2->GetPosition();
+
+		if (pos1.x > 0.3f) {
+			MoveBarrel = 0;
+			pos1.x = 0.3;
+			pos2.x = -0.3;
+		}
+
+		obj1->SetPosition(pos1 + dir * glm::vec3(-MoveBarrel) * glm::vec3(fElapsedTime));
+		obj2->SetPosition(pos2 + dir * glm::vec3(MoveBarrel) * glm::vec3(fElapsedTime));
+	}
+
+	if (RotateArm != 0) {
+		std::string name("Right_Top_Joint");
+		CObject* obj1 = CObject::FindFrameByName(m_pObjects[0].get(), name);
+
+		glm::vec3 axis(0, 0, 1);
+		float degree = 90.0f;
+
+		name = std::string("Left_Top_Joint");
+		CObject* obj2 = CObject::FindFrameByName(m_pObjects[0].get(), name);
+
+		obj1->RotationQuat(glm::radians(degree * RotateArm * fElapsedTime), axis);
+		obj2->RotationQuat(glm::radians(degree * -RotateArm * fElapsedTime), axis);
+	}
+
+	if (cameraMoveX != 0) {
+		glm::vec3 dir(1, 0, 0);
+		cameraSpring += dir * static_cast<float>(cameraMoveX) * fElapsedTime;
+	}
+	if (cameraMoveY != 0) {
+		glm::vec3 dir(0, 1, 0);
+		cameraSpring += dir * static_cast<float>(cameraMoveY) * fElapsedTime;
+	}
+	if (cameraMoveZ != 0) {
+		glm::vec3 dir(0, 0, 1);
+		cameraSpring += dir * static_cast<float>(cameraMoveZ) * fElapsedTime;
+	}
+	if (cameraRevolution != 0) {
+		glm::vec3 axis(0, 1, 0);
+		float degree = 90.0f;
+
+		glm::mat4x4 mat = glm::mat4_cast(glm::rotate(glm::quat(1, 0, 0, 0), glm::radians(degree * cameraRevolution * fElapsedTime), axis));
+
+		cameraSpring = glm::vec3(mat * glm::vec4(cameraSpring, 0.0f));
+	}
 }

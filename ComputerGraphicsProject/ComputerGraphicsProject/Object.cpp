@@ -1,6 +1,24 @@
 #include "Object.h"
 #include "Mesh.h"
 
+
+CObject* CObject::FindFrameByName(CObject* object, std::string& name)
+{
+	if (object == nullptr)
+		return nullptr;
+
+	if (object->GetName() == name) {
+		return object;
+	}
+
+	CObject* obj = CObject::FindFrameByName(object->GetSibling(), name);
+
+	if (obj)
+		return obj;
+
+	return CObject::FindFrameByName(object->GetChild(), name);
+}
+
 void CObject::SetScale(glm::vec3 scale)
 {
 	m_vec3Scale = scale;
@@ -29,9 +47,9 @@ void CObject::ReganerateTransform()
 
 void CObject::UpdateTransform(glm::mat4x4* parent)
 {	
-	if(parent == nullptr)
+	//if(parent == nullptr)
 		ReganerateTransform();
-	m_mat4x4Wolrd = (parent) ? m_mat4x4Transform * *parent : m_mat4x4Transform;
+	m_mat4x4Wolrd = (parent) ?  *parent * m_mat4x4Transform : m_mat4x4Transform;
 
 
 	if (m_pSibling) m_pSibling->UpdateTransform(parent);
@@ -66,6 +84,9 @@ void CObject::LoadFrameHierarchyFromFile(CObject* pParent, FILE* pInFile, int* p
 			nReads = (UINT)::fread(&xmf3Rotation, sizeof(float), 3, pInFile); //Euler Angle
 			nReads = (UINT)::fread(&xmf3Scale, sizeof(float), 3, pInFile);
 			nReads = (UINT)::fread(&xmf4Rotation, sizeof(float), 4, pInFile); //Quaternion
+			m_vec3Position = xmf3Position;
+			m_vec3Scale = xmf3Scale;
+			m_vec4Rotation = glm::quat(xmf4Rotation.w, xmf4Rotation.x, xmf4Rotation.y, xmf4Rotation.z);
 		}
 		else if (!strcmp(pstrToken, "<TransformMatrix>:"))
 		{
@@ -427,15 +448,17 @@ CObject::CObject()
 //	return *this;
 //}
 
-void CObject::Render()
+void CObject::Render(GLuint s_Program)
 {
-	if (m_pMesh)
+	if (m_pMesh) {
+		BindShaderVariables(s_Program);
 		m_pMesh->Render();
+	}
 
 	if (m_pSibling)
-		m_pSibling->Render();
+		m_pSibling->Render(s_Program);
 	if (m_pChild)
-		m_pChild->Render();
+		m_pChild->Render(s_Program);
 }
 
 void CObject::BindShaderVariables(GLuint s_Program)
@@ -466,6 +489,7 @@ void CObject::SetMaterial(int nMaterial, std::shared_ptr<CMaterial> pMaterial)
 {
 	m_ppMaterials[nMaterial] = pMaterial;
 }
+
 
 CLoadedModelInfo::~CLoadedModelInfo()
 {

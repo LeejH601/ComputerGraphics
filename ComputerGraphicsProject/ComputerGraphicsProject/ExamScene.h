@@ -67,6 +67,40 @@ public:
 	virtual void Update(float fElapsedTime);
 };
 
+class CExamScene_20 : public CPBR_TestScene
+{
+	int MoveBase = 0;
+
+	int MoveTop = 0;
+
+	int RotateBarrel = 0;
+
+	int MoveBarrel = 0;
+
+	int RotateArm = 0;
+
+	int cameraMoveX = 0;
+	int cameraMoveY = 0;
+	int cameraMoveZ = 0;
+
+	int cameraRevolution = 0;
+	bool cameraLookAt = true;
+
+	glm::vec3 cameraSpring;
+
+	glm::vec3 posBarrel;
+
+public:
+	CExamScene_20();
+	virtual ~CExamScene_20();
+
+	virtual void Init();
+	virtual void RenderScene();
+	virtual void BuildObjects();
+	virtual void KeyInput(unsigned char key, int x, int y);
+	virtual void Update(float fElapsedTime);
+};
+
 class CSPScene : public CPBR_TestScene
 {
 public:

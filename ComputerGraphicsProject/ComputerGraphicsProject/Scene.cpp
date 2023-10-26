@@ -515,8 +515,19 @@ void CPBR_TestScene::BuildObjects()
 	for (int i = 0; i < nObj; ++i) {
 		m_pObjects[i] = std::make_shared<CObject>();
 		m_pObjects[i]->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+		CObject* frame = m_pObjects[i]->GetChild();
+		int nMat = 0;
+		/*while (frame != nullptr)
+		{
+			frame->SetMaterial(g_Renderer->GetMaterialFromIndex(nMat++ % 6));
+			if(frame->GetSibling() != nullptr)
+				frame = frame->GetSibling();
+			else
+				frame = frame->GetChild();
+		}*/
 		m_pObjects[i]->SetMaterial(g_Renderer->GetMaterialFromIndex(i % 6));
 		m_pObjects[i]->SetPosition(basePos);
+		//m_pObjects[i]->SetScale(glm::vec3(0.1, 0.1, 0.1));
 		basePos.x += 2.0f;
 	}
 
@@ -548,7 +559,7 @@ void CPBR_TestScene::RenderScene()
 		obj->BindShaderVariables(s_Program);
 
 		obj->UpdateTransform(nullptr);
-		obj->Render();
+		obj->Render(s_Program);
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -584,7 +595,7 @@ void CPBR_TestScene::RenderScene()
 		obj->BindShaderVariables(s_Program);
 
 		obj->UpdateTransform(nullptr);
-		obj->Render();
+		obj->Render(s_Program);
 	}
 
 	s_Program = g_Renderer->SkyBoxShader;
@@ -598,7 +609,7 @@ void CPBR_TestScene::RenderScene()
 
 	m_pSkyBoxObject->BindShaderVariables(s_Program);
 	m_pSkyBoxObject->UpdateTransform(nullptr);
-	m_pSkyBoxObject->Render();
+	m_pSkyBoxObject->Render(s_Program);
 	
 }
 
@@ -625,7 +636,7 @@ void CPBR_TestScene::MouseMotion(int x, int y)
 		m_ptCurrMouseCuror = { x,y };
 		m_ptCurrMouseCuror.x -= g_WindowSizeX / 2;
 		m_ptCurrMouseCuror.y -= g_WindowSizeY / 2;
-		cxDelta = (float)(m_ptCurrMouseCuror.x - m_ptOldMouseCursor.x);
+		cxDelta = -(float)(m_ptCurrMouseCuror.x - m_ptOldMouseCursor.x);
 		cyDelta = (float)(m_ptCurrMouseCuror.y - m_ptOldMouseCursor.y);
 		m_ptOldMouseCursor = m_ptCurrMouseCuror;
 

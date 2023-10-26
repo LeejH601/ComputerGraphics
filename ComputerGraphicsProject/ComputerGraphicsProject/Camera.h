@@ -25,7 +25,7 @@ public:
 	virtual void RegenarationViewMatrix();
 	void GenerateProjectionMatrix(float fov, float aspect, float zNear, float zFar);
 
-	virtual void BindShaderVariables(GLuint s_Program);
+	virtual void BindShaderVariables(GLuint s_Program, bool regenerateView = true);
 
 	virtual glm::quat GetQauternion();
 	virtual glm::quat& GetQauternionRef();

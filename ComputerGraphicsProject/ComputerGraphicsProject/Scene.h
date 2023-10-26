@@ -66,6 +66,7 @@ public:
 
 class CPBR_TestScene : public CScene
 {
+protected:
 	std::shared_ptr<CObject> m_pSkyBoxObject;
 
 public:
