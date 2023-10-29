@@ -23,11 +23,12 @@ void CExamScene_7::Init()
 	m_pSunLight->m_vec3LightColor *= 2.0f;
 	m_pSunLight->m_vec3Direction = glm::vec3(0.0f, -1.0f, 0.0f);
 
-	m_sptrMainCamera = std::make_unique<CCamera>();
+	m_sptrCameras.resize(1);
+	m_sptrCameras[0] = std::make_unique<CCamera>();
 
-	m_sptrMainCamera->RegenarationViewMatrix();
-	m_sptrMainCamera->GenerateProjectionMatrix(glm::radians(90.0f), (float)g_WindowSizeX / (float)g_WindowSizeY, 0.1f, 50.0f);
-	m_pMainCamera = m_sptrMainCamera.get();
+	m_sptrCameras[0]->RegenarationViewMatrix();
+	m_sptrCameras[0]->GenerateProjectionMatrix(glm::radians(90.0f), (float)g_WindowSizeX / (float)g_WindowSizeY, 0.1f, 50.0f);
+	m_pMainCamera = m_sptrCameras[0].get();
 
 	glm::quat rotate = m_pMainCamera->GetQauternion();
 	rotate = glm::rotate(rotate, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -1246,9 +1247,7 @@ void CExamScene_20::KeyInput(unsigned char key, int x, int y)
 void CExamScene_20::Update(float fElapsedTime)
 {
 
-	m_pMainCamera->SetPosision(cameraSpring);
-	//if(cameraLookAt == true)
-	m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	UpdateCameraSpring();
 	/*else {
 		m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), m_pMainCamera->GetPosition() + glm::vec3(m_pMainCamera->m_mat4x4View[0][2],
 			m_pMainCamera->m_mat4x4View[1][2],
@@ -1364,4 +1363,74 @@ void CExamScene_20::Update(float fElapsedTime)
 
 		cameraSpring = glm::vec3(mat * glm::vec4(cameraSpring, 0.0f));
 	}
+}
+
+void CExamScene_20::UpdateCameraSpring()
+{
+	m_pMainCamera->SetPosision(cameraSpring);
+	//if(cameraLookAt == true)
+	m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+}
+
+CExamScene_21::CExamScene_21()
+{
+}
+
+CExamScene_21::~CExamScene_21()
+{
+}
+
+void CExamScene_21::Init()
+{
+	CExamScene_20::Init();
+
+	std::shared_ptr<CCamera> pCamera;
+	pCamera = std::make_shared<CCamera>();
+
+	float fNear = 0.0f, fFar = 5.0f;
+	pCamera->m_mat4x4Projection = glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, fNear, fFar);
+	otherCameraSpring[1] = glm::normalize(glm::vec3(0.00001f, 1.0f, 0.0f));
+	pCamera->SetPosision(otherCameraSpring[1]);
+	pCamera->m_mat4x4View = glm::lookAt(pCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+
+	m_sptrCameras.push_back(std::move(pCamera));
+
+
+	pCamera = std::make_shared<CCamera>();
+	pCamera->m_mat4x4Projection = glm::ortho (-5.0f, 5.0f, -5.0f,5.0f, fNear, fFar);
+	otherCameraSpring[2] = glm::vec3(0.0f, 0.0f, 1.0f);
+	pCamera->SetPosision(otherCameraSpring[2]);
+	pCamera->m_mat4x4View = glm::lookAt(pCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+
+	m_sptrCameras.push_back(std::move(pCamera));
+}
+
+void CExamScene_21::KeyInput(unsigned char key, int x, int y)
+{
+	CExamScene_20::KeyInput(key, x, y);
+
+	switch (key)
+	{
+	case '1':
+		m_pMainCamera = m_sptrCameras[0].get();
+		currentCameraIndex = 0;
+		break;
+	case '2':
+		m_pMainCamera = m_sptrCameras[1].get();
+		currentCameraIndex = 1;
+		break;
+	case '3':
+		m_pMainCamera = m_sptrCameras[2].get();
+		currentCameraIndex = 2;
+		break;
+	default:
+		break;
+	}
+}
+
+void CExamScene_21::UpdateCameraSpring()
+{
+	otherCameraSpring[0] = cameraSpring;
+	m_pMainCamera->SetPosision(otherCameraSpring[currentCameraIndex]);
+	m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 }

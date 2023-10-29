@@ -69,6 +69,7 @@ public:
 
 class CExamScene_20 : public CPBR_TestScene
 {
+protected:
 	int MoveBase = 0;
 
 	int MoveTop = 0;
@@ -99,6 +100,21 @@ public:
 	virtual void BuildObjects();
 	virtual void KeyInput(unsigned char key, int x, int y);
 	virtual void Update(float fElapsedTime);
+
+	virtual void UpdateCameraSpring();
+};
+
+class CExamScene_21 : public CExamScene_20
+{
+	int currentCameraIndex = 0;
+	glm::vec3 otherCameraSpring[3];
+public:
+	CExamScene_21();
+	virtual ~CExamScene_21();
+
+	virtual void Init();
+	virtual void KeyInput(unsigned char key, int x, int y);
+	virtual void UpdateCameraSpring();
 };
 
 class CSPScene : public CPBR_TestScene

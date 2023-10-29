@@ -92,16 +92,6 @@ void KeyInput(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
-	case '1':
-		g_currentScene->Exit();
-		g_currentScene = g_pSceneCache[0].get();
-		g_currentScene->Enter();
-		break;
-	case '2':
-		g_currentScene->Exit();
-		g_currentScene = g_pSceneCache[1].get();
-		g_currentScene->Enter();
-		break;
 	default:
 		break;
 	}
@@ -146,7 +136,7 @@ int main(int argc, char** argv)
 		std::cout << "Renderer could not be initialized.. \n";
 	}
 
-	std::shared_ptr<CScene> scene = std::make_shared<CExamScene_20>();
+	std::shared_ptr<CScene> scene = std::make_shared<CExamScene_21>();
 	g_pSceneCache.push_back(scene);
 	g_currentScene = g_pSceneCache.back().get();
 	g_currentScene->Enter();

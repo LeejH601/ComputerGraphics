@@ -69,12 +69,13 @@ void CScene::Init()
 	//glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 
+	m_sptrCameras.reserve(10);
+	std::shared_ptr<CCamera> pCamera = std::make_unique<CCamera>();
 
-	m_sptrMainCamera = std::make_unique<CCamera>();
-
-	m_sptrMainCamera->RegenarationViewMatrix();
-	m_sptrMainCamera->GenerateProjectionMatrix(glm::radians(90.0f), (float)g_WindowSizeX / (float)g_WindowSizeY, 0.1f, 50.0f);
-	m_pMainCamera = m_sptrMainCamera.get();
+	pCamera->RegenarationViewMatrix();
+	pCamera->GenerateProjectionMatrix(glm::radians(90.0f), (float)g_WindowSizeX / (float)g_WindowSizeY, 0.1f, 50.0f);
+	m_sptrCameras.push_back(std::move(pCamera));
+	m_pMainCamera = m_sptrCameras[0].get();
 
 	glm::quat rotate = m_pMainCamera->GetQauternion();
 	rotate = glm::rotate(rotate, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
