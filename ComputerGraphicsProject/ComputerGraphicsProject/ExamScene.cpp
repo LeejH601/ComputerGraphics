@@ -1434,3 +1434,70 @@ void CExamScene_21::UpdateCameraSpring()
 	m_pMainCamera->SetPosision(otherCameraSpring[currentCameraIndex]);
 	m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 }
+
+CExamScene_22::CExamScene_22()
+{
+}
+
+CExamScene_22::~CExamScene_22()
+{
+}
+
+void CExamScene_22::Init()
+{
+	CPBR_TestScene::Init();
+}
+
+void CExamScene_22::KeyInput(unsigned char key, int x, int y)
+{
+	CPBR_TestScene::KeyInput(key, x, y);
+	switch (key)
+	{
+	case 'o':
+		b_OpenDoor = true;
+		break;
+	default:
+		break;
+	}
+}
+
+void CExamScene_22::Update(float fElapsedTime)
+{
+	CPBR_TestScene::Update(fElapsedTime);
+
+	if (b_OpenDoor) {
+		if (L_DoorFrame->GetPosition().x >= 7.5f) {
+			b_OpenDoor = false;
+		}
+
+		glm::vec3 dir{ 1,0,0 };
+
+		L_DoorFrame->SetPosition(L_DoorFrame->GetPosition() + (dir * fElapsedTime));
+		R_DoorFrame->SetPosition(R_DoorFrame->GetPosition() + (-dir * fElapsedTime));
+	}
+}
+
+void CExamScene_22::BuildObjects()
+{
+	m_pObjects.resize(2);
+	m_pObjects[0] = std::make_shared<CObject>();
+	m_pObjects[0]->LoadGeometryAndAnimationFromFile("./Objects/Robot.bin");
+
+	m_pObjects[1] = std::make_shared<CObject>();
+	m_pObjects[1]->LoadGeometryAndAnimationFromFile("./Objects/stage.bin");
+
+	std::string frameName = "Door_R";
+	R_DoorFrame = CObject::FindFrameByName(m_pObjects[1].get(), frameName);
+
+	frameName = "Door_L";
+	L_DoorFrame = CObject::FindFrameByName(m_pObjects[1].get(), frameName);
+
+	frameName = "R_Arm_Joint";
+	R_Arm_Joint = CObject::FindFrameByName(m_pObjects[0].get(), frameName);
+	frameName = "L_Arm_Joint";
+	L_Arm_Joint = CObject::FindFrameByName(m_pObjects[0].get(), frameName);
+	frameName = "R_Leg_Joint";
+	R_Leg_Joint = CObject::FindFrameByName(m_pObjects[0].get(), frameName);
+	frameName = "L_Leg_Joint";
+	L_Leg_Joint = CObject::FindFrameByName(m_pObjects[0].get(), frameName);
+}

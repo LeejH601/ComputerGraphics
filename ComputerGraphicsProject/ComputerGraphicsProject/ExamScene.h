@@ -117,8 +117,34 @@ public:
 	virtual void UpdateCameraSpring();
 };
 
+
+class CExamScene_22 : public CPBR_TestScene
+{
+	bool b_OpenDoor = false;
+
+	CObject* R_DoorFrame = nullptr;
+	CObject* L_DoorFrame = nullptr;
+
+	CObject* R_Arm_Joint = nullptr;
+	CObject* L_Arm_Joint = nullptr;
+
+	CObject* R_Leg_Joint = nullptr;
+	CObject* L_Leg_Joint = nullptr;
+
+public:
+	CExamScene_22();
+	virtual ~CExamScene_22();
+
+	virtual void Init();
+	virtual void KeyInput(unsigned char key, int x, int y);
+	virtual void Update(float fElapsedTime);
+	virtual void BuildObjects();
+};
+
 class CSPScene : public CPBR_TestScene
 {
+
+
 public:
 	CSPScene();
 	virtual ~CSPScene();
