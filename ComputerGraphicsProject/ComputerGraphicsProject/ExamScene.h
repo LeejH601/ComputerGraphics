@@ -120,10 +120,24 @@ public:
 
 class CExamScene_22 : public CPBR_TestScene
 {
+	float m_fFloor = 0.0f;
+	float m_fCurrentTime = 0.0f;
+	float m_fRobotSpeed = 1.0f;
+
+	float m_fMaxRobotSpeed = 2.0f;
+	float m_fMinRobotSpeed = 0.1f;
+
+	float m_fBaseMoveDegree = 30.0f;
+
 	bool b_OpenDoor = false;
+	UINT m_DwRobotDir;
+	glm::vec3 m_vec3RobotDir;
+	float m_fJumpVelocity = 0.0f;
 
 	CObject* R_DoorFrame = nullptr;
 	CObject* L_DoorFrame = nullptr;
+
+	glm::vec3 BaseDoorPos[2];
 
 	CObject* R_Arm_Joint = nullptr;
 	CObject* L_Arm_Joint = nullptr;
@@ -131,14 +145,28 @@ class CExamScene_22 : public CPBR_TestScene
 	CObject* R_Leg_Joint = nullptr;
 	CObject* L_Leg_Joint = nullptr;
 
+	CObject* m_Robot = nullptr;
+
+	std::vector<CObject*> m_obstacles;
+
+	glm::vec3 cameraSpring;
+	glm::vec3 BaseCameraSpring;
+
+	int cameraMoveX = 0;
+	int cameraMoveY = 0;
+	int cameraMoveZ = 0;
+
 public:
 	CExamScene_22();
 	virtual ~CExamScene_22();
 
 	virtual void Init();
+	virtual void RenderScene();
 	virtual void KeyInput(unsigned char key, int x, int y);
+	virtual void KeyUpInput(unsigned char key, int x, int y);
 	virtual void Update(float fElapsedTime);
 	virtual void BuildObjects();
+	bool CheckCollision();
 };
 
 class CSPScene : public CPBR_TestScene

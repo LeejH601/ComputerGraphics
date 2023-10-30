@@ -798,7 +798,8 @@ void CSPScene::Update(float fElapsedTime)
 		if (m_pObjects.size() > 0) {
 			CObject* obj = m_pObjects[0].get();
 
-			CMesh* mesh = obj->GetMesh();
+			CMesh* mesh = nullptr;
+			mesh = obj->GetMesh();
 
 			std::vector<CMesh::Vertex> vertexs = mesh->GetVertexs();
 			std::vector<UINT> indices = mesh->GetSubSetIndice(0);
@@ -1437,6 +1438,8 @@ void CExamScene_21::UpdateCameraSpring()
 
 CExamScene_22::CExamScene_22()
 {
+	m_vec3RobotDir = glm::vec3(0);
+	m_DwRobotDir = 0;
 }
 
 CExamScene_22::~CExamScene_22()
@@ -1450,11 +1453,50 @@ void CExamScene_22::Init()
 
 void CExamScene_22::KeyInput(unsigned char key, int x, int y)
 {
-	CPBR_TestScene::KeyInput(key, x, y);
 	switch (key)
 	{
 	case 'o':
 		b_OpenDoor = true;
+		break;
+	case 'w':
+		m_DwRobotDir |= DW_FRONT;
+		break;
+	case 's':
+		m_DwRobotDir |= DW_BACK;
+		break;
+	case 'd':
+		m_DwRobotDir |= DW_RIGHT;
+		break;
+	case 'a':
+		m_DwRobotDir |= DW_LEFT;
+		break;
+	case '+':
+		m_fRobotSpeed = std::min(m_fMaxRobotSpeed, m_fRobotSpeed + 0.1f);
+		break;
+	case '-':
+		m_fRobotSpeed = std::max(m_fMinRobotSpeed, m_fRobotSpeed - 0.1f);
+		break;
+	case 'j':
+		m_fJumpVelocity = 9.8f;
+		break;
+	case 'i':
+		cameraSpring = BaseCameraSpring;
+		m_Robot->SetRotate(glm::quat(1, 0, 0, 0));
+		m_Robot->SetPosition(glm::vec3(0, 3, 0));
+		R_Arm_Joint->SetRotate(glm::quat(1, 0, 0, 0));
+		L_Arm_Joint->SetRotate(glm::quat(1, 0, 0, 0));
+		R_Leg_Joint->SetRotate(glm::quat(1, 0, 0, 0));
+		L_Leg_Joint->SetRotate(glm::quat(1, 0, 0, 0));
+		R_DoorFrame->SetPosition(BaseDoorPos[0]);
+		L_DoorFrame->SetPosition(BaseDoorPos[1]);
+
+		cameraMoveX = 0;
+		cameraMoveY = 0;
+		cameraMoveZ = 0;
+
+		m_DwRobotDir = 0;
+		m_fRobotSpeed = 1.0f;
+		m_vec3RobotDir = glm::vec3(0);
 		break;
 	default:
 		break;
@@ -1463,10 +1505,13 @@ void CExamScene_22::KeyInput(unsigned char key, int x, int y)
 
 void CExamScene_22::Update(float fElapsedTime)
 {
-	CPBR_TestScene::Update(fElapsedTime);
+	m_pMainCamera->SetPosision(cameraSpring);
+	m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 
+	m_fCurrentTime += fElapsedTime;
+	
 	if (b_OpenDoor) {
-		if (L_DoorFrame->GetPosition().x >= 7.5f) {
+		if (L_DoorFrame->GetPosition().x >= 7.45f) {
 			b_OpenDoor = false;
 		}
 
@@ -1474,14 +1519,98 @@ void CExamScene_22::Update(float fElapsedTime)
 
 		L_DoorFrame->SetPosition(L_DoorFrame->GetPosition() + (dir * fElapsedTime));
 		R_DoorFrame->SetPosition(R_DoorFrame->GetPosition() + (-dir * fElapsedTime));
+	} 
+
+	if (m_DwRobotDir != 0) {
+		if (m_DwRobotDir & DW_FRONT)
+			m_vec3RobotDir -= glm::vec3(0,0,1);
+		if (m_DwRobotDir & DW_BACK)
+			m_vec3RobotDir += glm::vec3(0, 0, 1);
+		if (m_DwRobotDir & DW_RIGHT)
+			m_vec3RobotDir += glm::vec3(1, 0, 0);
+		if (m_DwRobotDir & DW_LEFT)
+			m_vec3RobotDir -= glm::vec3(1, 0, 0);
+		if (glm::all(glm::isnan(m_vec3RobotDir)))
+			m_vec3RobotDir = glm::vec3(0, 0, 0);
+		else
+			m_vec3RobotDir = glm::normalize(m_vec3RobotDir);
+
+
+		glm::quat rotate{ 1,0,0,0 };
+		rotate = glm::quatLookAt(-m_vec3RobotDir, glm::vec3(0, 1, 0));
+		m_Robot->SetRotate(rotate);
 	}
+
+	if (glm::length(m_vec3RobotDir)) {
+		float fcos = glm::cos(m_fCurrentTime);
+
+		glm::quat rotate{ 1,0,0,0 };
+		float degree = glm::radians(m_fBaseMoveDegree * m_fRobotSpeed);
+		degree *= fcos;
+
+		rotate = glm::angleAxis(degree, glm::vec3(1, 0, 0));
+		R_Arm_Joint->SetRotate(rotate);
+		L_Leg_Joint->SetRotate(rotate);
+
+		rotate = glm::angleAxis(degree, glm::vec3(-1, 0, 0));
+		L_Arm_Joint->SetRotate(rotate);
+		R_Leg_Joint->SetRotate(rotate);
+
+	}
+	
+	
+	glm::vec3 robotPos = m_Robot->GetPosition();
+	if (glm::any(glm::isnan(robotPos)))
+		robotPos = glm::vec3(0, 0, 0);
+	glm::vec3 prevPos = robotPos;
+	robotPos = robotPos + (m_vec3RobotDir * fElapsedTime * m_fRobotSpeed);
+	robotPos.y = robotPos.y + (m_fJumpVelocity * fElapsedTime);
+	robotPos.y = std::max(m_fFloor, robotPos.y);
+	robotPos.x = std::min(std::max(-10.f, robotPos.x), 10.0f);
+	robotPos.z = std::min(std::max(-10.f, robotPos.z), 10.0f);
+	m_fJumpVelocity += fElapsedTime * -9.8f;
+
+	m_Robot->SetPosition(robotPos);
+
+	if (CheckCollision()) {
+		m_Robot->SetPosition(prevPos);
+	}
+
+	if (cameraMoveX != 0) {
+		glm::vec3 dir(1, 0, 0);
+		cameraSpring += dir * static_cast<float>(cameraMoveX) * fElapsedTime;
+	}
+	if (cameraMoveY != 0) {
+		glm::vec3 axis(0, 1, 0);
+		float degree = 90.0f;
+
+		glm::mat4x4 mat = glm::mat4_cast(glm::rotate(glm::quat(1, 0, 0, 0), glm::radians(degree * cameraMoveY * fElapsedTime), axis));
+
+		cameraSpring = glm::vec3(mat * glm::vec4(cameraSpring, 0.0f));
+	}
+	if (cameraMoveZ != 0) {
+		glm::vec3 dir(0, 0, 1);
+		cameraSpring += dir * static_cast<float>(cameraMoveZ) * fElapsedTime;
+	}
+
+
+	m_pSunLight->m_vec3LightColor = glm::vec3(1, 1, 1);
+	m_pSunLight->m_vec3Direction = glm::normalize(glm::vec3(-1, -1, -1));
+	m_pSunLight->m_vec3Direction = glm::vec3(sin(m_fCurrentTime), cos(m_fCurrentTime), -1);
+	m_pSunLight->m_vec3Position = (-m_pSunLight->m_vec3Direction) * 10.0f;
 }
 
 void CExamScene_22::BuildObjects()
 {
+	std::uniform_real_distribution <float> urd_pos{ -10,10 };
 	m_pObjects.resize(2);
 	m_pObjects[0] = std::make_shared<CObject>();
 	m_pObjects[0]->LoadGeometryAndAnimationFromFile("./Objects/Robot.bin");
+
+	m_Robot = m_pObjects[0].get();
+
+	glm::vec3 pos = m_Robot->GetPosition();
+	m_Robot->SetPosition(glm::vec3(pos.x, 3.0f, pos.z));
 
 	m_pObjects[1] = std::make_shared<CObject>();
 	m_pObjects[1]->LoadGeometryAndAnimationFromFile("./Objects/stage.bin");
@@ -1491,6 +1620,8 @@ void CExamScene_22::BuildObjects()
 
 	frameName = "Door_L";
 	L_DoorFrame = CObject::FindFrameByName(m_pObjects[1].get(), frameName);
+	BaseDoorPos[0] = R_DoorFrame->GetPosition();
+	BaseDoorPos[1] = L_DoorFrame->GetPosition();
 
 	frameName = "R_Arm_Joint";
 	R_Arm_Joint = CObject::FindFrameByName(m_pObjects[0].get(), frameName);
@@ -1500,4 +1631,160 @@ void CExamScene_22::BuildObjects()
 	R_Leg_Joint = CObject::FindFrameByName(m_pObjects[0].get(), frameName);
 	frameName = "L_Leg_Joint";
 	L_Leg_Joint = CObject::FindFrameByName(m_pObjects[0].get(), frameName);
+
+
+	for (int i = 0; i < 3; ++i) {
+		std::shared_ptr<CObject> obj = std::make_shared<CObject>();
+		obj->LoadGeometryAndAnimationFromFile("./Objects/obstacle.bin");
+		obj->SetPosition(glm::vec3(urd_pos(dre), 0.5f, urd_pos(dre)));
+		m_pObjects.emplace_back(std::move(obj));
+		m_obstacles.emplace_back(m_pObjects.back().get());
+	}
+
+	cameraSpring = glm::vec3(0, 8, 15);
+	BaseCameraSpring = cameraSpring;
+
+	m_pMainCamera->SetPosision(cameraSpring);
+	m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	// camera pos 0.409097 8.71877 21.2325
+}
+
+void CExamScene_22::KeyUpInput(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 'w':
+		m_DwRobotDir &= (~DW_FRONT);
+		break;
+	case 's':
+		m_DwRobotDir &= (~DW_BACK);
+		break;
+	case 'd':
+		m_DwRobotDir &= (~DW_RIGHT);
+		break;
+	case 'a':
+		m_DwRobotDir &= (~DW_LEFT);
+		break;
+	case 'x':
+		cameraMoveX = cameraMoveX == 1 ? 0 : 1;
+		break;
+	case 'X':
+		cameraMoveX = cameraMoveX == -1 ? 0 : -1;
+		break;
+	case 'y':
+		cameraMoveY = cameraMoveY == 1 ? 0 : 1;
+		break;
+	case 'Y':
+		cameraMoveY = cameraMoveY == -1 ? 0 : -1;
+		break;
+	case 'z':
+		cameraMoveZ = cameraMoveZ == 1 ? 0 : 1;
+		break;
+	case 'Z':
+		cameraMoveZ = cameraMoveZ == -1 ? 0 : -1;
+		break;
+	}
+}
+
+void CExamScene_22::RenderScene()
+{
+	GLuint s_Program = g_Renderer->TestShader;
+	glUseProgram(s_Program);
+
+
+
+	glViewport(0, 0, m_nShadowMapWidth, m_nShadowMapHeight);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBOShadowDepth);
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	// Render ShadowDepthMap
+	CShadowCamera shadowCamera;
+	//shadowCamera.GenerateProjectionMatrix(glm::radians(90.0f), (float)g_WindowSizeX / (float)g_WindowSizeY, 0.1f, 50.0f);
+	float fNear = 1.0f, fFar = 7.5f;
+	shadowCamera.m_mat4x4Projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, fNear, fFar);
+	shadowCamera.SetPosision(m_pSunLight->m_vec3Position);
+	shadowCamera.m_mat4x4View = glm::lookAt(m_pSunLight->m_vec3Position, m_pSunLight->m_vec3Direction, glm::vec3(0, 1, 0));
+	shadowCamera.BindShaderVariables(s_Program);
+
+
+	for (std::shared_ptr<CObject>& obj : m_pObjects) {
+		obj->BindShaderVariables(s_Program);
+
+		obj->UpdateTransform(nullptr);
+		obj->Render(s_Program);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+
+
+	BindShaderVariables(s_Program);
+
+	GLuint samplerULoc = glGetUniformLocation(s_Program, "u_IrradianceTexture");
+	glUniform1i(samplerULoc, 5);
+	m_tIrradianceTexture->BindShaderVariables(s_Program, GL_TEXTURE5);
+
+	samplerULoc = glGetUniformLocation(s_Program, "u_BrdfLUT");
+	glUniform1i(samplerULoc, 6);
+	m_tPreCoumputedBRDFLUTexture->BindShaderVariables(s_Program, GL_TEXTURE6);
+
+	samplerULoc = glGetUniformLocation(s_Program, "u_PreFilterMap");
+	glUniform1i(samplerULoc, 7);
+	m_tFilteringedEnvironmentTexture->BindShaderVariables(s_Program, GL_TEXTURE7);
+
+
+
+
+
+	//m_pSunLight->BindShaderVariables(s_Program);
+	m_pMainCamera->BindShaderVariables(s_Program, false);
+
+
+
+	for (std::shared_ptr<CObject>& obj : m_pObjects) {
+		obj->BindShaderVariables(s_Program);
+
+		obj->UpdateTransform(nullptr);
+		obj->Render(s_Program);
+	}
+
+	s_Program = g_Renderer->SkyBoxShader;
+	glUseProgram(s_Program);
+
+	//m_pSunLight->BindShaderVariables(s_Program);
+	m_pMainCamera->BindShaderVariables(s_Program, false);
+
+
+	glDepthFunc(GL_LEQUAL);
+
+	m_pSkyBoxObject->BindShaderVariables(s_Program);
+	m_pSkyBoxObject->UpdateTransform(nullptr);
+	m_pSkyBoxObject->Render(s_Program);
+}
+
+bool CExamScene_22::CheckCollision()
+{
+	m_fFloor = 0.0f;
+
+	for (int i = 0; i < m_obstacles.size(); ++i) {
+		glm::vec3 obsPos = m_obstacles[i]->GetPosition();
+		glm::vec4 xzRect{ obsPos.x - 1.5f,obsPos.z - 1.5f,obsPos.x + 1.5f,obsPos.z + 1.5f };
+		float height = 1.0f;
+
+		glm::vec3 robotPos = m_Robot->GetPosition();
+
+		if (robotPos.y < height) {
+			if (xzRect.x < robotPos.x && robotPos.x < xzRect.z && xzRect.y < robotPos.z && robotPos.z < xzRect.w) {
+				return true;
+			}
+		}
+		else {
+			if (xzRect.x < robotPos.x && robotPos.x < xzRect.z && xzRect.y < robotPos.z && robotPos.z < xzRect.w) {
+				m_fFloor = height;
+			}
+		}
+	}
+	return false;
 }
