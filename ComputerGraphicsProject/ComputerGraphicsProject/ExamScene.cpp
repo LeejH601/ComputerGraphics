@@ -885,14 +885,16 @@ void CSPScene::Update(float fElapsedTime)
 							C1.normal = glm::normalize(v3.normal + ((v1.normal - v3.normal) * t1));
 							C1.tangent = glm::normalize(v3.tangent + ((v1.tangent - v3.tangent) * t1));
 							C1.bitangent = glm::normalize(v3.bitangent + ((v1.bitangent - v3.bitangent) * t1));
-							C1.texcoord0 = glm::normalize(v3.texcoord0 + ((v1.texcoord0 - v3.texcoord0) * t1));
+							//C1.texcoord0 = glm::normalize(v3.texcoord0 + ((v1.texcoord0 - v3.texcoord0) * t1));
+							C1.texcoord0 = glm::mix(v3.texcoord0, v1.texcoord0, t1);
 
 							float t2 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v2.position - v3.position)));
 							C2.position = v3.position + t2 * (v2.position - v3.position);
 							C2.normal = glm::normalize(v3.normal + ((v2.normal - v3.normal) * t2));
 							C2.tangent = glm::normalize(v3.tangent + ((v2.tangent - v3.tangent) * t2));
 							C2.bitangent = glm::normalize(v3.bitangent + ((v2.bitangent - v3.bitangent) * t2));
-							C2.texcoord0 = glm::normalize(v3.texcoord0 + ((v2.texcoord0 - v3.texcoord0) * t2));
+							//C2.texcoord0 = glm::normalize(v3.texcoord0 + ((v2.texcoord0 - v3.texcoord0) * t2));
+							C2.texcoord0 = glm::mix(v3.texcoord0, v2.texcoord0, t2);
 
 							Upside.emplace_back(C1);
 
@@ -930,14 +932,14 @@ void CSPScene::Update(float fElapsedTime)
 							C1.normal = glm::normalize(v3.normal + ((v1.normal - v3.normal) * t1));
 							C1.tangent = glm::normalize(v3.tangent + ((v1.tangent - v3.tangent) * t1));
 							C1.bitangent = glm::normalize(v3.bitangent + ((v1.bitangent - v3.bitangent) * t1));
-							C1.texcoord0 = glm::normalize(v3.texcoord0 + ((v1.texcoord0 - v3.texcoord0) * t1));
+							C1.texcoord0 = glm::mix(v3.texcoord0, v1.texcoord0, t1);
 
 							float t2 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v2.position - v3.position)));
 							C2.position = v3.position + t2 * (v2.position - v3.position);
 							C2.normal = glm::normalize(v3.normal + ((v2.normal - v3.normal) * t2));
 							C2.tangent = glm::normalize(v3.tangent + ((v2.tangent - v3.tangent) * t2));
 							C2.bitangent = glm::normalize(v3.bitangent + ((v2.bitangent - v3.bitangent) * t2));
-							C2.texcoord0 = glm::normalize(v3.texcoord0 + ((v2.texcoord0 - v3.texcoord0) * t2));
+							C2.texcoord0 = glm::mix(v3.texcoord0, v2.texcoord0, t2);
 
 							Underside.emplace_back(C1);
 							Underside.emplace_back(v2);
