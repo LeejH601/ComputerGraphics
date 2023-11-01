@@ -69,9 +69,13 @@ public:
 
 class CSPScene : public CPBR_TestScene
 {
+	POINT m_startPos;
+	POINT m_endPos;
+	glm::vec3 p1, p2;
 public:
 	CSPScene();
 	virtual ~CSPScene();
 
+	virtual void MouseInput(int button, int state, int x, int y);
 	virtual void Update(float fElapsedTime);
 };

@@ -667,8 +667,8 @@ void CExamScene_9::Update(float fElapsedTime)
 		if (rect.w > height)
 			return false;
 		return true;
-	};
-	static glm::vec4 rectColide{- 0.5, -1.0f, 0.5f, 1.0f  };
+		};
+	static glm::vec4 rectColide{ -0.5, -1.0f, 0.5f, 1.0f };
 	for (int i = 0; i < m_pObjects.size(); ++i) {
 		CObject* obj = m_pObjects[i].get();
 		if (m_moveType)
@@ -706,7 +706,7 @@ void CExamScene_9::Update(float fElapsedTime)
 			}
 			std::cout << rect.x << " " << rect.y << " " << rect.z << " " << rect.w << std::endl;
 		}
-			break;
+		break;
 		case 2:
 		{
 			glm::vec4 point1{ rectColide.x, 0.0f, rectColide.y,1.0f };
@@ -728,11 +728,11 @@ void CExamScene_9::Update(float fElapsedTime)
 				}
 			}
 		}
-			break;
+		break;
 		default:
 			break;
 		}
-	
+
 	}
 }
 
@@ -762,7 +762,7 @@ void CExamScene_18::Init()
 
 	std::shared_ptr<CObject> obj = std::make_shared<CObject>();
 
-	for(int i = 0; i < 6; ++i)
+	for (int i = 0; i < 6; ++i)
 		obj->SetChild(child[i]);
 
 	//obj->RotationQuat(glm::radians(90.0f), glm::vec3(0, 0, 1));
@@ -789,9 +789,50 @@ CSPScene::~CSPScene()
 {
 }
 
+void CSPScene::MouseInput(int button, int state, int x, int y)
+{
+	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
+		m_eMouseState = MOUSE_STATE::MOUSE_CILCK_RIGHT;
+		m_ptOldMouseCursor = { x,y };
+		m_ptOldMouseCursor.x -= g_WindowSizeX / 2;
+		m_ptOldMouseCursor.y -= g_WindowSizeY / 2;
+	}
+	if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP) {
+		m_eMouseState = MOUSE_STATE::MOUSE_CILCK_NONE;
+	}
+
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		m_startPos = { x,y };
+
+	}
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
+		m_endPos = { x,y };
+	}
+}
+
 void CSPScene::Update(float fElapsedTime)
 {
+	CPBR_TestScene::Update(fElapsedTime);
 	static bool TestFlag = false;
+	
+
+	p1 = { m_startPos.x, m_startPos.y, 0.0f };
+	p1 /= g_WindowSizeX;
+	p1 -= 0.5f;
+	p1.z = 0.1f;
+
+	p2 = { m_endPos.x, m_endPos.y, 0.0f };
+	p2 /= g_WindowSizeX;
+	p2 -= 0.5f;
+	p2.z = 0.1f;
+
+	p1 = glm::vec4(p1,1.0f) * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::inverse(m_pMainCamera->m_mat4x4View) ;
+	p2 = glm::vec4(p2,1.0f) * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::inverse(m_pMainCamera->m_mat4x4View) ;
+
+	glm::vec3 direction = p2 - p1;
+
+
+
 
 	if (TestFlag == false) {
 		if (m_pObjects.size() > 0) {
@@ -807,44 +848,8 @@ void CSPScene::Update(float fElapsedTime)
 			std::vector<CMesh::Vertex> Underside;
 
 			std::vector<CMesh::Vertex> NewVertexs;
-			static class LessVertex
-			{
-				bool inited = false;
-				CMesh::Vertex KeyVertex;
-			public:
-				/*bool operator()(const CMesh::Vertex& lhs, const CMesh::Vertex& rhs) const {
-					if (lhs.position.x < rhs.position.x) {
-						return true;
-					}
-					if (abs(lhs.position.x - rhs.position.x) < 0.00001f) {
-						if (lhs.position.y < rhs.position.y) {
-							return true;
-						}
 
-						if (abs(lhs.position.y - rhs.position.y) < 0.00001f) {
-							if (lhs.position.z < rhs.position.z) {
-								return true;
-							}
-						}
-					}
-					return false;
-				};*/
-
-				bool operator()(const CMesh::Vertex& lhs, const CMesh::Vertex& rhs) const {
-
-					if (inited == false) {
-						CMesh::Vertex& Key = const_cast<CMesh::Vertex&>(KeyVertex);
-						Key = const_cast<CMesh::Vertex&>(lhs);
-						bool& flag = const_cast<bool&>(inited);
-						flag = true;
-					}
-
-					return glm::distance(KeyVertex.position, lhs.position) < glm::distance(KeyVertex.position, rhs.position);
-				};
-			};
-			std::set<CMesh::Vertex, LessVertex> NewVertexSet;
-
-			glm::vec4 testPlane = glm::vec4(0, 1, 0, 0.1f);
+			glm::vec4 testPlane = glm::vec4(0, 1, 0, 0.1f); //
 
 			if (nIndices > 0) {
 				for (int i = 0; i < nIndices;) {
@@ -877,11 +882,33 @@ void CSPScene::Update(float fElapsedTime)
 							glm::vec3 N{ testPlane.x,testPlane.y, testPlane.z };
 							float t1 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v1.position - v3.position)));
 							C1.position = v3.position + t1 * (v1.position - v3.position);
+							C1.normal = glm::normalize(v3.normal + ((v1.normal - v3.normal) * t1));
+							C1.tangent = glm::normalize(v3.tangent + ((v1.tangent - v3.tangent) * t1));
+							C1.bitangent = glm::normalize(v3.bitangent + ((v1.bitangent - v3.bitangent) * t1));
+							C1.texcoord0 = glm::normalize(v3.texcoord0 + ((v1.texcoord0 - v3.texcoord0) * t1));
 
 							float t2 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v2.position - v3.position)));
 							C2.position = v3.position + t2 * (v2.position - v3.position);
+							C2.normal = glm::normalize(v3.normal + ((v2.normal - v3.normal) * t2));
+							C2.tangent = glm::normalize(v3.tangent + ((v2.tangent - v3.tangent) * t2));
+							C2.bitangent = glm::normalize(v3.bitangent + ((v2.bitangent - v3.bitangent) * t2));
+							C2.texcoord0 = glm::normalize(v3.texcoord0 + ((v2.texcoord0 - v3.texcoord0) * t2));
 
 							Upside.emplace_back(C1);
+
+						/*	glm::vec3 C1Tov1 = glm::normalize(v1.position - C1.position);
+							glm::vec3 C2Tov2 = glm::normalize(v2.position - C1.position);
+							glm::vec3 newNormal = glm::cross(C1Tov1, C2Tov2);
+							float d = dot(newNormal, C1.normal);
+							if (d > 1) {
+								CMesh::Vertex temp = Upside[Upside.size() - 1];
+								Upside[Upside.size() - 1] = Upside[Upside.size() - 2];
+								Upside[Upside.size() - 2] = temp;
+							}
+							else {
+
+							}*/
+
 							Upside.emplace_back(v2);
 							Upside.emplace_back(C1);
 							Upside.emplace_back(C2);
@@ -889,7 +916,7 @@ void CSPScene::Update(float fElapsedTime)
 							Underside.emplace_back(C1);
 							Underside.emplace_back(C2);
 
-							
+
 						}
 						else {
 							v2 = Underside[Underside.size() - 1];
@@ -900,9 +927,17 @@ void CSPScene::Update(float fElapsedTime)
 							glm::vec3 N{ testPlane.x,testPlane.y, testPlane.z };
 							float t1 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v1.position - v3.position)));
 							C1.position = v3.position + t1 * (v1.position - v3.position);
+							C1.normal = glm::normalize(v3.normal + ((v1.normal - v3.normal) * t1));
+							C1.tangent = glm::normalize(v3.tangent + ((v1.tangent - v3.tangent) * t1));
+							C1.bitangent = glm::normalize(v3.bitangent + ((v1.bitangent - v3.bitangent) * t1));
+							C1.texcoord0 = glm::normalize(v3.texcoord0 + ((v1.texcoord0 - v3.texcoord0) * t1));
 
 							float t2 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v2.position - v3.position)));
 							C2.position = v3.position + t2 * (v2.position - v3.position);
+							C2.normal = glm::normalize(v3.normal + ((v2.normal - v3.normal) * t2));
+							C2.tangent = glm::normalize(v3.tangent + ((v2.tangent - v3.tangent) * t2));
+							C2.bitangent = glm::normalize(v3.bitangent + ((v2.bitangent - v3.bitangent) * t2));
+							C2.texcoord0 = glm::normalize(v3.texcoord0 + ((v2.texcoord0 - v3.texcoord0) * t2));
 
 							Underside.emplace_back(C1);
 							Underside.emplace_back(v2);
@@ -912,36 +947,41 @@ void CSPScene::Update(float fElapsedTime)
 							Upside.emplace_back(C1);
 							Upside.emplace_back(C2);
 						}
-						if( NewVertexs.size() > 0 && glm::distance(NewVertexs.back().position, C1.position) > 0.00001f)
-							NewVertexs.emplace_back(C1);
+						NewVertexs.emplace_back(C1);
 						NewVertexs.emplace_back(C2);
-
-						NewVertexSet.emplace(C1);
-						NewVertexSet.emplace(C2);
 					}
 				}
 			}
 
-			std::set<CMesh::Vertex, LessVertex>::iterator p = NewVertexSet.begin();
-			while (true)
-			{
-				std::set<CMesh::Vertex, LessVertex>::iterator v1 = p++;
-				std::set<CMesh::Vertex, LessVertex>::iterator v2 = p++;
-				std::set<CMesh::Vertex, LessVertex>::iterator v3 = p++;
-
-				Upside.emplace_back(*v1);
-				Upside.emplace_back(*v2);
-				Upside.emplace_back(*v3);
-
-				Underside.emplace_back(*v1);
-				Underside.emplace_back(*v2);
-				Underside.emplace_back(*v3);
-
-				if (p == NewVertexSet.end())
-					break;
-
-				p = v2;
+			CMesh::Vertex Center;
+			Center.position = glm::vec3(0, 0, 0);
+			Center.normal = -glm::vec3(testPlane.x, testPlane.y, testPlane.z);
+			for (CMesh::Vertex& v : NewVertexs) {
+				Center.position += v.position;
 			}
+			Center.position /= NewVertexs.size();
+
+			CMesh::Vertex CenterDown;
+			CenterDown = Center;
+			CenterDown.normal = -Center.normal;
+
+			for (int i = 0; i < NewVertexs.size() - 1; i += 2) {
+				CMesh::Vertex v2 = NewVertexs[i];
+				CMesh::Vertex v3 = NewVertexs[i + 1];
+
+				v2.normal = Center.normal;
+				v3.normal = Center.normal;
+				Upside.emplace_back(Center);
+				Upside.emplace_back(v2);
+				Upside.emplace_back(v3);
+
+				v2.normal = CenterDown.normal;
+				v3.normal = CenterDown.normal;
+				Underside.emplace_back(CenterDown);
+				Underside.emplace_back(v2);
+				Underside.emplace_back(v3);
+			}
+
 
 			std::shared_ptr<CMesh> newMesh1 = std::make_shared<CMesh>();
 			newMesh1->SetVertexs(Upside);
@@ -968,6 +1008,6 @@ void CSPScene::Update(float fElapsedTime)
 		}
 		TestFlag = true;
 	}
-	
+
 
 }
