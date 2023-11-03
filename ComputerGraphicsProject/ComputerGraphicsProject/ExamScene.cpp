@@ -818,16 +818,16 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 
 		inverseViewportMatrix = glm::inverse(inverseViewportMatrix);
 
-		p1 = { m_startPos.x, m_startPos.y, 0.0f };
+		p1 = { m_startPos.x, m_startPos.y, 1.0f };
 
-		p2 = { m_endPos.x, m_endPos.y, 0.0f };
+		p2 = { m_endPos.x, m_endPos.y, 1.0f };
 
 		p1 = glm::vec4(p1, 1.0f) * inverseViewportMatrix * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::inverse(m_pMainCamera->m_mat4x4View);
 		p2 = glm::vec4(p2, 1.0f) * inverseViewportMatrix * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::inverse(m_pMainCamera->m_mat4x4View);
 		p3 = m_pMainCamera->GetPosition();
 
-		glm::vec3 direction1 = p2 - p1;
-		glm::vec3 direction2 = p3 - p1;
+		glm::vec3 direction1 = p3 - p1;
+		glm::vec3 direction2 = p3 - p2;
 
 		direction1 = glm::normalize(direction1);
 		direction2 = glm::normalize(direction2);
@@ -851,8 +851,8 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 				plane = plane * inverseWorld;
 
 				glm::vec3 modelP1 = glm::vec3(glm::vec4(p1, 1.0f) * inverseWorld);
-				float D = (p1.x * plane.x, +p1.y * plane.y + p1.z * plane.z);
-				plane.w = D;
+				float D = (p3.x * plane.x, +p3.y * plane.y + p3.z * plane.z);
+				plane.w = -D;
 
 				CMesh* mesh = nullptr;
 				mesh = obj->GetMesh();
