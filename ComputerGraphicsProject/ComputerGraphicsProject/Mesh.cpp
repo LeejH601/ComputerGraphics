@@ -615,6 +615,17 @@ void CMesh::LoadMeshFromFile(FILE* pInFile)
 	CreateShaderVariables();
 }
 
+void CMesh::SetSubmesh(std::vector<UINT>& subsetIndices)
+{
+	if (m_nSubMeshes == 0) {
+		m_nSubMeshes = 1;
+		m_pnSubSetIndices.resize(m_nSubMeshes);
+		m_pnSubSetIndices[0] = subsetIndices.size();
+		m_ppnSubSetIndices.resize(m_nSubMeshes);
+		m_ppnSubSetIndices[0] = subsetIndices;
+	}
+}
+
 void CMesh::CreateShaderVariables()
 {
 	//glGenVertexArrays(1, &m_VAO);

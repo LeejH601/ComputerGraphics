@@ -81,6 +81,8 @@ public:
 		}
 	}
 
+	void SetSubmesh(std::vector<UINT>& subsetIndices);
+
 	virtual void CreateShaderVariables();
 	virtual void BindShaderVariables(GLuint s_Program);
 

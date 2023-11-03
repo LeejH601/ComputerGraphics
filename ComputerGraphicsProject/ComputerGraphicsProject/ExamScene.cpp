@@ -846,11 +846,15 @@ void CSPScene::Update(float fElapsedTime)
 			std::vector<UINT> indices = mesh->GetSubSetIndice(0);
 			int nIndices = indices.size();
 
-			std::vector<CMesh::Vertex> Upside;
-			std::vector<CMesh::Vertex> Underside;
+			/*std::vector<CMesh::Vertex> Upside;
+			std::vector<CMesh::Vertex> Underside;*/
+
+			std::vector<UINT> Upside;
+			std::vector<UINT> Underside;
 
 			std::vector<CMesh::Vertex> NewVertexs;
 			UINT newVertexIndexOffset = vertexs.size();
+			UINT IndexOffsetRegister = newVertexIndexOffset;
 
 			glm::vec4 testPlane = glm::vec4(0, 1, 0, 0.1f); //
 
@@ -871,19 +875,24 @@ void CSPScene::Update(float fElapsedTime)
 						UpAndDowns[j] = Distance(testPlane, v[j].position) >= 0.0f;
 						if (UpAndDowns[j]) {
 							nDistribution++;
-							Upside.emplace_back(v[j]);
+							Upside.emplace_back(vIndex[j]);
 						}
 						else
-							Underside.emplace_back(v[j]);
+							Underside.emplace_back(vIndex[j]);
 					}
 
 					if (nDistribution != 3 && nDistribution != 0) {
 						CMesh::Vertex v1, v2, v3;
 						CMesh::Vertex C1, C2;
+						UINT C1Index = IndexOffsetRegister++;
+						UINT C2Index = IndexOffsetRegister++;
 						if (nDistribution == 2) {
-							v2 = Upside[Upside.size() - 1];
-							v1 = Upside[Upside.size() - 2];
-							v3 = Underside[Underside.size() - 1];
+							UINT v1Index = Upside[Upside.size() - 2];
+							UINT v2Index = Upside[Upside.size() - 1];
+							UINT v3Index = Underside[Underside.size() - 1];
+							v2 = vertexs[v2Index];
+							v1 = vertexs[v1Index];
+							v3 = vertexs[v3Index];
 
 							float D = testPlane.w;
 							glm::vec3 N{ testPlane.x,testPlane.y, testPlane.z };
@@ -892,7 +901,6 @@ void CSPScene::Update(float fElapsedTime)
 							C1.normal = glm::normalize(v3.normal + ((v1.normal - v3.normal) * t1));
 							C1.tangent = glm::normalize(v3.tangent + ((v1.tangent - v3.tangent) * t1));
 							C1.bitangent = glm::normalize(v3.bitangent + ((v1.bitangent - v3.bitangent) * t1));
-							//C1.texcoord0 = glm::normalize(v3.texcoord0 + ((v1.texcoord0 - v3.texcoord0) * t1));
 							C1.texcoord0 = glm::mix(v3.texcoord0, v1.texcoord0, t1);
 
 							float t2 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v2.position - v3.position)));
@@ -900,37 +908,25 @@ void CSPScene::Update(float fElapsedTime)
 							C2.normal = glm::normalize(v3.normal + ((v2.normal - v3.normal) * t2));
 							C2.tangent = glm::normalize(v3.tangent + ((v2.tangent - v3.tangent) * t2));
 							C2.bitangent = glm::normalize(v3.bitangent + ((v2.bitangent - v3.bitangent) * t2));
-							//C2.texcoord0 = glm::normalize(v3.texcoord0 + ((v2.texcoord0 - v3.texcoord0) * t2));
 							C2.texcoord0 = glm::mix(v3.texcoord0, v2.texcoord0, t2);
 
-							Upside.emplace_back(C1);
+							Upside.emplace_back(C1Index);
+							Upside.emplace_back(v2Index);
+							Upside.emplace_back(C1Index);
+							Upside.emplace_back(C2Index);
 
-						/*	glm::vec3 C1Tov1 = glm::normalize(v1.position - C1.position);
-							glm::vec3 C2Tov2 = glm::normalize(v2.position - C1.position);
-							glm::vec3 newNormal = glm::cross(C1Tov1, C2Tov2);
-							float d = dot(newNormal, C1.normal);
-							if (d > 1) {
-								CMesh::Vertex temp = Upside[Upside.size() - 1];
-								Upside[Upside.size() - 1] = Upside[Upside.size() - 2];
-								Upside[Upside.size() - 2] = temp;
-							}
-							else {
-
-							}*/
-
-							Upside.emplace_back(v2);
-							Upside.emplace_back(C1);
-							Upside.emplace_back(C2);
-
-							Underside.emplace_back(C1);
-							Underside.emplace_back(C2);
+							Underside.emplace_back(C1Index);
+							Underside.emplace_back(C2Index);
 
 
 						}
 						else {
-							v2 = Underside[Underside.size() - 1];
-							v1 = Underside[Underside.size() - 2];
-							v3 = Upside[Upside.size() - 1];
+							UINT v1Index = Underside[Underside.size() - 2];
+							UINT v2Index = Underside[Underside.size() - 1];
+							UINT v3Index = Upside[Upside.size() - 1];
+							v2 = vertexs[v2Index];
+							v1 = vertexs[v1Index];
+							v3 = vertexs[v3Index];
 
 							float D = testPlane.w;
 							glm::vec3 N{ testPlane.x,testPlane.y, testPlane.z };
@@ -948,13 +944,14 @@ void CSPScene::Update(float fElapsedTime)
 							C2.bitangent = glm::normalize(v3.bitangent + ((v2.bitangent - v3.bitangent) * t2));
 							C2.texcoord0 = glm::mix(v3.texcoord0, v2.texcoord0, t2);
 
-							Underside.emplace_back(C1);
-							Underside.emplace_back(v2);
-							Underside.emplace_back(C1);
-							Underside.emplace_back(C2);
+							Underside.emplace_back(C1Index);
 
-							Upside.emplace_back(C1);
-							Upside.emplace_back(C2);
+							Underside.emplace_back(v2Index);
+							Underside.emplace_back(C1Index);
+							Underside.emplace_back(C2Index);
+
+							Upside.emplace_back(C1Index);
+							Upside.emplace_back(C2Index);
 						}
 						NewVertexs.emplace_back(C1);
 						NewVertexs.emplace_back(C2);
@@ -962,7 +959,17 @@ void CSPScene::Update(float fElapsedTime)
 				}
 			}
 
+			std::vector<CMesh::Vertex> mergedVertexs;
+			mergedVertexs.reserve(vertexs.size() + NewVertexs.size() + 2);
+			mergedVertexs = vertexs;
+			for (CMesh::Vertex& v : NewVertexs) {
+				mergedVertexs.emplace_back(v);
+			}
+
 			CMesh::Vertex Center;
+			UINT CenterIndex = IndexOffsetRegister++;
+			UINT CenterDownIndex = IndexOffsetRegister++;
+
 			Center.position = glm::vec3(0, 0, 0);
 			Center.normal = -glm::vec3(testPlane.x, testPlane.y, testPlane.z);
 			for (CMesh::Vertex& v : NewVertexs) {
@@ -974,30 +981,38 @@ void CSPScene::Update(float fElapsedTime)
 			CenterDown = Center;
 			CenterDown.normal = -Center.normal;
 
+			mergedVertexs.emplace_back(Center);
+			mergedVertexs.emplace_back(CenterDown);
+
 			for (int i = 0; i < NewVertexs.size() - 1; i += 2) {
-				CMesh::Vertex v2 = NewVertexs[i];
-				CMesh::Vertex v3 = NewVertexs[i + 1];
+				UINT v2Index = newVertexIndexOffset + i;
+				UINT v3Index = newVertexIndexOffset + i + 1;
+				CMesh::Vertex v2 = mergedVertexs[v2Index];
+				CMesh::Vertex v3 = mergedVertexs[v3Index];
 
 				v2.normal = Center.normal;
 				v3.normal = Center.normal;
-				Upside.emplace_back(Center);
-				Upside.emplace_back(v2);
-				Upside.emplace_back(v3);
+				Upside.emplace_back(CenterIndex);
+				Upside.emplace_back(v2Index);
+				Upside.emplace_back(v3Index);
 
 				v2.normal = CenterDown.normal;
 				v3.normal = CenterDown.normal;
-				Underside.emplace_back(CenterDown);
-				Underside.emplace_back(v2);
-				Underside.emplace_back(v3);
+				Underside.emplace_back(CenterDownIndex);
+				Underside.emplace_back(v2Index);
+				Underside.emplace_back(v3Index);
 			}
 
 
 			std::shared_ptr<CMesh> newMesh1 = std::make_shared<CMesh>();
-			newMesh1->SetVertexs(Upside);
+			newMesh1->SetVertexs(mergedVertexs);
+			newMesh1->SetSubmesh(Upside);
 			newMesh1->CreateShaderVariables();
 
+
 			std::shared_ptr<CMesh> newMesh2 = std::make_shared<CMesh>();
-			newMesh2->SetVertexs(Underside);
+			newMesh2->SetVertexs(mergedVertexs);
+			newMesh2->SetSubmesh(Underside);
 			newMesh2->CreateShaderVariables();
 
 			std::shared_ptr<CObject> newObj1 = std::make_shared<CObject>();
@@ -1007,7 +1022,9 @@ void CSPScene::Update(float fElapsedTime)
 			newObj2->SetMaterial(m_pObjects[0]->GetMaterial(0));
 
 			newObj1->SetMesh(newMesh1);
+			newObj1->SetPosition(glm::vec3(0, 2.0, 0));
 			newObj2->SetMesh(newMesh2);
+			newObj2->SetPosition(glm::vec3(0, -2.0, 0));
 
 			m_pObjects.clear();
 			m_pObjects.emplace_back(newObj1);
