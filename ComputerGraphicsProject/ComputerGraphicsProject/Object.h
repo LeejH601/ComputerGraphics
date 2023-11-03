@@ -39,6 +39,7 @@ public:
 	CObject& operator=(const CObject& other);
 	CObject& operator=(CObject&& other) noexcept;*/
 
+	void SetName(std::string str) { m_strObjectName = str; };
 	std::string GetName() { return m_strObjectName; };
 	glm::quat GetRotation() { return m_vec4Rotation; };
 	glm::vec3 GetScale() { return m_vec3Scale; };

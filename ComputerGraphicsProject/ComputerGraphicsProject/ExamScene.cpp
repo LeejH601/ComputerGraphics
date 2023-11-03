@@ -808,6 +808,259 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 	}
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
 		m_endPos = { x,y };
+
+		glm::mat4x4 inverseViewportMatrix = {
+		g_WindowSizeX / 2, 0, 0, g_WindowSizeX / 2,
+		0, g_WindowSizeY / 2, 0, g_WindowSizeY / 2,
+		0, 0, 1.f / 2.f, 1.f / 2.f,
+		0, 0, 0, 1.f
+		};
+
+		inverseViewportMatrix = glm::inverse(inverseViewportMatrix);
+
+		p1 = { m_startPos.x, m_startPos.y, 0.0f };
+
+		p2 = { m_endPos.x, m_endPos.y, 0.0f };
+
+		p1 = glm::vec4(p1, 1.0f) * inverseViewportMatrix * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::inverse(m_pMainCamera->m_mat4x4View);
+		p2 = glm::vec4(p2, 1.0f) * inverseViewportMatrix * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::inverse(m_pMainCamera->m_mat4x4View);
+		p3 = m_pMainCamera->GetPosition();
+
+		glm::vec3 direction1 = p2 - p1;
+		glm::vec3 direction2 = p3 - p1;
+
+		direction1 = glm::normalize(direction1);
+		direction2 = glm::normalize(direction2);
+
+		glm::vec3 normal = glm::cross(direction2, direction1);
+
+
+		glm::vec4 plane;
+
+
+		if (m_pObjects.size() > 0) {
+			std::vector<std::shared_ptr<CObject>> objectBuf;
+			objectBuf = m_pObjects;
+			m_pObjects.clear();
+
+			for (int i = 0; i < objectBuf.size(); ++i) {
+				CObject* obj = objectBuf[i].get();
+				glm::mat4x4 inverseWorld = obj->m_mat4x4Wolrd;
+				inverseWorld = glm::inverse(inverseWorld);
+				plane = glm::vec4(normal.x, normal.y, normal.z, 0);
+				plane = plane * inverseWorld;
+
+				glm::vec3 modelP1 = glm::vec3(glm::vec4(p1, 1.0f) * inverseWorld);
+				float D = (p1.x * plane.x, +p1.y * plane.y + p1.z * plane.z);
+				plane.w = D;
+
+				CMesh* mesh = nullptr;
+				mesh = obj->GetMesh();
+
+				std::vector<CMesh::Vertex> vertexs = mesh->GetVertexs();
+				std::vector<UINT> indices = mesh->GetSubSetIndice(0);
+				int nIndices = indices.size();
+
+				/*std::vector<CMesh::Vertex> Upside;
+				std::vector<CMesh::Vertex> Underside;*/
+
+				std::vector<UINT> Upside;
+				std::vector<UINT> Underside;
+
+				std::vector<CMesh::Vertex> NewVertexs;
+				UINT newVertexIndexOffset = vertexs.size();
+				UINT IndexOffsetRegister = newVertexIndexOffset;
+
+
+				if (nIndices > 0) {
+					for (int i = 0; i < nIndices;) {
+						CMesh::Vertex v[3];
+						UINT vIndex[3];
+						v[0] = vertexs[indices[i]];
+						vIndex[0] = indices[i++];
+						v[1] = vertexs[indices[i]];
+						vIndex[1] = indices[i++];
+						v[2] = vertexs[indices[i]];
+						vIndex[2] = indices[i++];
+
+						bool UpAndDowns[3];
+						int nDistribution = 0;
+						for (int j = 0; j < 3; ++j) {
+							UpAndDowns[j] = Distance(plane, v[j].position) >= 0.0f;
+							if (UpAndDowns[j]) {
+								nDistribution++;
+								Upside.emplace_back(vIndex[j]);
+							}
+							else
+								Underside.emplace_back(vIndex[j]);
+						}
+
+						if (nDistribution != 3 && nDistribution != 0) {
+							CMesh::Vertex v1, v2, v3;
+							CMesh::Vertex C1, C2;
+							UINT C1Index = IndexOffsetRegister++;
+							UINT C2Index = IndexOffsetRegister++;
+							if (nDistribution == 2) {
+								UINT v1Index = Upside[Upside.size() - 2];
+								UINT v2Index = Upside[Upside.size() - 1];
+								UINT v3Index = Underside[Underside.size() - 1];
+								v2 = vertexs[v2Index];
+								v1 = vertexs[v1Index];
+								v3 = vertexs[v3Index];
+
+								float D = plane.w;
+								glm::vec3 N{ plane.x,plane.y, plane.z };
+								float t1 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v1.position - v3.position)));
+								C1.position = v3.position + t1 * (v1.position - v3.position);
+								C1.normal = glm::normalize(v3.normal + ((v1.normal - v3.normal) * t1));
+								C1.tangent = glm::normalize(v3.tangent + ((v1.tangent - v3.tangent) * t1));
+								C1.bitangent = glm::normalize(v3.bitangent + ((v1.bitangent - v3.bitangent) * t1));
+								C1.texcoord0 = glm::mix(v3.texcoord0, v1.texcoord0, t1);
+
+								float t2 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v2.position - v3.position)));
+								C2.position = v3.position + t2 * (v2.position - v3.position);
+								C2.normal = glm::normalize(v3.normal + ((v2.normal - v3.normal) * t2));
+								C2.tangent = glm::normalize(v3.tangent + ((v2.tangent - v3.tangent) * t2));
+								C2.bitangent = glm::normalize(v3.bitangent + ((v2.bitangent - v3.bitangent) * t2));
+								C2.texcoord0 = glm::mix(v3.texcoord0, v2.texcoord0, t2);
+
+								Upside.emplace_back(C1Index);
+								Upside.emplace_back(v2Index);
+								Upside.emplace_back(C1Index);
+								Upside.emplace_back(C2Index);
+
+								Underside.emplace_back(C1Index);
+								Underside.emplace_back(C2Index);
+
+
+							}
+							else {
+								UINT v1Index = Underside[Underside.size() - 2];
+								UINT v2Index = Underside[Underside.size() - 1];
+								UINT v3Index = Upside[Upside.size() - 1];
+								v2 = vertexs[v2Index];
+								v1 = vertexs[v1Index];
+								v3 = vertexs[v3Index];
+
+								float D = plane.w;
+								glm::vec3 N{ plane.x,plane.y, plane.z };
+								float t1 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v1.position - v3.position)));
+								C1.position = v3.position + t1 * (v1.position - v3.position);
+								C1.normal = glm::normalize(v3.normal + ((v1.normal - v3.normal) * t1));
+								C1.tangent = glm::normalize(v3.tangent + ((v1.tangent - v3.tangent) * t1));
+								C1.bitangent = glm::normalize(v3.bitangent + ((v1.bitangent - v3.bitangent) * t1));
+								C1.texcoord0 = glm::mix(v3.texcoord0, v1.texcoord0, t1);
+
+								float t2 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v2.position - v3.position)));
+								C2.position = v3.position + t2 * (v2.position - v3.position);
+								C2.normal = glm::normalize(v3.normal + ((v2.normal - v3.normal) * t2));
+								C2.tangent = glm::normalize(v3.tangent + ((v2.tangent - v3.tangent) * t2));
+								C2.bitangent = glm::normalize(v3.bitangent + ((v2.bitangent - v3.bitangent) * t2));
+								C2.texcoord0 = glm::mix(v3.texcoord0, v2.texcoord0, t2);
+
+								Underside.emplace_back(C1Index);
+
+								Underside.emplace_back(v2Index);
+								Underside.emplace_back(C1Index);
+								Underside.emplace_back(C2Index);
+
+								Upside.emplace_back(C1Index);
+								Upside.emplace_back(C2Index);
+							}
+							NewVertexs.emplace_back(C1);
+							NewVertexs.emplace_back(C2);
+						}
+					}
+				}
+
+				if (NewVertexs.size() > 0) {
+					std::vector<CMesh::Vertex> mergedVertexs;
+					mergedVertexs.reserve(vertexs.size() + NewVertexs.size() + 2);
+					mergedVertexs = vertexs;
+					for (CMesh::Vertex& v : NewVertexs) {
+						mergedVertexs.emplace_back(v);
+					}
+
+					CMesh::Vertex Center;
+					UINT CenterIndex = IndexOffsetRegister++;
+					UINT CenterDownIndex = IndexOffsetRegister++;
+
+					Center.position = glm::vec3(0, 0, 0);
+					Center.normal = -glm::vec3(plane.x, plane.y, plane.z);
+					for (CMesh::Vertex& v : NewVertexs) {
+						Center.position += v.position;
+					}
+					Center.position /= NewVertexs.size();
+
+					CMesh::Vertex CenterDown;
+					CenterDown = Center;
+					CenterDown.normal = -Center.normal;
+
+					mergedVertexs.emplace_back(Center);
+					mergedVertexs.emplace_back(CenterDown);
+
+					for (int i = 0; i < NewVertexs.size() - 1; i += 2) {
+						UINT v2Index = newVertexIndexOffset + i;
+						UINT v3Index = newVertexIndexOffset + i + 1;
+						CMesh::Vertex v2 = mergedVertexs[v2Index];
+						CMesh::Vertex v3 = mergedVertexs[v3Index];
+
+						v2.normal = Center.normal;
+						v3.normal = Center.normal;
+						Upside.emplace_back(CenterIndex);
+						Upside.emplace_back(v2Index);
+						Upside.emplace_back(v3Index);
+
+						v2.normal = CenterDown.normal;
+						v3.normal = CenterDown.normal;
+						Underside.emplace_back(CenterDownIndex);
+						Underside.emplace_back(v2Index);
+						Underside.emplace_back(v3Index);
+					}
+
+
+					std::shared_ptr<CMesh> newMesh1 = std::make_shared<CMesh>();
+					newMesh1->SetVertexs(mergedVertexs);
+					newMesh1->SetSubmesh(Upside);
+					newMesh1->CreateShaderVariables();
+
+
+					std::shared_ptr<CMesh> newMesh2 = std::make_shared<CMesh>();
+					newMesh2->SetVertexs(mergedVertexs);
+					newMesh2->SetSubmesh(Underside);
+					newMesh2->CreateShaderVariables();
+
+					glm::vec3 objPos = obj->GetPosition();
+
+					std::shared_ptr<CObject> newObj1 = std::make_shared<CObject>();
+					newObj1->SetMaterial(obj->GetMaterial(0));
+					newObj1->SetName(obj->GetName());
+					newObj1->SetPosition(objPos + normal * 0.1f);
+
+					std::shared_ptr<CObject> newObj2 = std::make_shared<CObject>();
+					newObj2->SetMaterial(obj->GetMaterial(0));
+					newObj2->SetName(obj->GetName());
+					newObj2->SetPosition(objPos - normal * 0.1f);
+
+					newObj1->SetMesh(newMesh1);
+					newObj2->SetMesh(newMesh2);
+
+					m_pObjects.emplace_back(newObj1);
+					m_pObjects.emplace_back(newObj2);
+
+					std::cout << std::endl;
+				}
+				else {
+					m_pObjects.emplace_back(objectBuf[i]);
+				}
+			}
+			//m_pObjects = objectBuf;
+			//m_pObjects.clear();
+			/*for (int i = 0; i < objectBuf.size(); ++i) {
+				std::shared_ptr<CObject> o = objectBuf[i];
+				m_pObjects.emplace_back(objectBuf[i]);
+			}*/
+		}
 	}
 }
 
@@ -815,223 +1068,10 @@ void CSPScene::Update(float fElapsedTime)
 {
 	CPBR_TestScene::Update(fElapsedTime);
 	static bool TestFlag = false;
-	
-
-	p1 = { m_startPos.x, m_startPos.y, 0.0f };
-	p1 /= g_WindowSizeX;
-	p1 -= 0.5f;
-	p1.z = 0.1f;
-
-	p2 = { m_endPos.x, m_endPos.y, 0.0f };
-	p2 /= g_WindowSizeX;
-	p2 -= 0.5f;
-	p2.z = 0.1f;
-
-	p1 = glm::vec4(p1,1.0f) * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::inverse(m_pMainCamera->m_mat4x4View) ;
-	p2 = glm::vec4(p2,1.0f) * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::inverse(m_pMainCamera->m_mat4x4View) ;
-
-	glm::vec3 direction = p2 - p1;
-
-
 
 
 	if (TestFlag == false) {
-		if (m_pObjects.size() > 0) {
-			CObject* obj = m_pObjects[0].get();
 
-			CMesh* mesh = nullptr;
-			mesh = obj->GetMesh();
-
-			std::vector<CMesh::Vertex> vertexs = mesh->GetVertexs();
-			std::vector<UINT> indices = mesh->GetSubSetIndice(0);
-			int nIndices = indices.size();
-
-			/*std::vector<CMesh::Vertex> Upside;
-			std::vector<CMesh::Vertex> Underside;*/
-
-			std::vector<UINT> Upside;
-			std::vector<UINT> Underside;
-
-			std::vector<CMesh::Vertex> NewVertexs;
-			UINT newVertexIndexOffset = vertexs.size();
-			UINT IndexOffsetRegister = newVertexIndexOffset;
-
-			glm::vec4 testPlane = glm::vec4(0, 1, 0, 0.1f); //
-
-			if (nIndices > 0) {
-				for (int i = 0; i < nIndices;) {
-					CMesh::Vertex v[3];
-					UINT vIndex[3];
-					v[0] = vertexs[indices[i]];
-					vIndex[0] = indices[i++];
-					v[1] = vertexs[indices[i]];
-					vIndex[1] = indices[i++];
-					v[2] = vertexs[indices[i]];
-					vIndex[2] = indices[i++];
-
-					bool UpAndDowns[3];
-					int nDistribution = 0;
-					for (int j = 0; j < 3; ++j) {
-						UpAndDowns[j] = Distance(testPlane, v[j].position) >= 0.0f;
-						if (UpAndDowns[j]) {
-							nDistribution++;
-							Upside.emplace_back(vIndex[j]);
-						}
-						else
-							Underside.emplace_back(vIndex[j]);
-					}
-
-					if (nDistribution != 3 && nDistribution != 0) {
-						CMesh::Vertex v1, v2, v3;
-						CMesh::Vertex C1, C2;
-						UINT C1Index = IndexOffsetRegister++;
-						UINT C2Index = IndexOffsetRegister++;
-						if (nDistribution == 2) {
-							UINT v1Index = Upside[Upside.size() - 2];
-							UINT v2Index = Upside[Upside.size() - 1];
-							UINT v3Index = Underside[Underside.size() - 1];
-							v2 = vertexs[v2Index];
-							v1 = vertexs[v1Index];
-							v3 = vertexs[v3Index];
-
-							float D = testPlane.w;
-							glm::vec3 N{ testPlane.x,testPlane.y, testPlane.z };
-							float t1 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v1.position - v3.position)));
-							C1.position = v3.position + t1 * (v1.position - v3.position);
-							C1.normal = glm::normalize(v3.normal + ((v1.normal - v3.normal) * t1));
-							C1.tangent = glm::normalize(v3.tangent + ((v1.tangent - v3.tangent) * t1));
-							C1.bitangent = glm::normalize(v3.bitangent + ((v1.bitangent - v3.bitangent) * t1));
-							C1.texcoord0 = glm::mix(v3.texcoord0, v1.texcoord0, t1);
-
-							float t2 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v2.position - v3.position)));
-							C2.position = v3.position + t2 * (v2.position - v3.position);
-							C2.normal = glm::normalize(v3.normal + ((v2.normal - v3.normal) * t2));
-							C2.tangent = glm::normalize(v3.tangent + ((v2.tangent - v3.tangent) * t2));
-							C2.bitangent = glm::normalize(v3.bitangent + ((v2.bitangent - v3.bitangent) * t2));
-							C2.texcoord0 = glm::mix(v3.texcoord0, v2.texcoord0, t2);
-
-							Upside.emplace_back(C1Index);
-							Upside.emplace_back(v2Index);
-							Upside.emplace_back(C1Index);
-							Upside.emplace_back(C2Index);
-
-							Underside.emplace_back(C1Index);
-							Underside.emplace_back(C2Index);
-
-
-						}
-						else {
-							UINT v1Index = Underside[Underside.size() - 2];
-							UINT v2Index = Underside[Underside.size() - 1];
-							UINT v3Index = Upside[Upside.size() - 1];
-							v2 = vertexs[v2Index];
-							v1 = vertexs[v1Index];
-							v3 = vertexs[v3Index];
-
-							float D = testPlane.w;
-							glm::vec3 N{ testPlane.x,testPlane.y, testPlane.z };
-							float t1 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v1.position - v3.position)));
-							C1.position = v3.position + t1 * (v1.position - v3.position);
-							C1.normal = glm::normalize(v3.normal + ((v1.normal - v3.normal) * t1));
-							C1.tangent = glm::normalize(v3.tangent + ((v1.tangent - v3.tangent) * t1));
-							C1.bitangent = glm::normalize(v3.bitangent + ((v1.bitangent - v3.bitangent) * t1));
-							C1.texcoord0 = glm::mix(v3.texcoord0, v1.texcoord0, t1);
-
-							float t2 = (-D - glm::dot(N, v3.position)) / (glm::dot(N, (v2.position - v3.position)));
-							C2.position = v3.position + t2 * (v2.position - v3.position);
-							C2.normal = glm::normalize(v3.normal + ((v2.normal - v3.normal) * t2));
-							C2.tangent = glm::normalize(v3.tangent + ((v2.tangent - v3.tangent) * t2));
-							C2.bitangent = glm::normalize(v3.bitangent + ((v2.bitangent - v3.bitangent) * t2));
-							C2.texcoord0 = glm::mix(v3.texcoord0, v2.texcoord0, t2);
-
-							Underside.emplace_back(C1Index);
-
-							Underside.emplace_back(v2Index);
-							Underside.emplace_back(C1Index);
-							Underside.emplace_back(C2Index);
-
-							Upside.emplace_back(C1Index);
-							Upside.emplace_back(C2Index);
-						}
-						NewVertexs.emplace_back(C1);
-						NewVertexs.emplace_back(C2);
-					}
-				}
-			}
-
-			std::vector<CMesh::Vertex> mergedVertexs;
-			mergedVertexs.reserve(vertexs.size() + NewVertexs.size() + 2);
-			mergedVertexs = vertexs;
-			for (CMesh::Vertex& v : NewVertexs) {
-				mergedVertexs.emplace_back(v);
-			}
-
-			CMesh::Vertex Center;
-			UINT CenterIndex = IndexOffsetRegister++;
-			UINT CenterDownIndex = IndexOffsetRegister++;
-
-			Center.position = glm::vec3(0, 0, 0);
-			Center.normal = -glm::vec3(testPlane.x, testPlane.y, testPlane.z);
-			for (CMesh::Vertex& v : NewVertexs) {
-				Center.position += v.position;
-			}
-			Center.position /= NewVertexs.size();
-
-			CMesh::Vertex CenterDown;
-			CenterDown = Center;
-			CenterDown.normal = -Center.normal;
-
-			mergedVertexs.emplace_back(Center);
-			mergedVertexs.emplace_back(CenterDown);
-
-			for (int i = 0; i < NewVertexs.size() - 1; i += 2) {
-				UINT v2Index = newVertexIndexOffset + i;
-				UINT v3Index = newVertexIndexOffset + i + 1;
-				CMesh::Vertex v2 = mergedVertexs[v2Index];
-				CMesh::Vertex v3 = mergedVertexs[v3Index];
-
-				v2.normal = Center.normal;
-				v3.normal = Center.normal;
-				Upside.emplace_back(CenterIndex);
-				Upside.emplace_back(v2Index);
-				Upside.emplace_back(v3Index);
-
-				v2.normal = CenterDown.normal;
-				v3.normal = CenterDown.normal;
-				Underside.emplace_back(CenterDownIndex);
-				Underside.emplace_back(v2Index);
-				Underside.emplace_back(v3Index);
-			}
-
-
-			std::shared_ptr<CMesh> newMesh1 = std::make_shared<CMesh>();
-			newMesh1->SetVertexs(mergedVertexs);
-			newMesh1->SetSubmesh(Upside);
-			newMesh1->CreateShaderVariables();
-
-
-			std::shared_ptr<CMesh> newMesh2 = std::make_shared<CMesh>();
-			newMesh2->SetVertexs(mergedVertexs);
-			newMesh2->SetSubmesh(Underside);
-			newMesh2->CreateShaderVariables();
-
-			std::shared_ptr<CObject> newObj1 = std::make_shared<CObject>();
-			newObj1->SetMaterial(m_pObjects[0]->GetMaterial(0));
-
-			std::shared_ptr<CObject> newObj2 = std::make_shared<CObject>();
-			newObj2->SetMaterial(m_pObjects[0]->GetMaterial(0));
-
-			newObj1->SetMesh(newMesh1);
-			newObj1->SetPosition(glm::vec3(0, 2.0, 0));
-			newObj2->SetMesh(newMesh2);
-			newObj2->SetPosition(glm::vec3(0, -2.0, 0));
-
-			m_pObjects.clear();
-			m_pObjects.emplace_back(newObj1);
-			m_pObjects.emplace_back(newObj2);
-
-			std::cout << std::endl;
-		}
 		TestFlag = true;
 	}
 
@@ -1462,7 +1502,7 @@ void CExamScene_21::Init()
 
 
 	pCamera = std::make_shared<CCamera>();
-	pCamera->m_mat4x4Projection = glm::ortho (-5.0f, 5.0f, -5.0f,5.0f, fNear, fFar);
+	pCamera->m_mat4x4Projection = glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, fNear, fFar);
 	otherCameraSpring[2] = glm::vec3(0.0f, 0.0f, 1.0f);
 	pCamera->SetPosision(otherCameraSpring[2]);
 	pCamera->m_mat4x4View = glm::lookAt(pCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
@@ -1573,7 +1613,7 @@ void CExamScene_22::Update(float fElapsedTime)
 	m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 
 	m_fCurrentTime += fElapsedTime;
-	
+
 	if (b_OpenDoor) {
 		if (L_DoorFrame->GetPosition().x >= 7.45f) {
 			b_OpenDoor = false;
@@ -1583,11 +1623,11 @@ void CExamScene_22::Update(float fElapsedTime)
 
 		L_DoorFrame->SetPosition(L_DoorFrame->GetPosition() + (dir * fElapsedTime));
 		R_DoorFrame->SetPosition(R_DoorFrame->GetPosition() + (-dir * fElapsedTime));
-	} 
+	}
 
 	if (m_DwRobotDir != 0) {
 		if (m_DwRobotDir & DW_FRONT)
-			m_vec3RobotDir -= glm::vec3(0,0,1);
+			m_vec3RobotDir -= glm::vec3(0, 0, 1);
 		if (m_DwRobotDir & DW_BACK)
 			m_vec3RobotDir += glm::vec3(0, 0, 1);
 		if (m_DwRobotDir & DW_RIGHT)
@@ -1621,8 +1661,8 @@ void CExamScene_22::Update(float fElapsedTime)
 		R_Leg_Joint->SetRotate(rotate);
 
 	}
-	
-	
+
+
 	glm::vec3 robotPos = m_Robot->GetPosition();
 	if (glm::any(glm::isnan(robotPos)))
 		robotPos = glm::vec3(0, 0, 0);

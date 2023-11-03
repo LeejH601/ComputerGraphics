@@ -481,7 +481,10 @@ void CObject::BindShaderVariables(GLuint s_Program)
 
 void CObject::SetMaterial(std::shared_ptr<CMaterial> pMaterial)
 {
-	m_ppMaterials.push_back(pMaterial);
+	if (pMaterial) {
+		m_ppMaterials.push_back(pMaterial);
+		m_nMaterials = m_ppMaterials.size();
+	}
 }
 
 
