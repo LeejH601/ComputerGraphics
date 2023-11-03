@@ -73,13 +73,14 @@ void CCamera::GenerateProjectionMatrix(float fov, float aspect, float zNear, flo
 	//m_mat4x4Projection = glm::translate(m_mat4x4Projection, glm::vec3(0.0, 0.0, -5.0));
 }
 
-void CCamera::BindShaderVariables(GLuint s_Program)
+void CCamera::BindShaderVariables(GLuint s_Program, bool regenerateView)
 {
 	if (s_Program == -1)
 		return;
 	glViewport(m_vec4ViewPort.x, m_vec4ViewPort.y, m_vec4ViewPort.z, m_vec4ViewPort.w);
 
-	RegenarationViewMatrix();
+	if(regenerateView)
+		RegenarationViewMatrix();
 
 	GLuint viewLocation;
 	GLuint projectionLocation;

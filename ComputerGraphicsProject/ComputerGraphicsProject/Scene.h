@@ -24,7 +24,7 @@ protected:
 
 	bool m_bInitialized = false;
 
-	std::shared_ptr<CCamera> m_sptrMainCamera;
+	std::vector<std::shared_ptr<CCamera>> m_sptrCameras;
 	CCamera* m_pMainCamera = nullptr;
 	std::vector<CLight> m_pLights;
 	CLight* m_pSunLight = nullptr;
@@ -66,6 +66,7 @@ public:
 
 class CPBR_TestScene : public CScene
 {
+protected:
 	std::shared_ptr<CObject> m_pSkyBoxObject;
 
 public:

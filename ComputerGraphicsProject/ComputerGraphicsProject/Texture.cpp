@@ -1,5 +1,6 @@
 #include "Texture.h"
 #include "LoadPng.h"
+#include "Renderer.h"
 #define STB_IMAGE_IMPLEMENTATION
 
 #include "Dependencies/stb-master/stb_image.h"
@@ -39,6 +40,7 @@ void CTexture::LoadTextureFromPNG(std::string filePath, GLuint samplingMethod)
 
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, samplingMethod);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, samplingMethod);
+
 }
 
 void CTexture::LoadTextureHDR(std::string filePath, GLuint samplingMethod)

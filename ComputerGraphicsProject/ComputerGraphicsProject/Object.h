@@ -39,7 +39,13 @@ public:
 	CObject& operator=(const CObject& other);
 	CObject& operator=(CObject&& other) noexcept;*/
 
-	virtual void Render();
+	std::string GetName() { return m_strObjectName; };
+	glm::quat GetRotation() { return m_vec4Rotation; };
+	glm::vec3 GetScale() { return m_vec3Scale; };
+
+	static CObject* FindFrameByName(CObject* object, std::string& name);
+
+	virtual void Render(GLuint s_Program);
 
 	virtual void BindShaderVariables(GLuint s_Program);
 
@@ -67,6 +73,9 @@ public:
 			return m_ppMaterials[index];
 		return nullptr;
 	}
+
+	CObject* GetChild() { return m_pChild.get(); };
+	CObject* GetSibling() { return m_pSibling.get(); };
 };
 
 class IMoveContext
