@@ -848,15 +848,20 @@ void CSPScene::Update(float fElapsedTime)
 			std::vector<CMesh::Vertex> Underside;
 
 			std::vector<CMesh::Vertex> NewVertexs;
+			UINT newVertexIndexOffset = vertexs.size();
 
 			glm::vec4 testPlane = glm::vec4(0, 1, 0, 0.1f); //
 
 			if (nIndices > 0) {
 				for (int i = 0; i < nIndices;) {
 					CMesh::Vertex v[3];
-					v[0] = vertexs[indices[i++]];
-					v[1] = vertexs[indices[i++]];
-					v[2] = vertexs[indices[i++]];
+					UINT vIndex[3];
+					v[0] = vertexs[indices[i]];
+					vIndex[0] = indices[i++];
+					v[1] = vertexs[indices[i]];
+					vIndex[1] = indices[i++];
+					v[2] = vertexs[indices[i]];
+					vIndex[2] = indices[i++];
 
 					bool UpAndDowns[3];
 					int nDistribution = 0;
