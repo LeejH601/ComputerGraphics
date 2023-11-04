@@ -809,21 +809,34 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
 		m_endPos = { x,y };
 
-		glm::mat4x4 inverseViewportMatrix = {
+		/*glm::mat4x4 inverseViewportMatrix = {
 		g_WindowSizeX / 2, 0, 0, g_WindowSizeX / 2,
 		0, g_WindowSizeY / 2, 0, g_WindowSizeY / 2,
 		0, 0, 1.f / 2.f, 1.f / 2.f,
 		0, 0, 0, 1.f
+		};*/
+		glm::mat4x4 inverseViewportMatrix = {
+		g_WindowSizeX / 2, 0, 0,0,
+		0, -g_WindowSizeY / 2, 0, 0,
+		0, 0, 1.0f - 0.0f, 0,
+		g_WindowSizeX / 2, g_WindowSizeY / 2, 0, 1.f
 		};
 
 		inverseViewportMatrix = glm::inverse(inverseViewportMatrix);
 
 		p1 = { m_startPos.x, m_startPos.y, 1.0f };
-
 		p2 = { m_endPos.x, m_endPos.y, 1.0f };
 
-		p1 = glm::vec4(p1, 1.0f) * inverseViewportMatrix * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::inverse(m_pMainCamera->m_mat4x4View);
-		p2 = glm::vec4(p2, 1.0f) * inverseViewportMatrix * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::inverse(m_pMainCamera->m_mat4x4View);
+		p1.x = ((2.0f * p1.x / g_WindowSizeX) - 1.0f);
+		p1.y = ((-2.0f * p1.y / g_WindowSizeY) + 1.0f);
+
+		p2.x = ((2.0f * p2.x / g_WindowSizeX) - 1.0f);
+		p2.y = ((-2.0f * p2.y / g_WindowSizeY) + 1.0f);
+
+	/*	p1 = glm::vec4(p1, 1.0f) * inverseViewportMatrix * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::inverse(m_pMainCamera->m_mat4x4View);
+		p2 = glm::vec4(p2, 1.0f) * inverseViewportMatrix * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::inverse(m_pMainCamera->m_mat4x4View);*/
+		p1 = glm::inverse(m_pMainCamera->m_mat4x4View) * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::vec4(p1, 1.0f);
+		p2 = glm::inverse(m_pMainCamera->m_mat4x4View) * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::vec4(p2, 1.0f);
 		p3 = m_pMainCamera->GetPosition();
 
 		glm::vec3 direction1 = p3 - p1;
@@ -832,11 +845,13 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 		direction1 = glm::normalize(direction1);
 		direction2 = glm::normalize(direction2);
 
-		glm::vec3 normal = glm::cross(direction2, direction1);
+		glm::vec3 normal = glm::normalize(glm::cross(direction1, direction2));
 
 
 		glm::vec4 plane;
-
+		float test = (p1.x * normal.x + p1.y * normal.y + p1.z * normal.z);
+		float test2 = (p2.x * normal.x + p2.y * normal.y + p2.z * normal.z);
+		float test3 = (p3.x * normal.x + p3.y * normal.y + p3.z * normal.z);
 
 		if (m_pObjects.size() > 0) {
 			std::vector<std::shared_ptr<CObject>> objectBuf;
@@ -850,9 +865,9 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 				plane = glm::vec4(normal.x, normal.y, normal.z, 0);
 				plane = plane * inverseWorld;
 
-				glm::vec3 modelP1 = glm::vec3(glm::vec4(p1, 1.0f) * inverseWorld);
-				float D = (p3.x * plane.x, +p3.y * plane.y + p3.z * plane.z);
-				plane.w = -D;
+				glm::vec3 modelP3 = glm::vec3(glm::vec4(p3, 1.0f) * inverseWorld);
+				float D = (modelP3.x * plane.x + modelP3.y * plane.y + modelP3.z * plane.z);
+				plane.w = -D * 5.0f;
 
 				CMesh* mesh = nullptr;
 				mesh = obj->GetMesh();
