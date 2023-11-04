@@ -173,11 +173,14 @@ class CSPScene : public CPBR_TestScene
 {
 	POINT m_startPos;
 	POINT m_endPos;
-	glm::vec3 p1, p2, p3;
+	glm::vec4 p1, p2, p3;
+	std::vector<std::shared_ptr<CObject>> pointObj;
 public:
 	CSPScene();
 	virtual ~CSPScene();
 
+	virtual void BuildObjects();
 	virtual void MouseInput(int button, int state, int x, int y);
 	virtual void Update(float fElapsedTime);
+	virtual void RenderScene();
 };

@@ -139,5 +139,11 @@
     <None Include="Shaders\RenderNDCQuad_vs.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\Line_ps.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\Line_vs.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

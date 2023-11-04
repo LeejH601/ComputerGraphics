@@ -26,6 +26,7 @@ public:
 	GLuint irradianceShader = -1;
 	GLuint preFilteringCubeMapShader = -1;
 	GLuint preComputingBRDFShader = -1;
+	GLuint LineShader = -1;
 
 private:
 	std::vector<std::shared_ptr<CMaterial>> m_pMaterials;

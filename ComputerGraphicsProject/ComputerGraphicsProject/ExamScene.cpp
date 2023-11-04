@@ -668,7 +668,7 @@ void CExamScene_9::Update(float fElapsedTime)
 		if (rect.w > height)
 			return false;
 		return true;
-	};
+		};
 	static glm::vec4 rectColide{ -0.5, -1.0f, 0.5f, 1.0f };
 	for (int i = 0; i < m_pObjects.size(); ++i) {
 		CObject* obj = m_pObjects[i].get();
@@ -790,6 +790,17 @@ CSPScene::~CSPScene()
 {
 }
 
+void CSPScene::BuildObjects()
+{
+	CPBR_TestScene::BuildObjects();
+
+	pointObj.resize(2);
+	pointObj[0] = std::make_shared<CObject>();
+	pointObj[0]->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+	pointObj[1] = std::make_shared<CObject>();
+	pointObj[1]->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+}
+
 void CSPScene::MouseInput(int button, int state, int x, int y)
 {
 	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
@@ -824,8 +835,9 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 
 		inverseViewportMatrix = glm::inverse(inverseViewportMatrix);
 
-		p1 = { m_startPos.x, m_startPos.y, 1.0f };
-		p2 = { m_endPos.x, m_endPos.y, 1.0f };
+		p1 = { m_startPos.x, m_startPos.y, 1.0f,1.0f };
+		p2 = { m_endPos.x, m_endPos.y, 1.0f,1.0f };
+		p3 = { 0.0f, 0.0f, 0.0f,1.0f };
 
 		p1.x = ((2.0f * p1.x / g_WindowSizeX) - 1.0f);
 		p1.y = ((-2.0f * p1.y / g_WindowSizeY) + 1.0f);
@@ -833,41 +845,62 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 		p2.x = ((2.0f * p2.x / g_WindowSizeX) - 1.0f);
 		p2.y = ((-2.0f * p2.y / g_WindowSizeY) + 1.0f);
 
-	/*	p1 = glm::vec4(p1, 1.0f) * inverseViewportMatrix * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::inverse(m_pMainCamera->m_mat4x4View);
-		p2 = glm::vec4(p2, 1.0f) * inverseViewportMatrix * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::inverse(m_pMainCamera->m_mat4x4View);*/
-		p1 = glm::inverse(m_pMainCamera->m_mat4x4View) * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::vec4(p1, 1.0f);
-		p2 = glm::inverse(m_pMainCamera->m_mat4x4View) * glm::inverse(m_pMainCamera->m_mat4x4Projection) * glm::vec4(p2, 1.0f);
-		p3 = m_pMainCamera->GetPosition();
+		glm::mat4x4 inverseView = glm::transpose(glm::mat3x3(m_pMainCamera->m_mat4x4View));
+		inverseView[3][0] = -m_pMainCamera->m_mat4x4View[3][0];
+		inverseView[3][1] = -m_pMainCamera->m_mat4x4View[3][1];
+		inverseView[3][2] = -m_pMainCamera->m_mat4x4View[3][2];
+		inverseView[3][3] = 1.0f;
+		glm::mat4x4 t = glm::inverse(m_pMainCamera->m_mat4x4View);
 
-		glm::vec3 direction1 = p3 - p1;
-		glm::vec3 direction2 = p3 - p2;
-
-		direction1 = glm::normalize(direction1);
-		direction2 = glm::normalize(direction2);
-
-		glm::vec3 normal = glm::normalize(glm::cross(direction1, direction2));
+	
+		p1 = glm::inverse(m_pMainCamera->m_mat4x4Projection) * p1;
+		p1.x /= p1.w;
+		p1.y /= p1.w;
+		p1.z /= p1.w;
+		p1.w /= p1.w;
+		p1 = glm::inverse(m_pMainCamera->m_mat4x4View) * p1;
+		p2 = glm::inverse(m_pMainCamera->m_mat4x4Projection) * p2 ;
+		p2.x /= p2.w;
+		p2.y /= p2.w;
+		p2.z /= p2.w;
+		p2.w /= p2.w;
+		p2 = glm::inverse(m_pMainCamera->m_mat4x4View) * p2 ;
+	
+		glm::mat4x4 testMat = glm::lookAt(glm::vec3(0, 5, 0.000001), glm::vec3(0), glm::vec3(0, 1, 0));
+		glm::mat4x4 inverseTestMat = glm::inverse(testMat);
+	
+		p3 = glm::vec4( m_pMainCamera->GetPosition(), 1.0f);
+		
 
 
 		glm::vec4 plane;
-		float test = (p1.x * normal.x + p1.y * normal.y + p1.z * normal.z);
-		float test2 = (p2.x * normal.x + p2.y * normal.y + p2.z * normal.z);
-		float test3 = (p3.x * normal.x + p3.y * normal.y + p3.z * normal.z);
+	
 
 		if (m_pObjects.size() > 0) {
 			std::vector<std::shared_ptr<CObject>> objectBuf;
 			objectBuf = m_pObjects;
 			m_pObjects.clear();
-
+			glm::vec3 n;
 			for (int i = 0; i < objectBuf.size(); ++i) {
 				CObject* obj = objectBuf[i].get();
-				glm::mat4x4 inverseWorld = obj->m_mat4x4Wolrd;
-				inverseWorld = glm::inverse(inverseWorld);
-				plane = glm::vec4(normal.x, normal.y, normal.z, 0);
-				plane = plane * inverseWorld;
 
-				glm::vec3 modelP3 = glm::vec3(glm::vec4(p3, 1.0f) * inverseWorld);
-				float D = (modelP3.x * plane.x + modelP3.y * plane.y + modelP3.z * plane.z);
-				plane.w = -D * 5.0f;
+				glm::mat4x4 inverseWorld = glm::inverse(obj->m_mat4x4Wolrd);
+
+				glm::vec3 a = inverseWorld * p1;
+				glm::vec3 b = inverseWorld * p2;
+				glm::vec3 c = inverseWorld * p3;
+
+				glm::vec3 dir1 = a - c;
+				glm::vec3 dir2 = b - c;
+
+				dir1 = glm::normalize(dir1);
+				dir2 = glm::normalize(dir2);
+
+				n = glm::normalize(glm::cross(dir1, dir2));
+
+				plane = glm::vec4(n.x, n.y, n.z, 0);
+				plane.w = -(c.x * n.x + c.y * n.y + c.z * n.z);
+				
 
 				CMesh* mesh = nullptr;
 				mesh = obj->GetMesh();
@@ -1050,12 +1083,12 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 					std::shared_ptr<CObject> newObj1 = std::make_shared<CObject>();
 					newObj1->SetMaterial(obj->GetMaterial(0));
 					newObj1->SetName(obj->GetName());
-					newObj1->SetPosition(objPos + normal * 0.1f);
+					newObj1->SetPosition(objPos + n * 0.1f);
 
 					std::shared_ptr<CObject> newObj2 = std::make_shared<CObject>();
 					newObj2->SetMaterial(obj->GetMaterial(0));
 					newObj2->SetName(obj->GetName());
-					newObj2->SetPosition(objPos - normal * 0.1f);
+					newObj2->SetPosition(objPos - n * 0.1f);
 
 					newObj1->SetMesh(newMesh1);
 					newObj2->SetMesh(newMesh2);
@@ -1091,6 +1124,42 @@ void CSPScene::Update(float fElapsedTime)
 	}
 
 
+}
+
+void CSPScene::RenderScene()
+{
+	CPBR_TestScene::RenderScene();
+
+	pointObj[0]->SetPosition(p1);
+	pointObj[1]->SetPosition(p2);
+
+
+	glUseProgram(g_Renderer->TestShader);
+	m_pMainCamera->BindShaderVariables(g_Renderer->TestShader);
+
+	for (int i = 0; i < pointObj.size(); ++i) {
+		pointObj[i]->BindShaderVariables(g_Renderer->TestShader);
+		pointObj[i]->UpdateTransform(nullptr);
+		pointObj[i]->Render(g_Renderer->TestShader);
+	}
+
+	//GLuint lineVBO;
+	//glGenBuffers(1, &lineVBO);
+
+	//glBindBuffer(GL_ARRAY_BUFFER, lineVBO);
+	//CMesh::Vertex lineVertexs[2];
+	//lineVertexs[0].position = p1;
+	//lineVertexs[1].position = p2;
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertexs), lineVertexs, GL_STATIC_DRAW);
+
+	//GLuint s_program = g_Renderer->LineShader;
+
+	//GLuint posLoc = glGetAttribLocation(s_program, "v_Position");
+	//glEnableVertexAttribArray(posLoc);
+	//glBindBuffer(GL_ARRAY_BUFFER, lineVBO);
+	//glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(CMesh::Vertex), 0);
+
+	//glDrawArrays(GL_LINES, 0, 2);
 }
 
 CExamScene_20::CExamScene_20()
