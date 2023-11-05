@@ -792,13 +792,34 @@ CSPScene::~CSPScene()
 
 void CSPScene::BuildObjects()
 {
-	CPBR_TestScene::BuildObjects();
+	int nObj = 1;
+	//m_pObjects.resize(nObj);
+	glm::vec3 basePos{ 5.0f,-2.0f,0 };
+	basePos *= 1.5f;
+
+	for (int i = 0; i < nObj; ++i) {
+		std::shared_ptr<CDynamicObject> obj = std::make_shared<CDynamicObject>();
+		obj->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+
+
+		
+		//m_pObjects[i]->SetMaterial(g_Renderer->GetMaterialFromIndex(i % 6));
+		obj->SetPosition(basePos);
+		obj->AddAcceleration(glm::normalize(glm::vec3(-1.0f, 2.0f, 0.0f)), 6.5f);
+
+		baseObject = obj;
+
+		basePos.x += 2.0f;
+	}
 
 	pointObj.resize(2);
 	pointObj[0] = std::make_shared<CObject>();
 	pointObj[0]->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
 	pointObj[1] = std::make_shared<CObject>();
 	pointObj[1]->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+
+	m_pMainCamera->SetPosision(glm::vec3(0, 0, -5.0f));
+	m_pMainCamera->SetQauternion(glm::quat(1, 0, 0, 0));
 }
 
 void CSPScene::MouseInput(int button, int state, int x, int y)
@@ -820,20 +841,7 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
 		m_endPos = { x,y };
 
-		/*glm::mat4x4 inverseViewportMatrix = {
-		g_WindowSizeX / 2, 0, 0, g_WindowSizeX / 2,
-		0, g_WindowSizeY / 2, 0, g_WindowSizeY / 2,
-		0, 0, 1.f / 2.f, 1.f / 2.f,
-		0, 0, 0, 1.f
-		};*/
-		glm::mat4x4 inverseViewportMatrix = {
-		g_WindowSizeX / 2, 0, 0,0,
-		0, -g_WindowSizeY / 2, 0, 0,
-		0, 0, 1.0f - 0.0f, 0,
-		g_WindowSizeX / 2, g_WindowSizeY / 2, 0, 1.f
-		};
-
-		inverseViewportMatrix = glm::inverse(inverseViewportMatrix);
+		
 
 		p1 = { m_startPos.x, m_startPos.y, 1.0f,1.0f };
 		p2 = { m_endPos.x, m_endPos.y, 1.0f,1.0f };
@@ -845,25 +853,13 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 		p2.x = ((2.0f * p2.x / g_WindowSizeX) - 1.0f);
 		p2.y = ((-2.0f * p2.y / g_WindowSizeY) + 1.0f);
 
-		glm::mat4x4 inverseView = glm::transpose(glm::mat3x3(m_pMainCamera->m_mat4x4View));
-		inverseView[3][0] = -m_pMainCamera->m_mat4x4View[3][0];
-		inverseView[3][1] = -m_pMainCamera->m_mat4x4View[3][1];
-		inverseView[3][2] = -m_pMainCamera->m_mat4x4View[3][2];
-		inverseView[3][3] = 1.0f;
-		glm::mat4x4 t = glm::inverse(m_pMainCamera->m_mat4x4View);
 
 	
 		p1 = glm::inverse(m_pMainCamera->m_mat4x4Projection) * p1;
-		p1.x /= p1.w;
-		p1.y /= p1.w;
-		p1.z /= p1.w;
-		p1.w /= p1.w;
+		p1 /= p1.w;
 		p1 = glm::inverse(m_pMainCamera->m_mat4x4View) * p1;
 		p2 = glm::inverse(m_pMainCamera->m_mat4x4Projection) * p2 ;
-		p2.x /= p2.w;
-		p2.y /= p2.w;
-		p2.z /= p2.w;
-		p2.w /= p2.w;
+		p2 /= p2.w;
 		p2 = glm::inverse(m_pMainCamera->m_mat4x4View) * p2 ;
 	
 		glm::mat4x4 testMat = glm::lookAt(glm::vec3(0, 5, 0.000001), glm::vec3(0), glm::vec3(0, 1, 0));
@@ -904,6 +900,10 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 
 				CMesh* mesh = nullptr;
 				mesh = obj->GetMesh();
+				if (mesh == nullptr) {
+					m_pObjects.emplace_back(objectBuf[i]);
+					continue;
+				}
 
 				std::vector<CMesh::Vertex> vertexs = mesh->GetVertexs();
 				std::vector<UINT> indices = mesh->GetSubSetIndice(0);
@@ -1080,15 +1080,27 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 
 					glm::vec3 objPos = obj->GetPosition();
 
-					std::shared_ptr<CObject> newObj1 = std::make_shared<CObject>();
+					std::shared_ptr<CDynamicObject> newObj1 = std::make_shared<CDynamicObject>();
 					newObj1->SetMaterial(obj->GetMaterial(0));
 					newObj1->SetName(obj->GetName());
-					newObj1->SetPosition(objPos + n * 0.1f);
+					newObj1->SetPosition(objPos);
+					
 
-					std::shared_ptr<CObject> newObj2 = std::make_shared<CObject>();
+					std::shared_ptr<CDynamicObject> newObj2 = std::make_shared<CDynamicObject>();
 					newObj2->SetMaterial(obj->GetMaterial(0));
 					newObj2->SetName(obj->GetName());
-					newObj2->SetPosition(objPos - n * 0.1f);
+					newObj2->SetPosition(objPos);
+
+					if (dynamic_cast<CDynamicObject*>(obj)) {
+						newObj1->GetPhysics() = dynamic_cast<CDynamicObject*>(obj)->GetPhysics();
+						newObj1->ScaleLinearVelocity(0.2f);
+						newObj1->ScaleLinearAcceleration(0.5f);
+						newObj1->AddAcceleration(glm::vec3(n), 1.5f);
+						newObj2->GetPhysics() = dynamic_cast<CDynamicObject*>(obj)->GetPhysics();
+						newObj2->ScaleLinearVelocity(0.2f);
+						newObj2->ScaleLinearAcceleration(0.5f);
+						newObj2->AddAcceleration(glm::vec3(n), -1.5f);
+					}
 
 					newObj1->SetMesh(newMesh1);
 					newObj2->SetMesh(newMesh2);
@@ -1114,16 +1126,45 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 
 void CSPScene::Update(float fElapsedTime)
 {
-	CPBR_TestScene::Update(fElapsedTime);
-	static bool TestFlag = false;
+	//CPBR_TestScene::Update(fElapsedTime);
+	float fTime = g_Timer->GetTotalTime();
+
+	m_pSunLight->m_vec3LightColor = glm::vec3(1, 1, 1);
+	m_pSunLight->m_vec3Direction = glm::normalize(glm::vec3(-1, -1, -1));
+	m_pSunLight->m_vec3Direction = glm::vec3(sin(fTime), cos(fTime), -1);
+	m_pSunLight->m_vec3Position = (-m_pSunLight->m_vec3Direction) * 10.0f;
 
 
-	if (TestFlag == false) {
-
-		TestFlag = true;
+	bool clearMarker = false;
+	for (int i = 0; i < m_pObjects.size(); ++i) {
+		m_pObjects[i]->Update(fElapsedTime);
+		if (m_pObjects[i]->GetPosition().y < -20.0f)
+			clearMarker = true;
 	}
 
+	if (clearMarker) {
+		std::vector<std::shared_ptr<CObject>> buf = m_pObjects;
+		m_pObjects.clear();
+		for (int i = 0; i < buf.size(); ++i) {
+			if(buf[i]->GetPosition().y >= -20.0f)
+				m_pObjects.emplace_back(buf[i]);
+		}
+	}
 
+	static float spawnCooltime = 1.0f;
+	spawnCooltime -= fElapsedTime;
+	if (spawnCooltime < 0.0f) {
+		std::shared_ptr<CDynamicObject> newObj = std::make_shared<CDynamicObject>();
+		std::shared_ptr<CMesh> mesh = baseObject->GetMeshByShared();
+		std::shared_ptr<CMaterial> material = baseObject->GetMaterial(0);
+		newObj->SetMesh(mesh);
+		newObj->SetMaterial(material);
+		newObj->GetPhysics() = baseObject->GetPhysics();
+		newObj->SetPosition(baseObject->GetPosition());
+
+		m_pObjects.emplace_back(newObj);
+		spawnCooltime = 1.0f;
+	}
 }
 
 void CSPScene::RenderScene()

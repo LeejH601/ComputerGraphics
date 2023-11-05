@@ -175,6 +175,7 @@ class CSPScene : public CPBR_TestScene
 	POINT m_endPos;
 	glm::vec4 p1, p2, p3;
 	std::vector<std::shared_ptr<CObject>> pointObj;
+	std::shared_ptr<CDynamicObject> baseObject = nullptr;
 public:
 	CSPScene();
 	virtual ~CSPScene();

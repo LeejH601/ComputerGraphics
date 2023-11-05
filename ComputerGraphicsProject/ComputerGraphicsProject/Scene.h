@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "Light.h"
 #include "Object.h"
+#include "DynamicObject.h"
 
 
 #define MAX_LIGHTS 8

@@ -448,6 +448,10 @@ CObject::CObject()
 //	return *this;
 //}
 
+void CObject::Update(float fElapsedTime)
+{
+}
+
 void CObject::Render(GLuint s_Program)
 {
 	if (m_pMesh) {

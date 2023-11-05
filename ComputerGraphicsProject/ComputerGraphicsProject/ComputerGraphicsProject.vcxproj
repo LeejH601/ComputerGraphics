@@ -132,6 +132,7 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ComputerGraphicsProject.cpp" />
+    <ClCompile Include="DynamicObject.cpp" />
     <ClCompile Include="ExamScene.cpp" />
     <ClCompile Include="Global.cpp" />
     <ClCompile Include="Light.cpp" />
@@ -150,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="DynamicObject.h" />
     <ClInclude Include="ExamScene.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="Light.h" />

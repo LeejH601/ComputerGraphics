@@ -15,7 +15,7 @@ public:
 	glm::mat4x4 m_mat4x4Transform;
 	glm::mat4x4 m_mat4x4Wolrd;
 
-private:
+protected:
 	glm::quat m_vec4Rotation{ 1,0,0,0 };
 	glm::vec3 m_vec3Position{ 0,0,0 };
 	glm::vec3 m_vec3Scale{ 1,1,1 };
@@ -46,12 +46,14 @@ public:
 
 	static CObject* FindFrameByName(CObject* object, std::string& name);
 
+	virtual void Update(float fElapsedTime);
 	virtual void Render(GLuint s_Program);
 
 	virtual void BindShaderVariables(GLuint s_Program);
 
 	void SetMesh(std::shared_ptr<CMesh>& mesh) { m_pMesh = mesh; };
 	CMesh* GetMesh() { if (m_pMesh) return m_pMesh.get(); };
+	std::shared_ptr<CMesh> GetMeshByShared() { return m_pMesh; };
 	void SetMaterial(std::shared_ptr<CMaterial> pMaterial);
 	void SetMaterial(int nMaterial, std::shared_ptr<CMaterial> pMaterial);
 	void SetChild(std::shared_ptr<CObject> child);
