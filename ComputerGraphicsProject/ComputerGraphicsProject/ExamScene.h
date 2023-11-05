@@ -175,7 +175,19 @@ class CSPScene : public CPBR_TestScene
 	POINT m_endPos;
 	glm::vec4 p1, p2, p3;
 	std::vector<std::shared_ptr<CObject>> pointObj;
-	std::shared_ptr<CDynamicObject> baseObject = nullptr;
+	std::vector<std::shared_ptr<CDynamicObject>> baseObject;
+	std::shared_ptr<CObject> m_pbasket;
+	glm::vec3 m_vec3BasketRoute[2];
+	float m_fBasketDT = 0.0f;
+
+	std::vector<std::shared_ptr<CObject>> m_pInbasketObjects;
+
+	float m_fCorrectionSpeed = 1.0f;
+
+	static std::uniform_real_distribution<float> urd_velocityScale;
+	static std::uniform_int_distribution<unsigned int> urd_material;
+	static std::uniform_real_distribution<float> urd_rotate;
+
 public:
 	CSPScene();
 	virtual ~CSPScene();
@@ -183,5 +195,6 @@ public:
 	virtual void BuildObjects();
 	virtual void MouseInput(int button, int state, int x, int y);
 	virtual void Update(float fElapsedTime);
+	virtual void KeyInput(unsigned char key, int x, int y);
 	virtual void RenderScene();
 };

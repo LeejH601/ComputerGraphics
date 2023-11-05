@@ -4,13 +4,17 @@
 
 class CPhysicsComponent
 {
+	glm::vec3 m_vec3AngularAxis;
 	glm::vec3 m_vec3LinearVelocity;
-	glm::vec3 m_vec3AngularVelocity;
+	float m_fAngularVelocity;
 	glm::vec3 m_vec3LinearAcceleration;
-	glm::vec3 m_vec3AngularAcceleration;
+	float m_fAngularAcceleration;
 
 	float m_fMaxAcceleration;
 	float m_fMaxVelocity;
+
+	float m_fMaxTorqueAcceleration;
+	float m_fMaxTorque;
 
 	static glm::vec3 vec3GravityAcceleration;
 
@@ -21,10 +25,15 @@ public:
 	void simulate(CObject* target, float fElapsedTime);
 
 	void AddLinearAcceleration(glm::vec3 accel);
+	void SetLinearAcceleration(glm::vec3 accel);
 	glm::vec3 GetLinearAcceleration() { return m_vec3LinearAcceleration; };
 	glm::vec3 GetLinearVelocity() { return m_vec3LinearVelocity; };
 	void ScaleLinearAcceleration(float scale) { m_vec3LinearAcceleration *= scale; };
 	void ScaleLinearVelocity(float scale) { m_vec3LinearVelocity *= scale; };
+
+	void AddTorqueAcceleration(float fAccel);
+	float GetTorqueAcceleration();
+	void SetRotateAxis(glm::vec3 Axis);
 };
 
 
@@ -39,6 +48,9 @@ public:
 	virtual void Update(float fElapsedTime);
 
 	void AddAcceleration(glm::vec3 dir, float fAccel);
+	void SetLinearAcceleration(glm::vec3 accel);
+	void SetRotateAxis(glm::vec3 axis);
+	void AddTorqueAcceleration(float fAccel);
 	CPhysicsComponent& GetPhysics() { return m_PhysicsComponent; };
 	void ScaleLinearAcceleration(float scale) { m_PhysicsComponent.ScaleLinearAcceleration(scale); };
 	void ScaleLinearVelocity(float scale) { m_PhysicsComponent.ScaleLinearVelocity(scale); };

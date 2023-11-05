@@ -668,7 +668,7 @@ void CExamScene_9::Update(float fElapsedTime)
 		if (rect.w > height)
 			return false;
 		return true;
-		};
+	};
 	static glm::vec4 rectColide{ -0.5, -1.0f, 0.5f, 1.0f };
 	for (int i = 0; i < m_pObjects.size(); ++i) {
 		CObject* obj = m_pObjects[i].get();
@@ -782,6 +782,10 @@ void CExamScene_18::Update(float fElapsedTime)
 	CPBR_TestScene::Update(fElapsedTime);
 }
 
+std::uniform_real_distribution<float> CSPScene::urd_velocityScale = std::uniform_real_distribution<float>(0.8f, 1.2f);
+std::uniform_int_distribution<unsigned int> CSPScene::urd_material = std::uniform_int_distribution<unsigned int>();
+std::uniform_real_distribution<float>  CSPScene::urd_rotate = std::uniform_real_distribution<float>(-1.0f, 1.0f);
+
 CSPScene::CSPScene()
 {
 }
@@ -792,25 +796,113 @@ CSPScene::~CSPScene()
 
 void CSPScene::BuildObjects()
 {
-	int nObj = 1;
+	std::shared_ptr<CMaterial> newMaterial = std::make_shared<CMaterial>();
+	std::shared_ptr<CTexture> texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/rustediron2_basecolor.png", GL_LINEAR);
+	newMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/rustediron2_normal.png", GL_LINEAR);
+	newMaterial->SetNormalTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/rustediron2_metallic.png", GL_LINEAR);
+	newMaterial->SetMetallicTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/rustediron2_roughness.png", GL_LINEAR);
+	newMaterial->SetRoughnessTexture(texture);
+	g_Renderer->RegisterMaterial(newMaterial);
+
+	newMaterial = std::make_shared<CMaterial>();
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/Iron-Scuffed_basecolor.png", GL_LINEAR);
+	newMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/Iron-Scuffed_normal.png", GL_LINEAR);
+	newMaterial->SetNormalTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/Iron-Scuffed_metallic.png", GL_LINEAR);
+	newMaterial->SetMetallicTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/Iron-Scuffed_roughness.png", GL_LINEAR);
+	newMaterial->SetRoughnessTexture(texture);
+	g_Renderer->RegisterMaterial(newMaterial);
+
+	newMaterial = std::make_shared<CMaterial>();
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/older-padded-leather_albedo.png", GL_LINEAR);
+	newMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/older-padded-leather_normal-ogl.png", GL_LINEAR);
+	newMaterial->SetNormalTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/older-padded-leather_metallic.png", GL_LINEAR);
+	newMaterial->SetMetallicTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/older-padded-leather_roughness.png", GL_LINEAR);
+	newMaterial->SetRoughnessTexture(texture);
+	g_Renderer->RegisterMaterial(newMaterial);
+
+	newMaterial = std::make_shared<CMaterial>();
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/white-quilted-diamond_albedo.png", GL_LINEAR);
+	newMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/white-quilted-diamond_normal-ogl.png", GL_LINEAR);
+	newMaterial->SetNormalTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/white-quilted-diamond_metallic.png", GL_LINEAR);
+	newMaterial->SetMetallicTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/white-quilted-diamond_roughness.png", GL_LINEAR);
+	newMaterial->SetRoughnessTexture(texture);
+	g_Renderer->RegisterMaterial(newMaterial);
+
+	newMaterial = std::make_shared<CMaterial>();
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-albedo.png", GL_LINEAR);
+	newMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-metalness.png", GL_LINEAR);
+	newMaterial->SetNormalTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-normal-ogl.png", GL_LINEAR);
+	newMaterial->SetMetallicTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-roughness.png", GL_LINEAR);
+	newMaterial->SetRoughnessTexture(texture);
+	g_Renderer->RegisterMaterial(newMaterial);
+
 	//m_pObjects.resize(nObj);
 	glm::vec3 basePos{ 5.0f,-2.0f,0 };
-	basePos *= 1.5f;
+	basePos *= 2.0f;
 
-	for (int i = 0; i < nObj; ++i) {
-		std::shared_ptr<CDynamicObject> obj = std::make_shared<CDynamicObject>();
-		obj->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+	std::shared_ptr<CDynamicObject> obj = std::make_shared<CDynamicObject>();
+	obj->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
 
+	//m_pObjects[i]->SetMaterial(g_Renderer->GetMaterialFromIndex(i % 6));
+	obj->SetPosition(basePos);
+	obj->AddAcceleration(glm::normalize(glm::vec3(-1.0f, 2.0f, 0.0f)), 6.5f);
+	obj->SetRotateAxis(glm::vec3(0, 0, 1));
+	obj->AddTorqueAcceleration(15.0f);
 
-		
-		//m_pObjects[i]->SetMaterial(g_Renderer->GetMaterialFromIndex(i % 6));
-		obj->SetPosition(basePos);
-		obj->AddAcceleration(glm::normalize(glm::vec3(-1.0f, 2.0f, 0.0f)), 6.5f);
+	baseObject.emplace_back(obj);
 
-		baseObject = obj;
+	obj = std::make_shared<CDynamicObject>();
+	obj->LoadGeometryAndAnimationFromFile("./Objects/obstacle.bin");
 
-		basePos.x += 2.0f;
-	}
+	obj->SetPosition(basePos);
+	obj->AddAcceleration(glm::normalize(glm::vec3(-1.0f, 2.0f, 0.0f)), 6.5f);
+	obj->SetRotateAxis(glm::vec3(0, 0, 1));
+	obj->AddTorqueAcceleration(15.0f);
+
+	baseObject.emplace_back(obj);
+
+	m_pbasket = std::make_shared<CObject>();
+	m_pbasket->LoadGeometryAndAnimationFromFile("./Objects/basket.bin");
+
+	m_vec3BasketRoute[0] = glm::vec3(5, -3, 0);
+	m_vec3BasketRoute[1] = glm::vec3(-5, -3, 0);
+
+	m_pbasket->SetPosition(m_vec3BasketRoute[0]);
 
 	pointObj.resize(2);
 	pointObj[0] = std::make_shared<CObject>();
@@ -841,7 +933,7 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
 		m_endPos = { x,y };
 
-		
+
 
 		p1 = { m_startPos.x, m_startPos.y, 1.0f,1.0f };
 		p2 = { m_endPos.x, m_endPos.y, 1.0f,1.0f };
@@ -854,23 +946,23 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 		p2.y = ((-2.0f * p2.y / g_WindowSizeY) + 1.0f);
 
 
-	
+
 		p1 = glm::inverse(m_pMainCamera->m_mat4x4Projection) * p1;
 		p1 /= p1.w;
 		p1 = glm::inverse(m_pMainCamera->m_mat4x4View) * p1;
-		p2 = glm::inverse(m_pMainCamera->m_mat4x4Projection) * p2 ;
+		p2 = glm::inverse(m_pMainCamera->m_mat4x4Projection) * p2;
 		p2 /= p2.w;
-		p2 = glm::inverse(m_pMainCamera->m_mat4x4View) * p2 ;
-	
+		p2 = glm::inverse(m_pMainCamera->m_mat4x4View) * p2;
+
 		glm::mat4x4 testMat = glm::lookAt(glm::vec3(0, 5, 0.000001), glm::vec3(0), glm::vec3(0, 1, 0));
 		glm::mat4x4 inverseTestMat = glm::inverse(testMat);
-	
-		p3 = glm::vec4( m_pMainCamera->GetPosition(), 1.0f);
-		
+
+		p3 = glm::vec4(m_pMainCamera->GetPosition(), 1.0f);
+
 
 
 		glm::vec4 plane;
-	
+
 
 		if (m_pObjects.size() > 0) {
 			std::vector<std::shared_ptr<CObject>> objectBuf;
@@ -896,7 +988,7 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 
 				plane = glm::vec4(n.x, n.y, n.z, 0);
 				plane.w = -(c.x * n.x + c.y * n.y + c.z * n.z);
-				
+
 
 				CMesh* mesh = nullptr;
 				mesh = obj->GetMesh();
@@ -1084,7 +1176,7 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 					newObj1->SetMaterial(obj->GetMaterial(0));
 					newObj1->SetName(obj->GetName());
 					newObj1->SetPosition(objPos);
-					
+
 
 					std::shared_ptr<CDynamicObject> newObj2 = std::make_shared<CDynamicObject>();
 					newObj2->SetMaterial(obj->GetMaterial(0));
@@ -1096,9 +1188,11 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 						newObj1->ScaleLinearVelocity(0.2f);
 						newObj1->ScaleLinearAcceleration(0.5f);
 						newObj1->AddAcceleration(glm::vec3(n), 1.5f);
+						newObj1->SetRotate(obj->GetRotation());
 						newObj2->GetPhysics() = dynamic_cast<CDynamicObject*>(obj)->GetPhysics();
 						newObj2->ScaleLinearVelocity(0.2f);
 						newObj2->ScaleLinearAcceleration(0.5f);
+						newObj2->SetRotate(obj->GetRotation());
 						newObj2->AddAcceleration(glm::vec3(n), -1.5f);
 					}
 
@@ -1107,8 +1201,6 @@ void CSPScene::MouseInput(int button, int state, int x, int y)
 
 					m_pObjects.emplace_back(newObj1);
 					m_pObjects.emplace_back(newObj2);
-
-					std::cout << std::endl;
 				}
 				else {
 					m_pObjects.emplace_back(objectBuf[i]);
@@ -1134,19 +1226,57 @@ void CSPScene::Update(float fElapsedTime)
 	m_pSunLight->m_vec3Direction = glm::vec3(sin(fTime), cos(fTime), -1);
 	m_pSunLight->m_vec3Position = (-m_pSunLight->m_vec3Direction) * 10.0f;
 
+	m_fBasketDT += fElapsedTime;
 
-	bool clearMarker = false;
-	for (int i = 0; i < m_pObjects.size(); ++i) {
-		m_pObjects[i]->Update(fElapsedTime);
-		if (m_pObjects[i]->GetPosition().y < -20.0f)
-			clearMarker = true;
+	glm::vec3 vec3DbasketMove;
+	if (m_fBasketDT < 1.0f) {
+		glm::vec3 basketPos = m_pbasket->GetPosition();
+		vec3DbasketMove = basketPos;
+		basketPos = glm::mix(m_vec3BasketRoute[0], m_vec3BasketRoute[1], m_fBasketDT);
+		m_pbasket->SetPosition(basketPos);
+		vec3DbasketMove = basketPos - vec3DbasketMove;
+	}
+	else {
+		vec3DbasketMove = m_pbasket->GetPosition();
+		m_pbasket->SetPosition(m_vec3BasketRoute[1]);
+		glm::vec3 temp = m_vec3BasketRoute[1];
+		m_vec3BasketRoute[1] = m_vec3BasketRoute[0];
+		m_vec3BasketRoute[0] = temp;
+		m_fBasketDT = 0.0f;
+		vec3DbasketMove = temp - vec3DbasketMove;
 	}
 
-	if (clearMarker) {
-		std::vector<std::shared_ptr<CObject>> buf = m_pObjects;
-		m_pObjects.clear();
-		for (int i = 0; i < buf.size(); ++i) {
-			if(buf[i]->GetPosition().y >= -20.0f)
+
+	std::vector<bool> collisionObjectIndexs;
+	collisionObjectIndexs.resize(m_pObjects.size());
+	for (int i = 0; i < m_pObjects.size(); ++i) {
+		m_pObjects[i]->Update(fElapsedTime);
+		glm::vec3 objPos = m_pObjects[i]->GetPosition();
+
+
+		glm::vec3 basketPos = m_pbasket->GetPosition();
+		glm::vec2 basketOffset{ 2.5f / 2,2.5f / 2 };
+		if (basketPos.y <= objPos.y && objPos.y < basketPos.y + 0.5f) {
+			if (basketPos.x - basketOffset.x <= objPos.x && objPos.x <= basketPos.x + basketOffset.x) {
+				if (basketPos.z - basketOffset.y <= objPos.z && objPos.z <= basketPos.z + basketOffset.y) {
+					collisionObjectIndexs[i] = true;
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < m_pInbasketObjects.size(); ++i) {
+		m_pInbasketObjects[i]->SetPosition(m_pInbasketObjects[i]->GetPosition() + vec3DbasketMove);
+	}
+
+	std::vector<std::shared_ptr<CObject>> buf = m_pObjects;
+	m_pObjects.clear();
+	for (int i = 0; i < buf.size(); ++i) {
+		if (collisionObjectIndexs[i] == true) {
+			m_pInbasketObjects.emplace_back(buf[i]);
+		}
+		else {
+			if (buf[i]->GetPosition().y >= -20.0f)
 				m_pObjects.emplace_back(buf[i]);
 		}
 	}
@@ -1154,13 +1284,28 @@ void CSPScene::Update(float fElapsedTime)
 	static float spawnCooltime = 1.0f;
 	spawnCooltime -= fElapsedTime;
 	if (spawnCooltime < 0.0f) {
+		int baseIndex = urd_material(dre) % 2;
+		int startRandom = urd_material(dre) % 2;
 		std::shared_ptr<CDynamicObject> newObj = std::make_shared<CDynamicObject>();
-		std::shared_ptr<CMesh> mesh = baseObject->GetMeshByShared();
-		std::shared_ptr<CMaterial> material = baseObject->GetMaterial(0);
+		std::shared_ptr<CMesh> mesh = baseObject[baseIndex]->GetMeshByShared();
+		std::shared_ptr<CMaterial> material = g_Renderer->GetMaterialFromIndex(urd_material(dre) % 6);
 		newObj->SetMesh(mesh);
 		newObj->SetMaterial(material);
-		newObj->GetPhysics() = baseObject->GetPhysics();
-		newObj->SetPosition(baseObject->GetPosition());
+		newObj->GetPhysics() = baseObject[baseIndex]->GetPhysics();
+		newObj->SetPosition(baseObject[baseIndex]->GetPosition());
+		if (startRandom == 1) {
+			glm::vec3 pos = newObj->GetPosition();
+			pos.x = -pos.x;
+			newObj->SetPosition(pos);
+			glm::vec3 accel = newObj->GetPhysics().GetLinearAcceleration();
+			accel.x = -accel.x;
+			newObj->SetLinearAcceleration(accel);
+		}
+		newObj->ScaleLinearAcceleration(urd_velocityScale(dre) * m_fCorrectionSpeed);
+
+		glm::vec3 axis = glm::vec3(urd_rotate(dre), urd_rotate(dre), urd_rotate(dre));
+		axis = glm::normalize(axis);
+		newObj->SetRotateAxis(axis);
 
 		m_pObjects.emplace_back(newObj);
 		spawnCooltime = 1.0f;
@@ -1175,14 +1320,27 @@ void CSPScene::RenderScene()
 	pointObj[1]->SetPosition(p2);
 
 
-	glUseProgram(g_Renderer->TestShader);
-	m_pMainCamera->BindShaderVariables(g_Renderer->TestShader);
+	GLuint s_Program = g_Renderer->TestShader;
+	glUseProgram(s_Program);
+	m_pMainCamera->BindShaderVariables(s_Program);
 
 	for (int i = 0; i < pointObj.size(); ++i) {
-		pointObj[i]->BindShaderVariables(g_Renderer->TestShader);
+		pointObj[i]->BindShaderVariables(s_Program);
 		pointObj[i]->UpdateTransform(nullptr);
-		pointObj[i]->Render(g_Renderer->TestShader);
+		pointObj[i]->Render(s_Program);
 	}
+
+	
+
+	for (int i = 0; i < m_pInbasketObjects.size(); ++i) {
+		m_pInbasketObjects[i]->BindShaderVariables(s_Program);
+		m_pInbasketObjects[i]->UpdateTransform(nullptr);
+		m_pInbasketObjects[i]->Render(s_Program);
+	}
+
+	m_pbasket->BindShaderVariables(s_Program);
+	m_pbasket->UpdateTransform(nullptr);
+	m_pbasket->Render(s_Program);
 
 	//GLuint lineVBO;
 	//glGenBuffers(1, &lineVBO);
@@ -1201,6 +1359,32 @@ void CSPScene::RenderScene()
 	//glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(CMesh::Vertex), 0);
 
 	//glDrawArrays(GL_LINES, 0, 2);
+}
+
+void CSPScene::KeyInput(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 'l':
+		m_ePolygonMode = GL_LINE;
+		break;
+	case 'f':
+		m_ePolygonMode = GL_FILL;
+		break;
+	case '+':
+		m_fCorrectionSpeed = std::min(2.0f, m_fCorrectionSpeed + 0.1f);
+		break;
+	case '-':
+		m_fCorrectionSpeed = std::max(0.5f, m_fCorrectionSpeed - 0.1f);
+		break;
+	case 'q':
+		glutLeaveMainLoop();
+		break;
+	default:
+		break;
+	}
+	glm::vec3 pos = m_pMainCamera->GetPosition();
+	std::cout << pos.x << " " << pos.y << " " << pos.z << std::endl;
 }
 
 CExamScene_20::CExamScene_20()

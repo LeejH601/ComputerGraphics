@@ -25,6 +25,9 @@ protected:
 
 	bool m_bInitialized = false;
 
+	GLenum m_ePolygonFace = GL_FRONT_AND_BACK;
+	GLenum m_ePolygonMode = GL_FILL;
+
 	std::vector<std::shared_ptr<CCamera>> m_sptrCameras;
 	CCamera* m_pMainCamera = nullptr;
 	std::vector<CLight> m_pLights;
@@ -60,6 +63,7 @@ public:
 	virtual void SpecialKeyInput(int key, int x, int y);
 	virtual void BindShaderVariables(GLuint s_Program);
 	virtual void Update(float fElapsedTime);
+	virtual void SetPolygonMode(GLenum face = GL_FRONT_AND_BACK, GLenum mode = GL_FILL);
 
 	virtual void Enter();
 	virtual void Exit();

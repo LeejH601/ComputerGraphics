@@ -125,6 +125,11 @@ void CScene::Update(float fElapsedTime)
 {
 }
 
+void CScene::SetPolygonMode(GLenum face, GLenum mode)
+{
+	glPolygonMode(face, mode);
+}
+
 void CScene::Enter()
 {
 	if (!m_bInitialized)
@@ -546,6 +551,7 @@ void CPBR_TestScene::RenderScene()
 	glBindFramebuffer(GL_FRAMEBUFFER, m_FBOShadowDepth);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
+
 	// Render ShadowDepthMap
 	CShadowCamera shadowCamera;
 	//shadowCamera.GenerateProjectionMatrix(glm::radians(90.0f), (float)g_WindowSizeX / (float)g_WindowSizeY, 0.1f, 50.0f);
@@ -567,7 +573,7 @@ void CPBR_TestScene::RenderScene()
 
 
 	
-
+	SetPolygonMode(m_ePolygonFace, m_ePolygonMode);
 	
 	BindShaderVariables(s_Program);
 
