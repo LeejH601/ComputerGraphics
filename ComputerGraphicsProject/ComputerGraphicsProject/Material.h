@@ -30,6 +30,7 @@ public:
 	glm::vec3 EmissiveColor;
 	glm::float32 Refraction;
 	glm::float32 Opacity;
+	glm::vec4 UVOffset;
 
 	// 텍스쳐 필요
 	std::shared_ptr<CTexture> m_pBaseTexture;
@@ -37,6 +38,8 @@ public:
 	std::shared_ptr<CTexture> m_pMetallicTexture;
 	std::shared_ptr<CTexture> m_pRoughnessTexture;
 
+	void SetUVOffset(float t1, float t2, float s1, float s2);
+	void SetUVOffset(glm::vec4 offset);
 	void SetBaseTexture(std::shared_ptr<CTexture>& pTexture);
 	void SetNormalTexture(std::shared_ptr<CTexture>& pTexture);
 	void SetMetallicTexture(std::shared_ptr<CTexture>& pTexture);

@@ -46,7 +46,7 @@ uniform float gRoughnessColor;
 uniform float gFresnel;
 uniform float gMetallicColor;
 uniform vec3 gSpecularColor;
-
+//uniform vec4 gUVOffset;
 
 uniform sampler2D u_BaseTexture;
 uniform sampler2D u_NormalTexture;

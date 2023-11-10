@@ -15,13 +15,15 @@ uniform mat4 projectionTransform;
 uniform mat4 worldTransform;
 uniform mat4 viewTransform;
 
+uniform vec4 gUVOffset;
 
 void main()
 {
 	gl_Position = projectionTransform * viewTransform * worldTransform * vec4(v_Position, 1.0);
 	WorldPos = vec3(worldTransform * vec4(v_Position, 1.0));
 	Normal = mat3(transpose(inverse(worldTransform))) * v_Normal;
-	Texcoord0 = v_texcoord0;
+	Texcoord0 = v_texcoord0 * gUVOffset.zw;
+	//Texcoord0 = Texcoord0 + gUVOffset.xy;
 
 	mat3 mtxTangentToWorld;
 	mtxTangentToWorld[0] = normalize(worldTransform * vec4(v_Tangent, 0.0)).xyz;

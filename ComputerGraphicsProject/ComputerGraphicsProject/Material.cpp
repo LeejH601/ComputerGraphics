@@ -8,6 +8,7 @@ CMaterial::CMaterial()
 	MetallicColor = 1.0f;
 	RoughnessColor = 0.1f;
 	FresnelColor = 0.04f;
+	UVOffset = glm::vec4(0, 0, 1, 1);
 }
 
 CMaterial::~CMaterial()
@@ -34,6 +35,9 @@ void CMaterial::BindShaderVariables(GLuint s_Program)
 
 	GLuint FresnelLoc = glGetUniformLocation(s_Program, "gFresnel");
 	glUniform1f(FresnelLoc, FresnelColor);
+
+	GLuint UVOffsetLoc = glGetUniformLocation(s_Program, "gUVOffset");
+	glUniform4fv(UVOffsetLoc, 1, glm::value_ptr(UVOffset));
 
 
 	if (TextureMask & MATERIAL_BASE_MAP) {
@@ -64,6 +68,16 @@ void CMaterial::BindShaderVariables(GLuint s_Program)
 
 	}
 		
+}
+
+void CMaterial::SetUVOffset(float t1, float t2, float s1, float s2)
+{
+	UVOffset = glm::vec4(t1, t2, s1, s2);
+}
+
+void CMaterial::SetUVOffset(glm::vec4 offset)
+{
+	UVOffset = offset;
 }
 
 void CMaterial::SetBaseTexture(std::shared_ptr<CTexture>& pTexture)

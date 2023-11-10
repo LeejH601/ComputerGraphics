@@ -809,6 +809,7 @@ void CSPScene::BuildObjects()
 	texture = std::make_shared<CTexture>();
 	texture->LoadTextureFromPNG("./Textures/rustediron2_roughness.png", GL_LINEAR);
 	newMaterial->SetRoughnessTexture(texture);
+	newMaterial->SetUVOffset(0, 0, 2, 2);
 	g_Renderer->RegisterMaterial(newMaterial);
 
 	newMaterial = std::make_shared<CMaterial>();
@@ -824,6 +825,7 @@ void CSPScene::BuildObjects()
 	texture = std::make_shared<CTexture>();
 	texture->LoadTextureFromPNG("./Textures/Iron-Scuffed_roughness.png", GL_LINEAR);
 	newMaterial->SetRoughnessTexture(texture);
+	newMaterial->SetUVOffset(0, 0, 2, 2);
 	g_Renderer->RegisterMaterial(newMaterial);
 
 	newMaterial = std::make_shared<CMaterial>();
@@ -839,6 +841,7 @@ void CSPScene::BuildObjects()
 	texture = std::make_shared<CTexture>();
 	texture->LoadTextureFromPNG("./Textures/older-padded-leather_roughness.png", GL_LINEAR);
 	newMaterial->SetRoughnessTexture(texture);
+	newMaterial->SetUVOffset(0, 0, 2, 2);
 	g_Renderer->RegisterMaterial(newMaterial);
 
 	newMaterial = std::make_shared<CMaterial>();
@@ -854,6 +857,7 @@ void CSPScene::BuildObjects()
 	texture = std::make_shared<CTexture>();
 	texture->LoadTextureFromPNG("./Textures/white-quilted-diamond_roughness.png", GL_LINEAR);
 	newMaterial->SetRoughnessTexture(texture);
+	newMaterial->SetUVOffset(0, 0, 2, 2);
 	g_Renderer->RegisterMaterial(newMaterial);
 
 	newMaterial = std::make_shared<CMaterial>();
@@ -861,15 +865,53 @@ void CSPScene::BuildObjects()
 	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-albedo.png", GL_LINEAR);
 	newMaterial->SetBaseTexture(texture);
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-metalness.png", GL_LINEAR);
+	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-normal-ogl.png", GL_LINEAR);
 	newMaterial->SetNormalTexture(texture);
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-normal-ogl.png", GL_LINEAR);
+	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-metalness.png", GL_LINEAR);
 	newMaterial->SetMetallicTexture(texture);
 	texture = std::make_shared<CTexture>();
 	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-roughness.png", GL_LINEAR);
 	newMaterial->SetRoughnessTexture(texture);
+	newMaterial->SetUVOffset(0, 0, 2, 2);
 	g_Renderer->RegisterMaterial(newMaterial);
+
+	newMaterial = std::make_shared<CMaterial>();
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/T_04_Diffuse.png", GL_LINEAR);
+	newMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/T_04_Normal.png", GL_LINEAR);
+	newMaterial->SetNormalTexture(texture);
+	g_Renderer->RegisterMaterial(newMaterial);
+
+	newMaterial = std::make_shared<CMaterial>();
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/T_05_Diffuse.png", GL_LINEAR);
+	newMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/T_05_Normal.png", GL_LINEAR);
+	newMaterial->SetNormalTexture(texture);
+	g_Renderer->RegisterMaterial(newMaterial);
+
+	newMaterial = std::make_shared<CMaterial>();
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/T_33_Diffuse.png", GL_LINEAR);
+	newMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/T_33_Normal.png", GL_LINEAR);
+	newMaterial->SetNormalTexture(texture);
+	g_Renderer->RegisterMaterial(newMaterial);
+
+	newMaterial = std::make_shared<CMaterial>();
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/T_34_Diffuse.png", GL_LINEAR);
+	newMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture->LoadTextureFromPNG("./Textures/T_34_Normal.png", GL_LINEAR);
+	newMaterial->SetNormalTexture(texture);
+	g_Renderer->RegisterMaterial(newMaterial);
+
 
 	//m_pObjects.resize(nObj);
 	glm::vec3 basePos{ 5.0f,-2.0f,0 };
@@ -1288,7 +1330,7 @@ void CSPScene::Update(float fElapsedTime)
 		int startRandom = urd_material(dre) % 2;
 		std::shared_ptr<CDynamicObject> newObj = std::make_shared<CDynamicObject>();
 		std::shared_ptr<CMesh> mesh = baseObject[baseIndex]->GetMeshByShared();
-		std::shared_ptr<CMaterial> material = g_Renderer->GetMaterialFromIndex(urd_material(dre) % 6);
+		std::shared_ptr<CMaterial> material = g_Renderer->GetMaterialFromIndex(urd_material(dre) % 10);
 		newObj->SetMesh(mesh);
 		newObj->SetMaterial(material);
 		newObj->GetPhysics() = baseObject[baseIndex]->GetPhysics();
