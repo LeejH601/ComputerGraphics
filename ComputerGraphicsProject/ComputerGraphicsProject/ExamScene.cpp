@@ -938,6 +938,26 @@ void CSPScene::BuildObjects()
 
 	baseObject.emplace_back(obj);
 
+	obj = std::make_shared<CDynamicObject>();
+	obj->LoadGeometryAndAnimationFromFile("./Objects/Capsule.bin");
+
+	obj->SetPosition(basePos);
+	obj->AddAcceleration(glm::normalize(glm::vec3(-1.0f, 2.0f, 0.0f)), 6.5f);
+	obj->SetRotateAxis(glm::vec3(0, 0, 1));
+	obj->AddTorqueAcceleration(15.0f);
+
+	baseObject.emplace_back(obj);
+
+	obj = std::make_shared<CDynamicObject>();
+	obj->LoadGeometryAndAnimationFromFile("./Objects/Cylinder.bin");
+
+	obj->SetPosition(basePos);
+	obj->AddAcceleration(glm::normalize(glm::vec3(-1.0f, 2.0f, 0.0f)), 6.5f);
+	obj->SetRotateAxis(glm::vec3(0, 0, 1));
+	obj->AddTorqueAcceleration(15.0f);
+
+	baseObject.emplace_back(obj);
+
 	m_pbasket = std::make_shared<CObject>();
 	m_pbasket->LoadGeometryAndAnimationFromFile("./Objects/basket.bin");
 
@@ -1326,7 +1346,7 @@ void CSPScene::Update(float fElapsedTime)
 	static float spawnCooltime = 1.0f;
 	spawnCooltime -= fElapsedTime;
 	if (spawnCooltime < 0.0f) {
-		int baseIndex = urd_material(dre) % 2;
+		int baseIndex = urd_material(dre) % 4;
 		int startRandom = urd_material(dre) % 2;
 		std::shared_ptr<CDynamicObject> newObj = std::make_shared<CDynamicObject>();
 		std::shared_ptr<CMesh> mesh = baseObject[baseIndex]->GetMeshByShared();

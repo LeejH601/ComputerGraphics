@@ -608,6 +608,8 @@ void CPBR_TestScene::RenderScene()
 	s_Program = g_Renderer->SkyBoxShader;
 	glUseProgram(s_Program);
 
+	SetPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 	//m_pSunLight->BindShaderVariables(s_Program);
 	m_pMainCamera->BindShaderVariables(s_Program);
 
