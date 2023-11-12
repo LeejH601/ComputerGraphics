@@ -169,6 +169,25 @@ public:
 	bool CheckCollision();
 };
 
+
+class CRouteDisplayer
+{
+	static const UINT MAX_INSTANCE_SIZE = 50;
+
+	std::shared_ptr<CObject> m_pBaseRoutePointObject;
+
+	std::vector<glm::mat4x4> m_mat4x4InstanceWorlds;
+
+public:
+	CRouteDisplayer();
+	virtual ~CRouteDisplayer();
+
+	void calculateInstanceWorldTransform(glm::vec3 linearVelocity, glm::vec3 linearAcceleration, glm::vec3 startPosition, float offsetDT = 0.0f);
+	void calculateInstanceWorldTransform(CPhysicsComponent physics, glm::vec3 startPosition, float offsetDT = 0.0f);
+	void calculateInstanceWorldTransform(CPhysicsComponent physics, CObject* obj, float offsetDT = 0.0f);
+	virtual void Render(GLuint s_Program);
+};
+
 class CSPScene : public CPBR_TestScene
 {
 	POINT m_startPos;
@@ -181,12 +200,17 @@ class CSPScene : public CPBR_TestScene
 	float m_fBasketDT = 0.0f;
 
 	std::vector<std::shared_ptr<CObject>> m_pInbasketObjects;
+	std::shared_ptr<CRouteDisplayer> m_pRouteDisplayer;
 
 	float m_fCorrectionSpeed = 1.0f;
 
 	static std::uniform_real_distribution<float> urd_velocityScale;
 	static std::uniform_int_distribution<unsigned int> urd_material;
 	static std::uniform_real_distribution<float> urd_rotate;
+
+	float fRouteOffsetDT = 0.0f;
+
+	bool m_bShowRoute = false;
 
 public:
 	CSPScene();

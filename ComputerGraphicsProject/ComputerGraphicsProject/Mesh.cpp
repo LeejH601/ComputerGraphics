@@ -684,3 +684,17 @@ void CMesh::Render()
 		glDrawArrays(m_PrimitiveTopology, 0, m_nVertices);
 	}
 }
+
+void CMesh::RenderInstanced(int nInstance)
+{
+	if (m_nSubMeshes > 0) {
+		for (int i = 0; i < m_nSubMeshes; ++i) {
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBOs[i]);
+			//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, m_ppnSubSetIndices[i].data());
+			glDrawElementsInstanced(m_PrimitiveTopology, m_pnSubSetIndices[i] * sizeof(UINT), GL_UNSIGNED_INT, NULL, nInstance);
+		}
+	}
+	else {
+		glDrawArraysInstanced(m_PrimitiveTopology, 0, m_nVertices, nInstance);
+	}
+}

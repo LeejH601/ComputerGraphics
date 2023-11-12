@@ -166,6 +166,7 @@
     <ClInclude Include="Timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\Color_ps.glsl" />
     <None Include="Shaders\Cube_ps.glsl" />
     <None Include="Shaders\Cube_vs.glsl" />
     <None Include="Shaders\environmentMake_ps.glsl" />
@@ -176,6 +177,7 @@
     <None Include="Shaders\irradianceMake_vs.glsl" />
     <None Include="Shaders\Line_ps.glsl" />
     <None Include="Shaders\Line_vs.glsl" />
+    <None Include="Shaders\PBRInstance_vs.glsl" />
     <None Include="Shaders\PBR_ps.glsl" />
     <None Include="Shaders\PBR_vs.glsl" />
     <None Include="Shaders\preComputeBRDF_ps.glsl" />

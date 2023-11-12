@@ -25,6 +25,7 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 		//"./Shaders/SolidRect.fs");
 
 	TestShader = CompileShaders((char*)"./Shaders/PBR_vs.glsl", (char*)"./Shaders/PBR_ps.glsl");
+	PointInstanceShader = CompileShaders((char*)"./Shaders/PBRInstance_vs.glsl", (char*)"./Shaders/Color_ps.glsl");
 	CubeShader = CompileShaders((char*)"./Shaders/Cube_vs.glsl", (char*)"./Shaders/Cube_ps.glsl");
 	MakeCubeMapShader = CompileShaders((char*)"./Shaders/Cube_vs.glsl", (char*)"./Shaders/Cube_ps.glsl");
 	SkyBoxShader = CompileShaders((char*)"./Shaders/environmentMake_vs.glsl", (char*)"./Shaders/environmentMake_ps.glsl");

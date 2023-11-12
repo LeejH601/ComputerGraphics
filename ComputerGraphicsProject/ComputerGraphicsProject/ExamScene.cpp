@@ -668,7 +668,7 @@ void CExamScene_9::Update(float fElapsedTime)
 		if (rect.w > height)
 			return false;
 		return true;
-	};
+		};
 	static glm::vec4 rectColide{ -0.5, -1.0f, 0.5f, 1.0f };
 	for (int i = 0; i < m_pObjects.size(); ++i) {
 		CObject* obj = m_pObjects[i].get();
@@ -974,6 +974,8 @@ void CSPScene::BuildObjects()
 
 	m_pMainCamera->SetPosision(glm::vec3(0, 0, -5.0f));
 	m_pMainCamera->SetQauternion(glm::quat(1, 0, 0, 0));
+
+	m_pRouteDisplayer = std::make_shared<CRouteDisplayer>();
 }
 
 void CSPScene::MouseInput(int button, int state, int x, int y)
@@ -1372,6 +1374,10 @@ void CSPScene::Update(float fElapsedTime)
 		m_pObjects.emplace_back(newObj);
 		spawnCooltime = 1.0f;
 	}
+
+	fRouteOffsetDT += fElapsedTime;
+	fRouteOffsetDT = fRouteOffsetDT > 1.0f ? fRouteOffsetDT - 1.0f : fRouteOffsetDT;
+
 }
 
 void CSPScene::RenderScene()
@@ -1392,7 +1398,7 @@ void CSPScene::RenderScene()
 		pointObj[i]->Render(s_Program);
 	}
 
-	
+
 
 	for (int i = 0; i < m_pInbasketObjects.size(); ++i) {
 		m_pInbasketObjects[i]->BindShaderVariables(s_Program);
@@ -1403,6 +1409,24 @@ void CSPScene::RenderScene()
 	m_pbasket->BindShaderVariables(s_Program);
 	m_pbasket->UpdateTransform(nullptr);
 	m_pbasket->Render(s_Program);
+
+	if (m_bShowRoute) {
+		s_Program = g_Renderer->PointInstanceShader;
+		glUseProgram(s_Program);
+
+		m_pMainCamera->BindShaderVariables(s_Program);
+
+		for (int i = 0; i < m_pObjects.size(); ++i) {
+			CDynamicObject* obj = dynamic_cast<CDynamicObject*>(m_pObjects[i].get());
+			if (obj) {
+				CPhysicsComponent physic = obj->GetPhysics();
+				m_pRouteDisplayer->calculateInstanceWorldTransform(physic, obj, 0.f);
+				m_pRouteDisplayer->Render(s_Program);
+			}
+		}
+	}
+	
+
 
 	//GLuint lineVBO;
 	//glGenBuffers(1, &lineVBO);
@@ -1438,6 +1462,9 @@ void CSPScene::KeyInput(unsigned char key, int x, int y)
 		break;
 	case '-':
 		m_fCorrectionSpeed = std::max(0.5f, m_fCorrectionSpeed - 0.1f);
+		break;
+	case 'r':
+		m_bShowRoute = !m_bShowRoute;
 		break;
 	case 'q':
 		glutLeaveMainLoop();
@@ -2262,4 +2289,102 @@ bool CExamScene_22::CheckCollision()
 		}
 	}
 	return false;
+}
+
+CRouteDisplayer::CRouteDisplayer()
+{
+	m_mat4x4InstanceWorlds.resize(MAX_INSTANCE_SIZE);
+
+	m_pBaseRoutePointObject = std::make_shared<CObject>();
+	m_pBaseRoutePointObject->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+
+	std::shared_ptr<CMaterial> pMaterial = std::make_shared<CMaterial>();
+	pMaterial->BaseColor = glm::vec3(1.0f, 0.0f, 0.0f);
+	pMaterial->RoughnessColor = 1.0f;
+
+	m_pBaseRoutePointObject->SetMaterial(0, pMaterial);
+	m_pBaseRoutePointObject->SetScale(glm::vec3(0.1f));
+}
+
+CRouteDisplayer::~CRouteDisplayer()
+{
+}
+
+void CRouteDisplayer::calculateInstanceWorldTransform(glm::vec3 linearVelocity, glm::vec3 linearAcceleration, glm::vec3 startPosition, float offsetDT)
+{
+	int instancecount = m_mat4x4InstanceWorlds.size();
+	float t = offsetDT + 0.0f;
+	float Dt = 0.05f;
+	glm::vec3 LV = linearVelocity;
+	glm::vec3 LA = linearAcceleration;
+	for (int i = 0; i < instancecount; ++i) {
+		glm::vec3 newLV = LV + LA * t;
+		glm::vec3 pos = startPosition + newLV * t;
+		glm::mat4x4 world = glm::identity<glm::mat4x4>();
+		world[3] = glm::vec4(pos, 1.0f);
+		m_mat4x4InstanceWorlds[i] = world;
+		t += Dt;
+	}
+}
+
+void CRouteDisplayer::calculateInstanceWorldTransform(CPhysicsComponent physics, glm::vec3 startPosition, float offsetDT)
+{
+	CObject obj;
+	obj.SetPosition(startPosition);
+
+	float t = offsetDT + 0.0f;
+	float Dt = 0.05f;
+
+	physics.simulate(&obj, t);
+
+	int instancecount = m_mat4x4InstanceWorlds.size();
+	for (int i = 0; i < instancecount; ++i) {
+		physics.simulate(&obj, Dt);
+		obj.ReganerateTransform();
+		obj.UpdateTransform();
+		m_mat4x4InstanceWorlds[i] = obj.m_mat4x4Wolrd;
+	}
+}
+
+void CRouteDisplayer::calculateInstanceWorldTransform(CPhysicsComponent physics, CObject* obj, float offsetDT)
+{
+	CObject cobj;
+	cobj.SetPosition(obj->GetPosition());
+	cobj.SetRotate(obj->GetRotation());
+	cobj.SetScale(glm::vec3(0.05f));
+
+	float t = offsetDT + 0.0f;
+	float Dt = 0.1f;
+
+	physics.simulate(&cobj, t);
+
+	int instancecount = m_mat4x4InstanceWorlds.size();
+	for (int i = 0; i < instancecount; ++i) {
+		physics.simulate(&cobj, Dt);
+		cobj.ReganerateTransform();
+		cobj.UpdateTransform();
+		m_mat4x4InstanceWorlds[i] = cobj.m_mat4x4Transform;
+	}
+}
+
+void CRouteDisplayer::Render(GLuint s_Program)
+{
+	m_pBaseRoutePointObject->BindShaderVariables(s_Program);
+
+	auto SetWorlds = [&]() {
+
+		for (int i = 0; i < m_mat4x4InstanceWorlds.size(); ++i) {
+			std::string locName = std::string("gInstanceWorldTransforms[") + std::to_string(i) + std::string("]");
+			GLuint worldLoc = glGetUniformLocation(s_Program, locName.c_str());
+
+			glUniformMatrix4fv(worldLoc, 1, GL_FALSE, glm::value_ptr(m_mat4x4InstanceWorlds[i]));
+		}
+		};
+
+	GLuint instanceSizeLoc = glGetUniformLocation(s_Program, "gInstanceSize");
+	glUniform1i(instanceSizeLoc, m_mat4x4InstanceWorlds.size());
+
+	SetWorlds();
+
+	m_pBaseRoutePointObject->GetMesh()->RenderInstanced(m_mat4x4InstanceWorlds.size());
 }

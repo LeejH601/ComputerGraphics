@@ -151,5 +151,11 @@
     <None Include="Shaders\Line_vs.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\PBRInstance_vs.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\Color_ps.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

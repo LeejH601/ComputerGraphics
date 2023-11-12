@@ -87,6 +87,7 @@ public:
 	virtual void BindShaderVariables(GLuint s_Program);
 
 	virtual void Render();
+	virtual void RenderInstanced(int nInstance);
 
 private:
 	std::string m_strMeshName;
