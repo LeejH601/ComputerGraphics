@@ -542,6 +542,9 @@ void CPBR_TestScene::BuildObjects()
 
 void CPBR_TestScene::RenderScene()
 {
+	
+
+
 	GLuint s_Program = g_Renderer->TestShader;
 	glUseProgram(s_Program);
 
@@ -619,6 +622,46 @@ void CPBR_TestScene::RenderScene()
 	m_pSkyBoxObject->BindShaderVariables(s_Program);
 	m_pSkyBoxObject->UpdateTransform(nullptr);
 	m_pSkyBoxObject->Render(s_Program);
+
+
+
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGLUT_NewFrame();
+	ImGui::NewFrame();
+	ImGuiIO& io = ImGui::GetIO();
+
+	static bool showDemo = true;
+	static ImVec4 clear_color = { 0,0,0,1 };
+	ImGui::ShowDemoWindow(&showDemo);
+
+	static float f = 0.0f;
+	static int counter = 0;
+
+	ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+	ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+	ImGui::Checkbox("Demo Window", &showDemo);      // Edit bools storing our window open/close state
+	ImGui::Checkbox("Another Window", &showDemo);
+
+	ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+	//ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+	if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+		counter++;
+	ImGui::SameLine();
+	ImGui::Text("counter = %d", counter);
+
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+	ImGui::End();
+
+
+	ImGui::Render();
+	glViewport(0, 0, (GLsizei)io.DisplaySize.x, (GLsizei)io.DisplaySize.y);
+	//glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+	//glClear(GL_COLOR_BUFFER_BIT);
+	//glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound, but prefer using the GL3+ code.
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 	
 }
 
