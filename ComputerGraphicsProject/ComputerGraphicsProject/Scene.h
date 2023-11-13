@@ -9,6 +9,13 @@
 
 #define MAX_LIGHTS 8
 
+struct FRAMEBUFFEROBJECT_INFO
+{
+	GLuint FBO = -1;
+	int width = 0;
+	int height = 0;
+};
+
 class CScene
 {
 	struct UBO_LIGHT
@@ -22,6 +29,9 @@ protected:
 	std::shared_ptr<CTexture> m_tFilteringedEnvironmentTexture;
 	std::shared_ptr<CTexture> m_tPreCoumputedBRDFLUTexture;
 	std::shared_ptr<CTexture> m_tShadowDepthTexture;
+
+	bool m_bEnableMultiRenderTarget = false;
+	std::vector<FRAMEBUFFEROBJECT_INFO> m_FBOs;
 
 	bool m_bInitialized = false;
 
@@ -64,6 +74,9 @@ public:
 	virtual void BindShaderVariables(GLuint s_Program);
 	virtual void Update(float fElapsedTime);
 	virtual void SetPolygonMode(GLenum face = GL_FRONT_AND_BACK, GLenum mode = GL_FILL);
+	virtual void BindFrameBufferObjectFromIndex(UINT index, bool Is_FBO_Clear = true, GLbitfield FBO_Clear_Option = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	virtual void BindFrameBufferObject(FRAMEBUFFEROBJECT_INFO FBOInfo, bool Is_FBO_Clear = true, GLbitfield FBO_Clear_Option = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	virtual void PostProcessing();
 
 	virtual void Enter();
 	virtual void Exit();

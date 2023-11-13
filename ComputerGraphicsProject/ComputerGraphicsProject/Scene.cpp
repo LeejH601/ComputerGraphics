@@ -130,6 +130,34 @@ void CScene::SetPolygonMode(GLenum face, GLenum mode)
 	glPolygonMode(face, mode);
 }
 
+void CScene::BindFrameBufferObjectFromIndex(UINT index, bool Is_FBO_Clear, GLbitfield FBO_Clear_Option)
+{
+	FRAMEBUFFEROBJECT_INFO fboInfo = m_FBOs[index];
+	GLuint FBO = fboInfo.FBO;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+	if (Is_FBO_Clear) {
+		glClear(FBO_Clear_Option);
+	}
+}
+
+void CScene::BindFrameBufferObject(FRAMEBUFFEROBJECT_INFO FBOInfo, bool Is_FBO_Clear, GLbitfield FBO_Clear_Option)
+{
+	GLuint FBO = FBOInfo.FBO;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+	if (Is_FBO_Clear) {
+		glClear(FBO_Clear_Option);
+	}
+}
+
+void CScene::PostProcessing()
+{
+	if (!m_bEnableMultiRenderTarget) {
+		return;
+	}
+}
+
 void CScene::Enter()
 {
 	if (!m_bInitialized)
@@ -569,9 +597,18 @@ void CPBR_TestScene::RenderScene()
 		obj->Render(s_Program);
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	FRAMEBUFFEROBJECT_INFO FBO_Info;
 
-
+	if (m_bEnableMultiRenderTarget) {
+		FBO_Info = m_FBOs[0];
+	}
+	else {
+		FBO_Info.FBO = 0;
+		FBO_Info.width = g_WindowSizeX;
+		FBO_Info.height = g_WindowSizeY;
+	}
+	
+	BindFrameBufferObject(FBO_Info);
 	
 	SetPolygonMode(m_ePolygonFace, m_ePolygonMode);
 	
@@ -589,8 +626,6 @@ void CPBR_TestScene::RenderScene()
 	glUniform1i(samplerULoc, 7);
 	m_tFilteringedEnvironmentTexture->BindShaderVariables(s_Program, GL_TEXTURE7);
 
-
-	
 
 
 	//m_pSunLight->BindShaderVariables(s_Program);
@@ -619,7 +654,6 @@ void CPBR_TestScene::RenderScene()
 	m_pSkyBoxObject->BindShaderVariables(s_Program);
 	m_pSkyBoxObject->UpdateTransform(nullptr);
 	m_pSkyBoxObject->Render(s_Program);
-	
 }
 
 void CPBR_TestScene::MouseInput(int button, int state, int x, int y)
