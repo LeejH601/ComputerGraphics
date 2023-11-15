@@ -25,6 +25,15 @@
 #include <DirectXCollision.h>
 
 
+#define DECLARE_SINGLE(MYType)\
+public:\
+	static MYType* GetInst()\
+	{\
+		static MYType m_pInst;\
+		return &m_pInst;\
+	}
+
+
 extern int ReadIntegerFromFile(FILE* pInFile);
 extern float ReadFloatFromFile(FILE* pInFile);
 extern BYTE ReadStringFromFile(FILE* pInFile, char* pstrToken);

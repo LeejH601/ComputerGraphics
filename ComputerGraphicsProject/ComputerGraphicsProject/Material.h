@@ -18,6 +18,8 @@ public:
 
 	virtual void BindShaderVariables(GLuint s_Program);
 
+	std::string m_strMaterialName;
+
 	UINT TextureMask;
 
 	// 머터리얼 값들
@@ -44,5 +46,7 @@ public:
 	void SetNormalTexture(std::shared_ptr<CTexture>& pTexture);
 	void SetMetallicTexture(std::shared_ptr<CTexture>& pTexture);
 	void SetRoughnessTexture(std::shared_ptr<CTexture>& pTexture);
+	void SetName(std::string str) { m_strMaterialName = str; };
+	std::string GetName() { return m_strMaterialName; };
 };
 
