@@ -5,6 +5,7 @@
 #include <cmath>
 #include <vector>
 #include <set>
+#include "ResourceManager.h"
 
 CExamScene_7::CExamScene_7()
 {
@@ -810,7 +811,7 @@ void CSPScene::BuildObjects()
 	texture->LoadTextureFromPNG("./Textures/rustediron2_roughness.png", GL_LINEAR);
 	newMaterial->SetRoughnessTexture(texture);
 	newMaterial->SetUVOffset(0, 0, 2, 2);
-	g_Renderer->RegisterMaterial(newMaterial);
+	CResourceManager::GetInst()->RegisterMaterial(newMaterial);
 
 	newMaterial = std::make_shared<CMaterial>();
 	texture = std::make_shared<CTexture>();
@@ -826,7 +827,7 @@ void CSPScene::BuildObjects()
 	texture->LoadTextureFromPNG("./Textures/Iron-Scuffed_roughness.png", GL_LINEAR);
 	newMaterial->SetRoughnessTexture(texture);
 	newMaterial->SetUVOffset(0, 0, 2, 2);
-	g_Renderer->RegisterMaterial(newMaterial);
+	CResourceManager::GetInst()->RegisterMaterial(newMaterial);
 
 	newMaterial = std::make_shared<CMaterial>();
 	texture = std::make_shared<CTexture>();
@@ -842,7 +843,7 @@ void CSPScene::BuildObjects()
 	texture->LoadTextureFromPNG("./Textures/older-padded-leather_roughness.png", GL_LINEAR);
 	newMaterial->SetRoughnessTexture(texture);
 	newMaterial->SetUVOffset(0, 0, 2, 2);
-	g_Renderer->RegisterMaterial(newMaterial);
+	CResourceManager::GetInst()->RegisterMaterial(newMaterial);
 
 	newMaterial = std::make_shared<CMaterial>();
 	texture = std::make_shared<CTexture>();
@@ -858,7 +859,7 @@ void CSPScene::BuildObjects()
 	texture->LoadTextureFromPNG("./Textures/white-quilted-diamond_roughness.png", GL_LINEAR);
 	newMaterial->SetRoughnessTexture(texture);
 	newMaterial->SetUVOffset(0, 0, 2, 2);
-	g_Renderer->RegisterMaterial(newMaterial);
+	CResourceManager::GetInst()->RegisterMaterial(newMaterial);
 
 	newMaterial = std::make_shared<CMaterial>();
 	texture = std::make_shared<CTexture>();
@@ -874,7 +875,7 @@ void CSPScene::BuildObjects()
 	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-roughness.png", GL_LINEAR);
 	newMaterial->SetRoughnessTexture(texture);
 	newMaterial->SetUVOffset(0, 0, 2, 2);
-	g_Renderer->RegisterMaterial(newMaterial);
+	CResourceManager::GetInst()->RegisterMaterial(newMaterial);
 
 	newMaterial = std::make_shared<CMaterial>();
 	texture = std::make_shared<CTexture>();
@@ -883,7 +884,7 @@ void CSPScene::BuildObjects()
 	texture = std::make_shared<CTexture>();
 	texture->LoadTextureFromPNG("./Textures/T_04_Normal.png", GL_LINEAR);
 	newMaterial->SetNormalTexture(texture);
-	g_Renderer->RegisterMaterial(newMaterial);
+	CResourceManager::GetInst()->RegisterMaterial(newMaterial);
 
 	newMaterial = std::make_shared<CMaterial>();
 	texture = std::make_shared<CTexture>();
@@ -892,7 +893,7 @@ void CSPScene::BuildObjects()
 	texture = std::make_shared<CTexture>();
 	texture->LoadTextureFromPNG("./Textures/T_05_Normal.png", GL_LINEAR);
 	newMaterial->SetNormalTexture(texture);
-	g_Renderer->RegisterMaterial(newMaterial);
+	CResourceManager::GetInst()->RegisterMaterial(newMaterial);
 
 	newMaterial = std::make_shared<CMaterial>();
 	texture = std::make_shared<CTexture>();
@@ -901,7 +902,7 @@ void CSPScene::BuildObjects()
 	texture = std::make_shared<CTexture>();
 	texture->LoadTextureFromPNG("./Textures/T_33_Normal.png", GL_LINEAR);
 	newMaterial->SetNormalTexture(texture);
-	g_Renderer->RegisterMaterial(newMaterial);
+	CResourceManager::GetInst()->RegisterMaterial(newMaterial);
 
 	newMaterial = std::make_shared<CMaterial>();
 	texture = std::make_shared<CTexture>();
@@ -910,7 +911,7 @@ void CSPScene::BuildObjects()
 	texture = std::make_shared<CTexture>();
 	texture->LoadTextureFromPNG("./Textures/T_34_Normal.png", GL_LINEAR);
 	newMaterial->SetNormalTexture(texture);
-	g_Renderer->RegisterMaterial(newMaterial);
+	CResourceManager::GetInst()->RegisterMaterial(newMaterial);
 
 
 	//m_pObjects.resize(nObj);
@@ -1352,7 +1353,7 @@ void CSPScene::Update(float fElapsedTime)
 		int startRandom = urd_material(dre) % 2;
 		std::shared_ptr<CDynamicObject> newObj = std::make_shared<CDynamicObject>();
 		std::shared_ptr<CMesh> mesh = baseObject[baseIndex]->GetMeshByShared();
-		std::shared_ptr<CMaterial> material = g_Renderer->GetMaterialFromIndex(urd_material(dre) % 10);
+		std::shared_ptr<CMaterial> material = CResourceManager::GetInst()->GetMaterialFromIndex(urd_material(dre) % 10);
 		newObj->SetMesh(mesh);
 		newObj->SetMaterial(material);
 		newObj->GetPhysics() = baseObject[baseIndex]->GetPhysics();

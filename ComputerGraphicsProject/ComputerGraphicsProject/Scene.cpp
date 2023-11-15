@@ -3,6 +3,7 @@
 #include "Renderer.h"
 #include "Mesh.h"
 #include "Timer.h"
+#include "ResourceManager.h"
 
 CScene::CScene()
 {
@@ -400,7 +401,7 @@ void CPBR_TestScene::Init()
 	std::shared_ptr<CMesh> testCubeMesh;
 	testCubeMesh = CMesh::CreateCubeMesh(1.0f, 1.0f, 1.0f);
 	testCubeMesh->CreateShaderVariables();
-	g_Renderer->RegisterMesh(testCubeMesh);
+	CResourceManager::GetInst()->RegisterMesh(testCubeMesh);
 
 	
 
@@ -409,7 +410,7 @@ void CPBR_TestScene::Init()
 	std::shared_ptr<CMaterial> pMaterial = std::make_shared<CMaterial>();
 	pTexture = m_tFilteringedEnvironmentTexture;
 	pMaterial->SetBaseTexture(pTexture);
-	g_Renderer->RegisterMaterial(pMaterial);
+	CResourceManager::GetInst()->RegisterMaterial(pMaterial);
 
 	m_pSkyBoxObject->SetMesh(testCubeMesh);
 	m_pSkyBoxObject->SetMaterial(pMaterial);
@@ -424,7 +425,7 @@ void CPBR_TestScene::BuildObjects()
 	std::shared_ptr<CMesh> testSphereMesh;
 	testSphereMesh = CMesh::CreateSphereMesh(20, 20);
 	testSphereMesh->CreateShaderVariables();
-	g_Renderer->RegisterMesh(testSphereMesh);
+	CResourceManager::GetInst()->RegisterMesh(testSphereMesh);
 
 	std::shared_ptr<CObject> planeObj = std::make_shared<CObject>();
 	planeObj->LoadGeometryAndAnimationFromFile("./Objects/Plane.bin");
@@ -443,7 +444,7 @@ void CPBR_TestScene::BuildObjects()
 	texture = std::make_shared<CTexture>();
 	texture->LoadTextureFromPNG("./Textures/rustediron2_roughness.png", GL_LINEAR);
 	testMaterial->SetRoughnessTexture(texture);
-	g_Renderer->RegisterMaterial(testMaterial);
+	CResourceManager::GetInst()->RegisterMaterial(testMaterial);
 
 	testMaterial = std::make_shared<CMaterial>();
 	texture = std::make_shared<CTexture>();
@@ -458,7 +459,7 @@ void CPBR_TestScene::BuildObjects()
 	texture = std::make_shared<CTexture>();
 	texture->LoadTextureFromPNG("./Textures/Iron-Scuffed_roughness.png", GL_LINEAR);
 	testMaterial->SetRoughnessTexture(texture);
-	g_Renderer->RegisterMaterial(testMaterial);
+	CResourceManager::GetInst()->RegisterMaterial(testMaterial);
 
 	testMaterial = std::make_shared<CMaterial>();
 	texture = std::make_shared<CTexture>();
@@ -473,7 +474,7 @@ void CPBR_TestScene::BuildObjects()
 	texture = std::make_shared<CTexture>();
 	texture->LoadTextureFromPNG("./Textures/older-padded-leather_roughness.png", GL_LINEAR);
 	testMaterial->SetRoughnessTexture(texture);
-	g_Renderer->RegisterMaterial(testMaterial);
+	CResourceManager::GetInst()->RegisterMaterial(testMaterial);
 
 	testMaterial = std::make_shared<CMaterial>();
 	texture = std::make_shared<CTexture>();
@@ -488,7 +489,7 @@ void CPBR_TestScene::BuildObjects()
 	texture = std::make_shared<CTexture>();
 	texture->LoadTextureFromPNG("./Textures/white-quilted-diamond_roughness.png", GL_LINEAR);
 	testMaterial->SetRoughnessTexture(texture);
-	g_Renderer->RegisterMaterial(testMaterial);
+	CResourceManager::GetInst()->RegisterMaterial(testMaterial);
 
 	testMaterial = std::make_shared<CMaterial>();
 	texture = std::make_shared<CTexture>();
@@ -503,7 +504,7 @@ void CPBR_TestScene::BuildObjects()
 	texture = std::make_shared<CTexture>();
 	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-roughness.png", GL_LINEAR);
 	testMaterial->SetRoughnessTexture(texture);
-	g_Renderer->RegisterMaterial(testMaterial);
+	CResourceManager::GetInst()->RegisterMaterial(testMaterial);
 
 	int nObj = 1;
 	m_pObjects.resize(nObj);
@@ -531,7 +532,7 @@ void CPBR_TestScene::BuildObjects()
 			else
 				frame = frame->GetChild();
 		}*/
-		m_pObjects[i]->SetMaterial(g_Renderer->GetMaterialFromIndex(i % 6));
+		m_pObjects[i]->SetMaterial(CResourceManager::GetInst()->GetMaterialFromIndex(i % 6));
 		m_pObjects[i]->SetPosition(basePos);
 		//m_pObjects[i]->SetScale(glm::vec3(0.1, 0.1, 0.1));
 		basePos.x += 2.0f;

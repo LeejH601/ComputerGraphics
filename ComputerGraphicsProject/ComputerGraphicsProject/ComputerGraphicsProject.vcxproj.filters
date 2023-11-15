@@ -16,6 +16,15 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{bb8e51cf-9bc8-448c-b71d-39f6540cf2ab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Imgui">
+      <UniqueIdentifier>{d72c0d6d-20d8-421e-bf61-19853568421b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Imgui\Header">
+      <UniqueIdentifier>{9eafc031-33f6-401f-a83f-0b8592834a03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Imgui\Source">
+      <UniqueIdentifier>{8cbef28f-90da-4433-9abf-13d2ad040a31}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ComputerGraphicsProject.cpp">
@@ -67,24 +76,27 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Imgui\imgui.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>Imgui\Source</Filter>
     </ClCompile>
     <ClCompile Include="Imgui\imgui_demo.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>Imgui\Source</Filter>
     </ClCompile>
     <ClCompile Include="Imgui\imgui_draw.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>Imgui\Source</Filter>
     </ClCompile>
     <ClCompile Include="Imgui\imgui_impl_glut.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>Imgui\Source</Filter>
     </ClCompile>
     <ClCompile Include="Imgui\imgui_impl_opengl3.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>Imgui\Source</Filter>
     </ClCompile>
     <ClCompile Include="Imgui\imgui_tables.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>Imgui\Source</Filter>
     </ClCompile>
     <ClCompile Include="Imgui\imgui_widgets.cpp">
+      <Filter>Imgui\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -135,30 +147,33 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Imgui\imconfig.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>Imgui\Header</Filter>
     </ClInclude>
     <ClInclude Include="Imgui\imgui.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>Imgui\Header</Filter>
     </ClInclude>
     <ClInclude Include="Imgui\imgui_impl_glut.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>Imgui\Header</Filter>
     </ClInclude>
     <ClInclude Include="Imgui\imgui_impl_opengl3.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>Imgui\Header</Filter>
     </ClInclude>
     <ClInclude Include="Imgui\imgui_impl_opengl3_loader.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>Imgui\Header</Filter>
     </ClInclude>
     <ClInclude Include="Imgui\imgui_internal.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>Imgui\Header</Filter>
     </ClInclude>
     <ClInclude Include="Imgui\imstb_rectpack.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>Imgui\Header</Filter>
     </ClInclude>
     <ClInclude Include="Imgui\imstb_textedit.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>Imgui\Header</Filter>
     </ClInclude>
     <ClInclude Include="Imgui\imstb_truetype.h">
+      <Filter>Imgui\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

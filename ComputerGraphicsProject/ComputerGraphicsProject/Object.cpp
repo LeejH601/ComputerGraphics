@@ -1,6 +1,6 @@
 #include "Object.h"
 #include "Mesh.h"
-
+#include "ResourceManager.h"
 
 CObject* CObject::FindFrameByName(CObject* object, std::string& name)
 {
@@ -46,10 +46,10 @@ void CObject::ReganerateTransform()
 }
 
 void CObject::UpdateTransform(glm::mat4x4* parent)
-{	
+{
 	//if(parent == nullptr)
-		ReganerateTransform();
-	m_mat4x4Wolrd = (parent) ?  *parent * m_mat4x4Transform : m_mat4x4Transform;
+	ReganerateTransform();
+	m_mat4x4Wolrd = (parent) ? *parent * m_mat4x4Transform : m_mat4x4Transform;
 
 
 	if (m_pSibling) m_pSibling->UpdateTransform(parent);
@@ -94,8 +94,7 @@ void CObject::LoadFrameHierarchyFromFile(CObject* pParent, FILE* pInFile, int* p
 		}
 		else if (!strcmp(pstrToken, "<Mesh>:"))
 		{
-			std::shared_ptr<CMesh> pMesh = std::make_shared<CMesh>();
-			pMesh->LoadMeshFromFile(pInFile);
+			std::shared_ptr<CMesh> pMesh = CMesh::LoadMeshFromFile(pInFile);
 
 			SetMesh(pMesh);
 		}
@@ -182,6 +181,21 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 	static int TextureLoadCnt = 3;
 	float buffer;
 
+	auto LoadTexture = [&]() {
+		pTexture = std::make_shared<CTexture>();
+		if (strcmp(pstrTextureName, "null"))
+		{
+			std::shared_ptr<CTexture> loadedTexture = CResourceManager::GetInst()->GetTextureFromName(pstrTextureName);
+			if (loadedTexture == nullptr) {
+				pTexture->LoadTextureFromPNG(std::string("Textures/") + std::string(pstrTextureName) + std::string(".png"), GL_LINEAR);
+				pTexture->SetName(pstrTextureName);
+				CResourceManager::GetInst()->RegisterTexture(pTexture);
+			}
+			else {
+				pTexture = loadedTexture;
+			}
+		}
+		};
 
 	for (; ; )
 	{
@@ -252,11 +266,7 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 			nReads = (UINT)::fread(pstrTextureName, sizeof(char), nStrLength, pInFile);
 			pstrTextureName[nStrLength] = '\0';
 
-			pTexture = std::make_shared<CTexture>();
-			if (strcmp(pstrTextureName, "null"))
-			{
-				pTexture->LoadTextureFromPNG(std::string("Textures/") + std::string(pstrTextureName) + std::string(".png"), GL_LINEAR);
-			}
+			LoadTexture();
 			pMaterial->SetBaseTexture(pTexture);
 		}
 		else if (!strcmp(pstrToken, "<SpecularMap>:"))
@@ -266,11 +276,7 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 			nReads = (UINT)::fread(pstrTextureName, sizeof(char), nStrLength, pInFile);
 			pstrTextureName[nStrLength] = '\0';
 
-			pTexture = std::make_shared<CTexture>();
-			if (strcmp(pstrTextureName, "null"))
-			{
-				pTexture->LoadTextureFromPNG(std::string("Textures/") + std::string(pstrTextureName) + std::string(".png"), GL_LINEAR);
-			}
+			LoadTexture();
 		}
 		else if (!strcmp(pstrToken, "<NormalMap>:"))
 		{
@@ -279,11 +285,7 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 			nReads = (UINT)::fread(pstrTextureName, sizeof(char), nStrLength, pInFile);
 			pstrTextureName[nStrLength] = '\0';
 
-			pTexture = std::make_shared<CTexture>();
-			if (strcmp(pstrTextureName, "null"))
-			{
-				pTexture->LoadTextureFromPNG(std::string("Textures/") + std::string(pstrTextureName) + std::string(".png"), GL_LINEAR);
-			}
+			LoadTexture();
 			pMaterial->SetNormalTexture(pTexture);
 		}
 		else if (!strcmp(pstrToken, "<MetallicMap>:"))
@@ -293,11 +295,8 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 			nReads = (UINT)::fread(pstrTextureName, sizeof(char), nStrLength, pInFile);
 			pstrTextureName[nStrLength] = '\0';
 
-			pTexture = std::make_shared<CTexture>();
-			if (strcmp(pstrTextureName, "null"))
-			{
-				pTexture->LoadTextureFromPNG(std::string("Textures/") + std::string(pstrTextureName) + std::string(".png"), GL_LINEAR);
-			}
+			LoadTexture();
+			pMaterial->SetMetallicTexture(pTexture);
 		}
 		else if (!strcmp(pstrToken, "<EmissionMap>:"))
 		{
@@ -306,11 +305,7 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 			nReads = (UINT)::fread(pstrTextureName, sizeof(char), nStrLength, pInFile);
 			pstrTextureName[nStrLength] = '\0';
 
-			pTexture = std::make_shared<CTexture>();
-			if (strcmp(pstrTextureName, "null"))
-			{
-				pTexture->LoadTextureFromPNG(std::string("Textures/") + std::string(pstrTextureName) + std::string(".png"), GL_LINEAR);
-			}
+			LoadTexture();
 		}
 		/*else if (!strcmp(pstrToken, "<DetailAlbedoMap>:"))
 		{

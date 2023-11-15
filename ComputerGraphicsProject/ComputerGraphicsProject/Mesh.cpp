@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include "ResourceManager.h"
 
 std::shared_ptr<CMesh> CMesh::CreateCubeMesh(float fWidth, float fHeight, float fDepth)
 {
@@ -54,7 +55,7 @@ std::shared_ptr<CMesh> CMesh::CreateCubeMesh(float fWidth, float fHeight, float 
 
 	float fx = fWidth * 0.5f, fy = fHeight * 0.5f, fz = fDepth * 0.5f;
 
-	
+
 	Vertices[0] = glm::vec3(-fx, fy, fz);
 	Vertices[1] = glm::vec3(-fx, -fy, fz);
 	Vertices[2] = glm::vec3(fx, -fy, fz);
@@ -163,7 +164,7 @@ std::shared_ptr<CMesh> CMesh::CreateCubeMeshForIndex(float fWidth, float fHeight
 	mesh->m_pVertices[5].normal = glm::normalize(mesh->m_pVertices[5].position);
 	mesh->m_pVertices[6].normal = glm::normalize(mesh->m_pVertices[6].position);
 	mesh->m_pVertices[7].normal = glm::normalize(mesh->m_pVertices[7].position);
-	
+
 	mesh->m_nSubMeshes = 1;
 	mesh->m_pnSubSetIndices.resize(mesh->m_nSubMeshes);
 	mesh->m_pnSubSetIndices[0] = 36;
@@ -430,16 +431,24 @@ std::shared_ptr<CMesh> CMesh::CreateRectMesh()
 	return pMesh;
 }
 
-void CMesh::LoadMeshFromFile(FILE* pInFile)
+std::shared_ptr<CMesh> CMesh::LoadMeshFromFile(FILE* pInFile)
 {
 	char pstrToken[64] = { '\0' };
 	int nPositions = 0, nColors = 0, nNormals = 0, nTangents = 0, nBiTangents = 0, nTextureCoords = 0, nIndices = 0, nSubMeshes = 0, nSubIndices = 0;
 
-	UINT nReads = (UINT)::fread(&m_nVertices, sizeof(int), 1, pInFile);
+	std::shared_ptr<CMesh> pMesh = std::make_shared<CMesh>();
+
+	UINT nReads = (UINT)::fread(&pMesh->m_nVertices, sizeof(int), 1, pInFile);
 
 	char pstrMeshName[256];
 	::ReadStringFromFile(pInFile, pstrMeshName);
-	m_strMeshName = pstrMeshName;
+	pMesh->m_strMeshName = pstrMeshName;
+
+	bool isLoadMeshed = false;
+	std::shared_ptr<CMesh> loadedMesh = CResourceManager::GetInst()->GetMeshFromName(pMesh->m_strMeshName);
+	if (loadedMesh != nullptr) {
+		isLoadMeshed = true;
+	}
 
 	/*std::wstring wMeshName;
 	size_t tmp = 0;
@@ -453,8 +462,15 @@ void CMesh::LoadMeshFromFile(FILE* pInFile)
 		::ReadStringFromFile(pInFile, pstrToken);
 		if (!strcmp(pstrToken, "<Bounds>:"))
 		{
+			glm::vec3 m_vec3AABBCenter;
+			glm::vec3 m_vec3AABBExtents;
 			nReads = (UINT)::fread(&m_vec3AABBCenter, sizeof(glm::vec3), 1, pInFile);
 			nReads = (UINT)::fread(&m_vec3AABBExtents, sizeof(glm::vec3), 1, pInFile);
+
+			if (isLoadMeshed == false) {
+				pMesh->m_vec3AABBCenter = m_vec3AABBCenter;
+				pMesh->m_vec3AABBExtents = m_vec3AABBExtents;
+			}
 
 			/*std::wstring wBounds = L"m_xmf3AABBCenter.x: ";
 			wBounds = wBounds.append(std::to_wstring(m_xmf3AABBCenter.x));
@@ -484,13 +500,14 @@ void CMesh::LoadMeshFromFile(FILE* pInFile)
 				pxmf3Positions.resize(nPositions);
 				nReads = (UINT)::fread(pxmf3Positions.data(), sizeof(glm::vec3), nPositions, pInFile);
 
-				if (m_pVertices.size() == 0)
-					m_pVertices.resize(nPositions);
+				if (isLoadMeshed == false) {
+					if (pMesh->m_pVertices.size() == 0)
+						pMesh->m_pVertices.resize(nPositions);
 
-				for (int i = 0; i < nPositions; ++i) {
-					m_pVertices[i].position = pxmf3Positions[i];
+					for (int i = 0; i < nPositions; ++i) {
+						pMesh->m_pVertices[i].position = pxmf3Positions[i];
+					}
 				}
-				
 			}
 		}
 		else if (!strcmp(pstrToken, "<Colors>:"))
@@ -514,9 +531,12 @@ void CMesh::LoadMeshFromFile(FILE* pInFile)
 				m_pxmf2TextureCoords0.resize(nTextureCoords);
 				nReads = (UINT)::fread(m_pxmf2TextureCoords0.data(), sizeof(glm::vec2), nTextureCoords, pInFile);
 
-				for (int i = 0; i < nPositions; ++i) {
-					m_pVertices[i].texcoord0 = m_pxmf2TextureCoords0[i];
+				if (isLoadMeshed == false) {
+					for (int i = 0; i < nPositions; ++i) {
+						pMesh->m_pVertices[i].texcoord0 = m_pxmf2TextureCoords0[i];
+					}
 				}
+
 			}
 		}
 		else if (!strcmp(pstrToken, "<TextureCoords1>:"))
@@ -529,9 +549,12 @@ void CMesh::LoadMeshFromFile(FILE* pInFile)
 				m_pxmf2TextureCoords1.resize(nTextureCoords);
 				nReads = (UINT)::fread(m_pxmf2TextureCoords1.data(), sizeof(glm::vec2), nTextureCoords, pInFile);
 
-				for (int i = 0; i < nPositions; ++i) {
-					m_pVertices[i].texcoord1 = m_pxmf2TextureCoords1[i];
+				if (isLoadMeshed == false) {
+					for (int i = 0; i < nPositions; ++i) {
+						pMesh->m_pVertices[i].texcoord1 = m_pxmf2TextureCoords1[i];
+					}
 				}
+
 			}
 		}
 		else if (!strcmp(pstrToken, "<Normals>:"))
@@ -544,8 +567,10 @@ void CMesh::LoadMeshFromFile(FILE* pInFile)
 				m_pxmf3Normals.resize(nNormals);
 				nReads = (UINT)::fread(m_pxmf3Normals.data(), sizeof(glm::vec3), nNormals, pInFile);
 
-				for (int i = 0; i < nPositions; ++i) {
-					m_pVertices[i].normal = m_pxmf3Normals[i];
+				if (isLoadMeshed == false) {
+					for (int i = 0; i < nPositions; ++i) {
+						pMesh->m_pVertices[i].normal = m_pxmf3Normals[i];
+					}
 				}
 			}
 		}
@@ -559,8 +584,10 @@ void CMesh::LoadMeshFromFile(FILE* pInFile)
 				m_pxmf3Tangents.resize(nTangents);
 				nReads = (UINT)::fread(m_pxmf3Tangents.data(), sizeof(glm::vec3), nTangents, pInFile);
 
-				for (int i = 0; i < nPositions; ++i) {
-					m_pVertices[i].tangent = m_pxmf3Tangents[i];
+				if (isLoadMeshed == false) {
+					for (int i = 0; i < nPositions; ++i) {
+						pMesh->m_pVertices[i].tangent = m_pxmf3Tangents[i];
+					}
 				}
 			}
 		}
@@ -573,35 +600,65 @@ void CMesh::LoadMeshFromFile(FILE* pInFile)
 				m_pxmf3BiTangents.resize(nBiTangents);
 				nReads = (UINT)::fread(m_pxmf3BiTangents.data(), sizeof(glm::vec3), nBiTangents, pInFile);
 
-				for (int i = 0; i < nPositions; ++i) {
-					m_pVertices[i].bitangent = m_pxmf3BiTangents[i];
+				if (isLoadMeshed == false) {
+					for (int i = 0; i < nPositions; ++i) {
+						pMesh->m_pVertices[i].bitangent = m_pxmf3BiTangents[i];
+					}
 				}
 			}
 		}
 		else if (!strcmp(pstrToken, "<SubMeshes>:"))
 		{
-			nReads = (UINT)::fread(&(m_nSubMeshes), sizeof(int), 1, pInFile);
-			if (m_nSubMeshes > 0)
+			UINT nSubMeshes;
+			nReads = (UINT)::fread(&(nSubMeshes), sizeof(int), 1, pInFile);
+			if (nSubMeshes > 0)
 			{
-				m_pnSubSetIndices.resize(m_nSubMeshes);
-				m_ppnSubSetIndices.resize(m_nSubMeshes);
+				if (isLoadMeshed == false) {
+					pMesh->m_nSubMeshes = nSubMeshes;
+					pMesh->m_pnSubSetIndices.resize(pMesh->m_nSubMeshes);
+					pMesh->m_ppnSubSetIndices.resize(pMesh->m_nSubMeshes);
 
 
-				for (int i = 0; i < m_nSubMeshes; i++)
-				{
-					::ReadStringFromFile(pInFile, pstrToken);
-					if (!strcmp(pstrToken, "<SubMesh>:"))
+					for (int i = 0; i < pMesh->m_nSubMeshes; i++)
 					{
-						int nIndex = 0;
-						nReads = (UINT)::fread(&nIndex, sizeof(int), 1, pInFile); //i
-						nReads = (UINT)::fread(&(m_pnSubSetIndices[i]), sizeof(int), 1, pInFile);
-						if (m_pnSubSetIndices[i] > 0)
+						::ReadStringFromFile(pInFile, pstrToken);
+						if (!strcmp(pstrToken, "<SubMesh>:"))
 						{
-							// 서브 메쉬들의 인덱스 들
-							m_ppnSubSetIndices[i].resize(m_pnSubSetIndices[i]);
-							nReads = (UINT)::fread(m_ppnSubSetIndices[i].data(), sizeof(UINT), m_pnSubSetIndices[i], pInFile);
+							int nIndex = 0;
+							nReads = (UINT)::fread(&nIndex, sizeof(int), 1, pInFile); //i
+							nReads = (UINT)::fread(&(pMesh->m_pnSubSetIndices[i]), sizeof(int), 1, pInFile);
+							if (pMesh->m_pnSubSetIndices[i] > 0)
+							{
+								// 서브 메쉬들의 인덱스 들
+								pMesh->m_ppnSubSetIndices[i].resize(pMesh->m_pnSubSetIndices[i]);
+								nReads = (UINT)::fread(pMesh->m_ppnSubSetIndices[i].data(), sizeof(UINT), pMesh->m_pnSubSetIndices[i], pInFile);
 
+
+							}
+						}
+					}
+				}
+				else {
+					std::vector<UINT> pnSubSetIndices;
+					std::vector<std::vector<UINT>> ppnSubSetIndices;
+					pnSubSetIndices.resize(nSubMeshes);
+					ppnSubSetIndices.resize(nSubMeshes);
+
+					for (int i = 0; i < nSubMeshes; i++)
+					{
+						::ReadStringFromFile(pInFile, pstrToken);
+						int nIndex = 0;
+
+						if (!strcmp(pstrToken, "<SubMesh>:"))
+						{
 							
+							nReads = (UINT)::fread(&nIndex, sizeof(int), 1, pInFile); //i
+							nReads = (UINT)::fread(&(pnSubSetIndices[i]), sizeof(int), 1, pInFile);
+							if (pnSubSetIndices[i] > 0)
+							{
+								ppnSubSetIndices[i].resize(pnSubSetIndices[i]);
+								nReads = (UINT)::fread(ppnSubSetIndices[i].data(), sizeof(UINT), pnSubSetIndices[i], pInFile);
+							}
 						}
 					}
 				}
@@ -612,7 +669,14 @@ void CMesh::LoadMeshFromFile(FILE* pInFile)
 			break;
 		}
 	}
-	CreateShaderVariables();
+	if (isLoadMeshed == false) {
+		pMesh->CreateShaderVariables();
+		CResourceManager::GetInst()->RegisterMesh(pMesh);
+	}
+	else {
+		pMesh = loadedMesh;
+	}
+	return pMesh;
 }
 
 void CMesh::SetSubmesh(std::vector<UINT>& subsetIndices)
@@ -634,7 +698,7 @@ void CMesh::CreateShaderVariables()
 	//glBindVertexArray(m_VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	
+
 	glBufferData(GL_ARRAY_BUFFER, sizeof(CMesh::Vertex) * m_pVertices.size(), m_pVertices.data(), GL_STATIC_DRAW);
 
 	m_IBOs.resize(m_nSubMeshes);
