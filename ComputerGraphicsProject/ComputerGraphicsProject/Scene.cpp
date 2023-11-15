@@ -595,7 +595,6 @@ void CPBR_TestScene::RenderScene()
 
 	
 
-
 	//m_pSunLight->BindShaderVariables(s_Program);
 	m_pMainCamera->BindShaderVariables(s_Program);
 
@@ -657,8 +656,6 @@ void CPBR_TestScene::RenderScene()
 
 	ImGui::Render();
 	glViewport(0, 0, (GLsizei)io.DisplaySize.x, (GLsizei)io.DisplaySize.y);
-	//glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-	//glClear(GL_COLOR_BUFFER_BIT);
 	//glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound, but prefer using the GL3+ code.
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

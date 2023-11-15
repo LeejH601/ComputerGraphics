@@ -21,6 +21,8 @@
 #include "Imgui/imgui_internal.h"
 #include "Imgui/imgui_impl_opengl3.h"
 #include "Imgui/imgui_impl_glut.h"
+#include <DirectXMath.h>
+#include <DirectXCollision.h>
 
 
 extern int ReadIntegerFromFile(FILE* pInFile);

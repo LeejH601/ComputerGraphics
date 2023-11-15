@@ -31,6 +31,8 @@ protected:
 	CObject* m_pParent = nullptr;
 	std::shared_ptr<CObject> m_pSibling = nullptr;
 
+	DirectX::BoundingOrientedBox m_OBB;
+
 public:
 	CObject();
 	virtual ~CObject() = default;
