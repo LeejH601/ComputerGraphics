@@ -137,6 +137,7 @@
     <ClCompile Include="DynamicObject.cpp" />
     <ClCompile Include="ExamScene.cpp" />
     <ClCompile Include="Global.cpp" />
+    <ClCompile Include="GUIManager.cpp" />
     <ClCompile Include="Imgui\imgui.cpp" />
     <ClCompile Include="Imgui\imgui_demo.cpp" />
     <ClCompile Include="Imgui\imgui_draw.cpp" />
@@ -165,6 +166,7 @@
     <ClInclude Include="DynamicObject.h" />
     <ClInclude Include="ExamScene.h" />
     <ClInclude Include="Global.h" />
+    <ClInclude Include="GUIManager.h" />
     <ClInclude Include="Imgui\imconfig.h" />
     <ClInclude Include="Imgui\imgui.h" />
     <ClInclude Include="Imgui\imgui_impl_glut.h" />

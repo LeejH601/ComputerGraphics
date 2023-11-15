@@ -24,6 +24,7 @@ void CTexture::LoadTextureFromPNG(std::string filePath, GLuint samplingMethod)
 {
 	std::vector<unsigned char> image;
 	unsigned width, height;
+	
 	unsigned error = lodepng::decode(image, width, height, filePath);
 	if (error != 0)
 	{
@@ -36,6 +37,8 @@ void CTexture::LoadTextureFromPNG(std::string filePath, GLuint samplingMethod)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
 		GL_UNSIGNED_BYTE, &image[0]);
 
+	m_nWidth = width;
+	m_nHeight = height;
 	m_TextureType = GL_TEXTURE_2D;
 
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, samplingMethod);

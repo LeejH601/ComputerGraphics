@@ -99,6 +99,9 @@
     <ClCompile Include="ResourceManager.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="GUIManager.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderer.h">
@@ -174,6 +177,9 @@
       <Filter>Imgui\Header</Filter>
     </ClInclude>
     <ClInclude Include="ResourceManager.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="GUIManager.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

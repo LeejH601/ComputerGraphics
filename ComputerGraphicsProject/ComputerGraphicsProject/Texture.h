@@ -12,6 +12,9 @@ public:
 	GLenum m_TextureType = GL_TEXTURE_2D;
 	GLuint m_TextureID;
 
+	UINT m_nWidth = 0;
+	UINT m_nHeight = 0;
+
 	virtual void BindShaderVariables(GLuint s_Program, GLenum TextureSlo);
 
 	void LoadTextureFromPNG(std::string filePath, GLuint samplingMethod);

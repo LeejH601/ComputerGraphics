@@ -637,6 +637,20 @@ void CPBR_TestScene::RenderScene()
 	static float f = 0.0f;
 	static int counter = 0;
 
+	ImGui::Begin("textures"); 
+	int index = 0;
+	std::shared_ptr<CTexture> pTexure = CResourceManager::GetInst()->GetTextureFromIndex(index++);
+	while (pTexure != nullptr)
+	{
+		ImTextureID textureID = &pTexure->m_TextureID;
+		ImVec2 resoultion = ImVec2(50, 50);
+		ImGui::Image((void*)pTexure->m_TextureID, resoultion);
+		//ImGui::ImageButton(pTexure->GetName().c_str(), (void*)pTexure->m_TextureID, resoultion);
+		ImGui::SameLine();
+		pTexure = CResourceManager::GetInst()->GetTextureFromIndex(index++);
+	}
+	ImGui::End();
+
 	ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
 	ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
