@@ -4,6 +4,7 @@
 #include "Mesh.h"
 #include "Timer.h"
 #include "ResourceManager.h"
+#include "GUIManager.h"
 
 CScene::CScene()
 {
@@ -22,7 +23,7 @@ void CScene::Init()
 
 	memcpy(UBOLightData.lights, m_pLights.data(), sizeof(CLight) * m_pLights.size());
 	UBOLightData.nLights = m_pLights.size();
-	
+
 
 
 	GLuint sizeVec = sizeof(glm::vec3);
@@ -64,8 +65,8 @@ void CScene::Init()
 	//	std::cout << "error glBindBuffer" << std::endl;
 	//glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	//
-	
-	
+
+
 	//glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_UBOLights, (GLintptr)0, (GLintptr)(sizeof(UBO_LIGHT)));
 	//glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
@@ -114,7 +115,7 @@ void CScene::BindShaderVariables(GLuint s_Program)
 	UBOLightData.nLights = m_pLights.size();
 
 
-	glBindBuffer(GL_UNIFORM_BUFFER, m_UBOLights); 
+	glBindBuffer(GL_UNIFORM_BUFFER, m_UBOLights);
 	GLuint offset = 0u;
 	glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(UBOLightData), &UBOLightData);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -163,18 +164,18 @@ void CPBR_TestScene::Init()
 	glGenFramebuffers(1, &cubeFBO);
 	glGenRenderbuffers(1, &cubeRBO);
 
-	
+
 
 	glBindFramebuffer(GL_FRAMEBUFFER, cubeFBO);
 	glBindRenderbuffer(GL_RENDERBUFFER, cubeRBO);
-	
+
 	glRenderbufferStorage(GL_RENDERBUFFER, cubeRBO, cubeMapWidth, cubeMapHeight);
 	/*GLenum error = glGetError();
 	if (error)
 		std::cout << "error glBindBuffer" << std::endl;*/
-	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, cubeRBO);
-	
-	
+		//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, cubeRBO);
+
+
 	GLuint& cubeMapID = m_tCubeMapTexture.m_TextureID;
 	glGenTextures(1, &cubeMapID);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMapID);
@@ -197,7 +198,7 @@ void CPBR_TestScene::Init()
 		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
 		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
 	};
-	
+
 	GLuint MakeCubeMapShader = g_Renderer->MakeCubeMapShader;
 	glUseProgram(MakeCubeMapShader); // ¼ÎÀÌ´õ ¼³Á¤
 
@@ -359,7 +360,7 @@ void CPBR_TestScene::Init()
 
 	GLuint preComputingBRDFShader = g_Renderer->preComputingBRDFShader;
 	glUseProgram(preComputingBRDFShader);
-	
+
 
 	glBindFramebuffer(GL_FRAMEBUFFER, cubeFBO);
 	glBindRenderbuffer(GL_RENDERBUFFER, cubeRBO);
@@ -403,7 +404,7 @@ void CPBR_TestScene::Init()
 	testCubeMesh->CreateShaderVariables();
 	CResourceManager::GetInst()->RegisterMesh(testCubeMesh);
 
-	
+
 
 	m_pSkyBoxObject = std::make_shared<CObject>();
 
@@ -432,77 +433,76 @@ void CPBR_TestScene::BuildObjects()
 	planeObj->GetMaterial(0)->RoughnessColor = 1.0f;
 
 	std::shared_ptr<CMaterial> testMaterial = std::make_shared<CMaterial>();
-	std::shared_ptr<CTexture> texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/rustediron2_basecolor.png", GL_LINEAR);
+	std::shared_ptr<CTexture> texture = CResourceManager::GetInst()->ImportTexture("./Textures/rustediron2_basecolor.png", GL_LINEAR);
 	testMaterial->SetBaseTexture(texture);
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/rustediron2_normal.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/rustediron2_normal.png", GL_LINEAR);
 	testMaterial->SetNormalTexture(texture);
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/rustediron2_metallic.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/rustediron2_metallic.png", GL_LINEAR);
 	testMaterial->SetMetallicTexture(texture);
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/rustediron2_roughness.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/rustediron2_roughness.png", GL_LINEAR);
 	testMaterial->SetRoughnessTexture(texture);
 	CResourceManager::GetInst()->RegisterMaterial(testMaterial);
 
 	testMaterial = std::make_shared<CMaterial>();
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/Iron-Scuffed_basecolor.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/Iron-Scuffed_basecolor.png", GL_LINEAR);
 	testMaterial->SetBaseTexture(texture);
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/Iron-Scuffed_normal.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/Iron-Scuffed_normal.png", GL_LINEAR);
 	testMaterial->SetNormalTexture(texture);
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/Iron-Scuffed_metallic.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/Iron-Scuffed_metallic.png", GL_LINEAR);
 	testMaterial->SetMetallicTexture(texture);
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/Iron-Scuffed_roughness.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/Iron-Scuffed_roughness.png", GL_LINEAR);
 	testMaterial->SetRoughnessTexture(texture);
 	CResourceManager::GetInst()->RegisterMaterial(testMaterial);
 
 	testMaterial = std::make_shared<CMaterial>();
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/older-padded-leather_albedo.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/older-padded-leather_albedo.png", GL_LINEAR);
 	testMaterial->SetBaseTexture(texture);
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/older-padded-leather_normal-ogl.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/older-padded-leather_normal-ogl.png", GL_LINEAR);
 	testMaterial->SetNormalTexture(texture);
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/older-padded-leather_metallic.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/older-padded-leather_metallic.png", GL_LINEAR);
 	testMaterial->SetMetallicTexture(texture);
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/older-padded-leather_roughness.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/older-padded-leather_roughness.png", GL_LINEAR);
 	testMaterial->SetRoughnessTexture(texture);
 	CResourceManager::GetInst()->RegisterMaterial(testMaterial);
 
 	testMaterial = std::make_shared<CMaterial>();
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/white-quilted-diamond_albedo.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/white-quilted-diamond_albedo.png", GL_LINEAR);
 	testMaterial->SetBaseTexture(texture);
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/white-quilted-diamond_normal-ogl.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/white-quilted-diamond_normal-ogl.png", GL_LINEAR);
 	testMaterial->SetNormalTexture(texture);
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/white-quilted-diamond_metallic.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/white-quilted-diamond_metallic.png", GL_LINEAR);
 	testMaterial->SetMetallicTexture(texture);
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/white-quilted-diamond_roughness.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/white-quilted-diamond_roughness.png", GL_LINEAR);
 	testMaterial->SetRoughnessTexture(texture);
 	CResourceManager::GetInst()->RegisterMaterial(testMaterial);
 
 	testMaterial = std::make_shared<CMaterial>();
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-albedo.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/wrinkled-paper-albedo.png", GL_LINEAR);
 	testMaterial->SetBaseTexture(texture);
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-metalness.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/wrinkled-paper-metalness.png", GL_LINEAR);
 	testMaterial->SetNormalTexture(texture);
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-normal-ogl.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/wrinkled-paper-normal-ogl.png", GL_LINEAR);
 	testMaterial->SetMetallicTexture(texture);
 	texture = std::make_shared<CTexture>();
-	texture->LoadTextureFromPNG("./Textures/wrinkled-paper-roughness.png", GL_LINEAR);
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/wrinkled-paper-roughness.png", GL_LINEAR);
 	testMaterial->SetRoughnessTexture(texture);
 	CResourceManager::GetInst()->RegisterMaterial(testMaterial);
 
@@ -532,18 +532,20 @@ void CPBR_TestScene::BuildObjects()
 			else
 				frame = frame->GetChild();
 		}*/
-		m_pObjects[i]->SetMaterial(CResourceManager::GetInst()->GetMaterialFromIndex(i % 6));
+		m_pObjects[i]->SetMaterial(0, CResourceManager::GetInst()->GetMaterialFromIndex(i % 6));
 		m_pObjects[i]->SetPosition(basePos);
 		//m_pObjects[i]->SetScale(glm::vec3(0.1, 0.1, 0.1));
 		basePos.x += 2.0f;
 	}
 
 	m_pObjects.push_back(planeObj);
+
+	CGUIManager::GetInst()->SetSelectedObject(m_pObjects[0].get());
 }
 
 void CPBR_TestScene::RenderScene()
 {
-	
+
 
 
 	GLuint s_Program = g_Renderer->TestShader;
@@ -564,7 +566,7 @@ void CPBR_TestScene::RenderScene()
 	shadowCamera.SetPosision(m_pSunLight->m_vec3Position);
 	shadowCamera.m_mat4x4View = glm::lookAt(m_pSunLight->m_vec3Position, m_pSunLight->m_vec3Direction, glm::vec3(0, 1, 0));
 	shadowCamera.BindShaderVariables(s_Program);
-	
+
 
 	for (std::shared_ptr<CObject>& obj : m_pObjects) {
 		obj->BindShaderVariables(s_Program);
@@ -576,9 +578,9 @@ void CPBR_TestScene::RenderScene()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
-	
+
 	SetPolygonMode(m_ePolygonFace, m_ePolygonMode);
-	
+
 	BindShaderVariables(s_Program);
 
 	GLuint samplerULoc = glGetUniformLocation(s_Program, "u_IrradianceTexture");
@@ -594,7 +596,7 @@ void CPBR_TestScene::RenderScene()
 	m_tFilteringedEnvironmentTexture->BindShaderVariables(s_Program, GL_TEXTURE7);
 
 
-	
+
 
 	//m_pSunLight->BindShaderVariables(s_Program);
 	m_pMainCamera->BindShaderVariables(s_Program);
@@ -625,56 +627,17 @@ void CPBR_TestScene::RenderScene()
 
 
 
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplGLUT_NewFrame();
-	ImGui::NewFrame();
-	ImGuiIO& io = ImGui::GetIO();
+	
 
-	static bool showDemo = true;
+	/*static bool showDemo = true;
 	static ImVec4 clear_color = { 0,0,0,1 };
 	ImGui::ShowDemoWindow(&showDemo);
 
 	static float f = 0.0f;
-	static int counter = 0;
-
-	ImGui::Begin("textures"); 
-	int index = 0;
-	std::shared_ptr<CTexture> pTexure = CResourceManager::GetInst()->GetTextureFromIndex(index++);
-	while (pTexure != nullptr)
-	{
-		ImTextureID textureID = &pTexure->m_TextureID;
-		ImVec2 resoultion = ImVec2(50, 50);
-		ImGui::Image((void*)pTexure->m_TextureID, resoultion);
-		//ImGui::ImageButton(pTexure->GetName().c_str(), (void*)pTexure->m_TextureID, resoultion);
-		ImGui::SameLine();
-		pTexure = CResourceManager::GetInst()->GetTextureFromIndex(index++);
-	}
-	ImGui::End();
-
-	ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-	ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-	ImGui::Checkbox("Demo Window", &showDemo);      // Edit bools storing our window open/close state
-	ImGui::Checkbox("Another Window", &showDemo);
-
-	ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-	//ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-	if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-		counter++;
-	ImGui::SameLine();
-	ImGui::Text("counter = %d", counter);
-
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-	ImGui::End();
-
-
-	ImGui::Render();
-	glViewport(0, 0, (GLsizei)io.DisplaySize.x, (GLsizei)io.DisplaySize.y);
-	//glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound, but prefer using the GL3+ code.
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
+	static int counter = 0;*/
 	
+	CGUIManager::GetInst()->ShowAssetInspector();
+
 }
 
 void CPBR_TestScene::MouseInput(int button, int state, int x, int y)

@@ -29,8 +29,18 @@ public:
 	std::shared_ptr<CMesh> GetMeshFromIndex(UINT index);
 	std::shared_ptr<CTexture> GetTextureFromIndex(UINT index); 
 
+	UINT GetTextureIndex(std::string str);
+
 	std::shared_ptr<CMaterial> GetMaterialFromName(std::string str);
 	std::shared_ptr<CMesh> GetMeshFromName(std::string str);
 	std::shared_ptr<CTexture> GetTextureFromName(std::string str);
+
+	std::vector<std::shared_ptr<CTexture>>& GetTextureList() { return m_pTextures; };
+	std::vector<std::shared_ptr<CMaterial>>& GetMaterialList() { return m_pMaterials; };
+	std::vector<std::shared_ptr<CMesh>>& GetMeshList() { return m_pMeshs; };
+
+	std::shared_ptr<CTexture> ImportTexture(std::string path, GLuint samplingMethod);
+
+	std::vector<std::string> GetTextureNameList();
 };
 

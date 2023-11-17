@@ -78,6 +78,9 @@ public:
 			return m_ppMaterials[index];
 		return nullptr;
 	}
+	std::vector<std::shared_ptr<CMaterial>>& GetAllMaterials() {
+		return m_ppMaterials;
+	}
 
 	CObject* GetChild() { return m_pChild.get(); };
 	CObject* GetSibling() { return m_pSibling.get(); };
