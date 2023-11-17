@@ -72,6 +72,14 @@ UINT CResourceManager::GetTextureIndex(std::string str)
     return -1;
 }
 
+UINT CResourceManager::GetMaterialIndex(std::string str)
+{
+    auto iMat = m_MaterialNameMap.find(str);
+    if (iMat != m_MaterialNameMap.end())
+        return iMat->second;
+    return -1;
+}
+
 std::shared_ptr<CMaterial> CResourceManager::GetMaterialFromName(std::string str)
 {
     auto iMaterial = m_MaterialNameMap.find(str);
@@ -118,6 +126,16 @@ std::vector<std::string> CResourceManager::GetTextureNameList()
     std::vector<std::string> names;
     for (std::shared_ptr<CTexture> texture : m_pTextures) {
         names.emplace_back(texture->GetName());
+    }
+
+    return names;
+}
+
+std::vector<std::string> CResourceManager::GetMaterialNameList()
+{
+    std::vector<std::string> names;
+    for (std::shared_ptr<CMaterial> mat : m_pMaterials) {
+        names.emplace_back(mat->GetName());
     }
 
     return names;

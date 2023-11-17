@@ -30,6 +30,7 @@ public:
 	std::shared_ptr<CTexture> GetTextureFromIndex(UINT index); 
 
 	UINT GetTextureIndex(std::string str);
+	UINT GetMaterialIndex(std::string str);
 
 	std::shared_ptr<CMaterial> GetMaterialFromName(std::string str);
 	std::shared_ptr<CMesh> GetMeshFromName(std::string str);
@@ -42,5 +43,6 @@ public:
 	std::shared_ptr<CTexture> ImportTexture(std::string path, GLuint samplingMethod);
 
 	std::vector<std::string> GetTextureNameList();
+	std::vector<std::string> GetMaterialNameList();
 };
 

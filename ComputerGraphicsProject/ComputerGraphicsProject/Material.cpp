@@ -67,7 +67,7 @@ void CMaterial::BindShaderVariables(GLuint s_Program)
 	if (TextureMask & MATERIAL_EMISSION_MAP) {
 
 	}
-		
+
 }
 
 void CMaterial::SetUVOffset(float t1, float t2, float s1, float s2)
@@ -83,23 +83,40 @@ void CMaterial::SetUVOffset(glm::vec4 offset)
 void CMaterial::SetBaseTexture(std::shared_ptr<CTexture>& pTexture)
 {
 	m_pBaseTexture = pTexture;
-	TextureMask |= MATERIAL_BASE_MAP;
+
+	if (pTexture != nullptr)
+		TextureMask |= MATERIAL_BASE_MAP;
+	else
+		TextureMask -= MATERIAL_BASE_MAP;
+	TextureMask = std::max((UINT)0, TextureMask);
 }
 
 void CMaterial::SetNormalTexture(std::shared_ptr<CTexture>& pTexture)
 {
 	m_pNormalTexture = pTexture;
-	TextureMask |= MATERIAL_NORMAL_MAP;
+	if (pTexture != nullptr)
+		TextureMask |= MATERIAL_NORMAL_MAP;
+	else
+		TextureMask -= MATERIAL_NORMAL_MAP;
+	TextureMask = std::max((UINT)0, TextureMask);
 }
 
 void CMaterial::SetMetallicTexture(std::shared_ptr<CTexture>& pTexture)
 {
 	m_pMetallicTexture = pTexture;
-	TextureMask |= MATERIAL_METALLIC_MAP;
+	if (pTexture != nullptr)
+		TextureMask |= MATERIAL_METALLIC_MAP;
+	else
+		TextureMask -= MATERIAL_METALLIC_MAP;
+	TextureMask = std::max((UINT)0, TextureMask);
 }
 
 void CMaterial::SetRoughnessTexture(std::shared_ptr<CTexture>& pTexture)
 {
 	m_pRoughnessTexture = pTexture;
-	TextureMask |= MATERIAL_ROUGHNESS_MAP;
+	if (pTexture != nullptr)
+		TextureMask |= MATERIAL_ROUGHNESS_MAP;
+	else
+		TextureMask -= MATERIAL_ROUGHNESS_MAP;
+	TextureMask = std::max((UINT)0, TextureMask);
 }

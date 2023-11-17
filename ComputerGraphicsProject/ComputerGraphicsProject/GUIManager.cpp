@@ -50,7 +50,7 @@ void CGUIManager::ShowAssetInspector()
 	}
 	ImGui::End();
 
-	if(m_pSelectedObject)
+	if (m_pSelectedObject)
 		ShowSelectedObjectInfo(m_pSelectedObject);
 
 	ImGui::Render();
@@ -82,6 +82,8 @@ void CGUIManager::ShowTextureInspector()
 
 				// Display preview (could be anything, e.g. when dragging an image we could decide to display
 				// the filename and a small preview of the image, etc.)
+				m_nSelectItemIndex = i;
+				m_eDragingType = DRAGING_SOURCE_TYPE::SOURCE_TEXTURE;
 				ImGui::Image((void*)pTexure[i]->m_TextureID, resoultion);
 				ImGui::Text(pTexure[i]->GetName().c_str());
 
@@ -98,6 +100,7 @@ void CGUIManager::ShowTextureInspector()
 					pTexure[payload_n] = pTexure[i];
 					pTexure[i] = temp;
 				}
+				m_eDragingType = DRAGING_SOURCE_TYPE::SOURCE_NONE;
 				ImGui::EndDragDropTarget();
 			}
 
@@ -121,7 +124,7 @@ void CGUIManager::ShowMaterialInspector()
 		for (int i = 0; i < pMaterials.size(); ++i) {
 			ImGui::PushID(i);
 
-			if (i % (widthSize-1) != 0)
+			if (i % (widthSize - 1) != 0)
 				ImGui::SameLine();
 
 			ImTextureID textureID;
@@ -141,6 +144,8 @@ void CGUIManager::ShowMaterialInspector()
 
 				// Display preview (could be anything, e.g. when dragging an image we could decide to display
 				// the filename and a small preview of the image, etc.)
+				m_nSelectItemIndex = i;
+				m_eDragingType = DRAGING_SOURCE_TYPE::SOURCE_MATERIAL;
 				if (pMaterials[i]->m_pBaseTexture)
 					ImGui::Image((void*)pMaterials[i]->m_pBaseTexture->m_TextureID, resoultion);
 				else
@@ -160,6 +165,7 @@ void CGUIManager::ShowMaterialInspector()
 					pMaterials[payload_n] = pMaterials[i];
 					pMaterials[i] = temp;
 				}
+				m_eDragingType = DRAGING_SOURCE_TYPE::SOURCE_NONE;
 				ImGui::EndDragDropTarget();
 			}
 			ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + resoultion.x);
@@ -176,7 +182,7 @@ void CGUIManager::ShowMaterialInspector()
 
 void CGUIManager::ShowSelectedObjectInfo(CObject* obj)
 {
-	if(ImGui::Begin("object")) {
+	if (ImGui::Begin("object")) {
 		ImVec2 winSize = ImGui::GetWindowSize();
 		ImVec2 winPos = ImGui::GetWindowPos();
 		winSize.x = g_WindowSizeX / 3;
@@ -190,8 +196,31 @@ void CGUIManager::ShowSelectedObjectInfo(CObject* obj)
 	std::vector<std::shared_ptr<CMaterial>>& pMaterials = obj->GetAllMaterials();
 
 	if (ImGui::TreeNode("Materials")) {
+		std::vector<std::string> matNames = CResourceManager::GetInst()->GetMaterialNameList();
+		std::vector<const char*> matitems;
+		for (std::string& str : matNames)
+			matitems.emplace_back(str.c_str());
+
 		for (int i = 0; i < pMaterials.size(); ++i) {
+			int matIndex = -1;
 			std::shared_ptr<CMaterial> pMat = pMaterials[i];
+			if (pMat->m_pBaseTexture)
+				matIndex = CResourceManager::GetInst()->GetMaterialIndex(pMat->GetName());
+			std::string matTag = "Material-";
+			matTag += std::to_string(i);
+			if (ImGui::Combo(matTag.c_str(), &matIndex, matitems.data(), matitems.size())) {
+				std::shared_ptr<CMaterial> newMat = CResourceManager::GetInst()->GetMaterialFromIndex(matIndex);
+				obj->SetMaterial(i, newMat);
+			}
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (m_eDragingType == DRAGING_SOURCE_TYPE::SOURCE_MATERIAL) {
+					std::shared_ptr<CMaterial> newMat = CResourceManager::GetInst()->GetMaterialFromIndex(m_nSelectItemIndex);
+					obj->SetMaterial(i, newMat);
+				}
+				ImGui::EndDragDropTarget();
+			}
+
 			//ImGui::Text("BaseColor"); ImGui::SameLine();
 			std::string nameTag = std::to_string(i);
 			ImGui::ColorEdit3((std::string("BaseColor##") + nameTag).c_str(), (float*)&pMat->BaseColor);
@@ -199,13 +228,90 @@ void CGUIManager::ShowSelectedObjectInfo(CObject* obj)
 			ImGui::DragFloat((std::string("Metallic##") + nameTag).c_str(), (float*)&pMat->MetallicColor);
 			ImGui::DragFloat((std::string("Roughness##") + nameTag).c_str(), (float*)&pMat->RoughnessColor);
 
-			if (pMat->m_pBaseTexture) {
-				UINT baseTextureIndex = CResourceManager::GetInst()->GetTextureIndex(pMat->m_pBaseTexture->GetName());
-				std::vector<std::string> textureNames = CResourceManager::GetInst()->GetTextureNameList();
-				//ImGui::Combo("BaseTexture", &baseTextureIndex, textureNames.data());
-				ImGui::BeginCombo("BaseTexture", (const char*)&baseTextureIndex);
-				ImGui::Image((void*)&pMat->m_pBaseTexture->m_TextureID, ImVec2(10, 10));
+			ImGui::InputFloat2((std::string("TexOffset##") + nameTag).c_str(), (float*)&pMat->UVOffset);
+			ImGui::InputFloat2((std::string("TexSacle##") + nameTag).c_str(), (float*)&pMat->UVOffset.z);
+
+			int baseTextureIndex = 0;
+			if (pMat->m_pBaseTexture)
+				baseTextureIndex = CResourceManager::GetInst()->GetTextureIndex(pMat->m_pBaseTexture->GetName()) + 1;
+			int normalTextureIndex = 0;
+			if (pMat->m_pNormalTexture)
+				normalTextureIndex = CResourceManager::GetInst()->GetTextureIndex(pMat->m_pNormalTexture->GetName()) + 1;
+			int metailicTextureIndex = 0;
+			if (pMat->m_pMetallicTexture)
+				metailicTextureIndex = CResourceManager::GetInst()->GetTextureIndex(pMat->m_pMetallicTexture->GetName()) + 1;
+			int roughnessTextureIndex = 0;
+			if (pMat->m_pRoughnessTexture)
+				roughnessTextureIndex = CResourceManager::GetInst()->GetTextureIndex(pMat->m_pRoughnessTexture->GetName()) + 1;
+
+
+			std::vector<std::string> textureNames = CResourceManager::GetInst()->GetTextureNameList();
+			std::vector<const char*> items;
+			items.emplace_back("None");
+			for (std::string& str : textureNames)
+				items.emplace_back(str.c_str());
+
+			if (ImGui::Combo("BaseTexture", &baseTextureIndex, items.data(), items.size())) {
+				std::shared_ptr<CTexture> newTexture = CResourceManager::GetInst()->GetTextureFromIndex(baseTextureIndex - 1);
+				pMat->SetBaseTexture(newTexture);
 			}
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (m_eDragingType == DRAGING_SOURCE_TYPE::SOURCE_TEXTURE) {
+					std::shared_ptr<CTexture> newTexture = CResourceManager::GetInst()->GetTextureFromIndex(m_nSelectItemIndex);
+					pMat->SetBaseTexture(newTexture);
+				}
+				ImGui::EndDragDropTarget();
+			}
+			GLuint baseTexID = (pMat->m_pBaseTexture) ? pMat->m_pBaseTexture->m_TextureID : -1;
+			ImGui::Image((void*)baseTexID, ImVec2(20, 20));
+
+			if (ImGui::Combo("NormalTexture", &normalTextureIndex, items.data(), items.size())) {
+				std::shared_ptr<CTexture> newTexture = CResourceManager::GetInst()->GetTextureFromIndex(normalTextureIndex - 1);
+				pMat->SetNormalTexture(newTexture);
+			}
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (m_eDragingType == DRAGING_SOURCE_TYPE::SOURCE_TEXTURE) {
+					std::shared_ptr<CTexture> newTexture = CResourceManager::GetInst()->GetTextureFromIndex(m_nSelectItemIndex);
+					pMat->SetNormalTexture(newTexture);
+				}
+				ImGui::EndDragDropTarget();
+			}
+			GLuint normalTexID = (pMat->m_pNormalTexture) ? pMat->m_pNormalTexture->m_TextureID : -1;
+			ImGui::Image((void*)normalTexID, ImVec2(20, 20));
+
+			if (ImGui::Combo("MetaillicTexture", &metailicTextureIndex, items.data(), items.size())) {
+				std::shared_ptr<CTexture> newTexture = CResourceManager::GetInst()->GetTextureFromIndex(metailicTextureIndex - 1);
+				pMat->SetMetallicTexture(newTexture);
+			}
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (m_eDragingType == DRAGING_SOURCE_TYPE::SOURCE_TEXTURE) {
+					std::shared_ptr<CTexture> newTexture = CResourceManager::GetInst()->GetTextureFromIndex(m_nSelectItemIndex);
+					pMat->SetMetallicTexture(newTexture);
+				}
+				ImGui::EndDragDropTarget();
+			}
+			GLuint metalTexID = (pMat->m_pMetallicTexture) ? pMat->m_pMetallicTexture->m_TextureID : -1;
+			ImGui::Image((void*)metalTexID, ImVec2(20, 20));
+
+			if (ImGui::Combo("RoughnessTexture", &roughnessTextureIndex, items.data(), items.size())) {
+				std::shared_ptr<CTexture> newTexture = CResourceManager::GetInst()->GetTextureFromIndex(roughnessTextureIndex - 1);
+				pMat->SetRoughnessTexture(newTexture);
+			}
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (m_eDragingType == DRAGING_SOURCE_TYPE::SOURCE_TEXTURE) {
+					std::shared_ptr<CTexture> newTexture = CResourceManager::GetInst()->GetTextureFromIndex(m_nSelectItemIndex);
+					pMat->SetRoughnessTexture(newTexture);
+				}
+				ImGui::EndDragDropTarget();
+			}
+			GLuint roughTexID = (pMat->m_pRoughnessTexture) ? pMat->m_pRoughnessTexture->m_TextureID : -1;
+			ImGui::Image((void*)roughTexID, ImVec2(20, 20));
+
+
 		}
 		ImGui::TreePop();
 	}
