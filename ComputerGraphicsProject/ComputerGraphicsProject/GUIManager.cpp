@@ -2,6 +2,7 @@
 #include "Global.h"
 #include "ResourceManager.h"
 #include "Object.h"
+#include "Imgui/ImGuiFileDialog.h"
 
 CGUIManager::CGUIManager()
 {
@@ -48,6 +49,35 @@ void CGUIManager::ShowAssetInspector()
 		}
 		ImGui::EndTabBar();
 	}
+
+	if (ImGui::Button("Open File Dialog"))
+		ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".*,.png,.bin", ".");
+
+	if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey"))
+	{
+		// action if OK
+		if (ImGuiFileDialog::Instance()->IsOk())
+		{
+			std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+			std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+			// action
+
+			std::cout << filePathName << std::endl;
+			std::cout << filePath << std::endl;
+
+			if (filePathName.find(".png") != std::string::npos) {
+				std::string fileName = filePathName;
+				fileName.erase(fileName.begin(), fileName.begin() + filePath.size() + 1);
+				fileName.erase(fileName.end() - 4, fileName.end());
+				CResourceManager::GetInst()->ImportTexture(filePathName, fileName, GL_LINEAR);
+			}
+		}
+
+		// close
+		ImGuiFileDialog::Instance()->Close();
+	}
+
+
 	ImGui::End();
 
 	if (m_pSelectedObject)

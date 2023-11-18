@@ -41,6 +41,7 @@ public:
 	std::vector<std::shared_ptr<CMesh>>& GetMeshList() { return m_pMeshs; };
 
 	std::shared_ptr<CTexture> ImportTexture(std::string path, GLuint samplingMethod);
+	std::shared_ptr<CTexture> ImportTexture(std::string path, std::string textureName, GLuint samplingMethod);
 
 	std::vector<std::string> GetTextureNameList();
 	std::vector<std::string> GetMaterialNameList();

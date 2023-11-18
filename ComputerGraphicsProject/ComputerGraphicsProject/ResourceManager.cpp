@@ -121,6 +121,18 @@ std::shared_ptr<CTexture> CResourceManager::ImportTexture(std::string path, GLui
     return texture;
 }
 
+std::shared_ptr<CTexture> CResourceManager::ImportTexture(std::string path, std::string textureName, GLuint samplingMethod)
+{
+    std::shared_ptr<CTexture> texture = std::make_shared<CTexture>();
+    texture->LoadTextureFromPNG(path.c_str(), samplingMethod);
+
+    texture->SetName(textureName);
+
+    RegisterTexture(texture);
+
+    return texture;
+}
+
 std::vector<std::string> CResourceManager::GetTextureNameList()
 {
     std::vector<std::string> names;

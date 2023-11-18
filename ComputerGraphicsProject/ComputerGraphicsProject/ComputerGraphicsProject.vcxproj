@@ -139,6 +139,7 @@
     <ClCompile Include="Global.cpp" />
     <ClCompile Include="GUIManager.cpp" />
     <ClCompile Include="Imgui\imgui.cpp" />
+    <ClCompile Include="Imgui\ImGuiFileDialog.cpp" />
     <ClCompile Include="Imgui\imgui_demo.cpp" />
     <ClCompile Include="Imgui\imgui_draw.cpp" />
     <ClCompile Include="Imgui\imgui_impl_glut.cpp" />
@@ -167,8 +168,11 @@
     <ClInclude Include="ExamScene.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="GUIManager.h" />
+    <ClInclude Include="Imgui\dirent\dirent.h" />
     <ClInclude Include="Imgui\imconfig.h" />
     <ClInclude Include="Imgui\imgui.h" />
+    <ClInclude Include="Imgui\ImGuiFileDialog.h" />
+    <ClInclude Include="Imgui\ImGuiFileDialogConfig.h" />
     <ClInclude Include="Imgui\imgui_impl_glut.h" />
     <ClInclude Include="Imgui\imgui_impl_opengl3.h" />
     <ClInclude Include="Imgui\imgui_impl_opengl3_loader.h" />
