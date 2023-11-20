@@ -2249,6 +2249,9 @@ void CExamScene_25::KeyInput(unsigned char key, int x, int y)
 		rInput = true;
 	
 		break;
+	case 'e':
+		RInput = true;
+		break;
 	case 'z':
 		zInput = true;
 		break;
@@ -2256,6 +2259,7 @@ void CExamScene_25::KeyInput(unsigned char key, int x, int y)
 		ZInput = true;
 		break;
 	case 'q':
+		glutLeaveMainLoop();
 		break;
 	}
 }
@@ -2277,7 +2281,6 @@ void CExamScene_25::KeyUpInput(unsigned char key, int x, int y)
 		ZInput = false;
 		break;
 	case 'q':
-		glutLeaveMainLoop();
 		break;
 	}
 }
@@ -2290,6 +2293,13 @@ void CExamScene_25::Update(float fElapsedTime)
 	if (rInput) {
 		glm::vec4 pos = glm::vec4(m_pLights[0].m_vec3Position, 1.0f);
 		glm::mat4 rotate = glm::rotate(glm::identity<glm::mat4>(), glm::radians(45.f * fElapsedTime), glm::vec3(0, 1, 0));
+		pos = rotate * pos;
+		m_pLights[0].m_vec3Position = pos;
+		std::cout << pos.x << " " << pos.y << " " << pos.z << std::endl;
+	}
+	if (RInput) {
+		glm::vec4 pos = glm::vec4(m_pLights[0].m_vec3Position, 1.0f);
+		glm::mat4 rotate = glm::rotate(glm::identity<glm::mat4>(), glm::radians(-45.f * fElapsedTime), glm::vec3(0, 1, 0));
 		pos = rotate * pos;
 		m_pLights[0].m_vec3Position = pos;
 		std::cout << pos.x << " " << pos.y << " " << pos.z << std::endl;
@@ -2509,4 +2519,149 @@ void CRouteDisplayer::Render(GLuint s_Program)
 	SetWorlds();
 
 	m_pBaseRoutePointObject->GetMesh()->RenderInstanced(m_mat4x4InstanceWorlds.size());
+}
+
+CExamScene_26::CExamScene_26()
+{
+}
+
+CExamScene_26::~CExamScene_26()
+{
+}
+
+void CExamScene_26::Init()
+{
+	CPBR_TestScene::Init();
+
+	
+
+	m_pMainCamera->SetPosision(glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(4));
+	m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	m_bRegenarateView = false;
+
+	m_pLights.clear();
+	m_pLights.push_back(CLight());
+	m_pLights[0].m_LightType = TYPE_LIGHT_DIRECTION_BY_POSITION;
+	m_pLights[0].m_vec3Position = glm::vec3(1, 0, 0);
+	m_pLights[0].m_vec3LightColor = glm::vec3(1, 1, 1) * glm::vec3(2.0f);
+}
+
+void CExamScene_26::KeyInput(unsigned char key, int x, int y)
+{
+	static std::uniform_real_distribution<float> urd_color(0, 1.0f);
+	switch (key)
+	{
+	case 'c':
+		m_pLights[0].m_vec3LightColor = glm::vec3(urd_color(dre), urd_color(dre), urd_color(dre)) * 2.0f;
+		break;
+	case 'r':
+		rInput = true;
+		break;
+	case 'e':
+		RInput = true;
+		break;
+	case 'q':
+		glutLeaveMainLoop();
+		break;
+	}
+}
+
+void CExamScene_26::KeyUpInput(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 'c':
+		break;
+	case 'r':
+		rInput = false;
+		break;
+	case 'e':
+		RInput = false;
+		break;
+	case 'q':
+		break;
+	}
+}
+
+void CExamScene_26::Update(float fElapsedTime)
+{
+	if (rInput) {
+		glm::vec4 pos = glm::vec4(m_pLights[0].m_vec3Position, 1.0f);
+		glm::mat4 rotate = glm::rotate(glm::identity<glm::mat4>(), glm::radians(45.f * fElapsedTime), glm::vec3(0, 1, 0));
+		pos = rotate * pos;
+		m_pLights[0].m_vec3Position = pos;
+	}
+	if (RInput) {
+		glm::vec4 pos = glm::vec4(m_pLights[0].m_vec3Position, 1.0f);
+		glm::mat4 rotate = glm::rotate(glm::identity<glm::mat4>(), glm::radians(-45.f * fElapsedTime), glm::vec3(0, 1, 0));
+		pos = rotate * pos;
+		m_pLights[0].m_vec3Position = pos;
+	}
+}
+
+void CExamScene_26::BuildObjects()
+{
+	std::shared_ptr<CMaterial> testMaterial = std::make_shared<CMaterial>();
+	std::shared_ptr<CTexture> texture = CResourceManager::GetInst()->ImportTexture("./Textures/rustediron2_basecolor.png", GL_LINEAR);
+	testMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/rustediron2_normal.png", GL_LINEAR);
+	testMaterial->SetNormalTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/rustediron2_metallic.png", GL_LINEAR);
+	testMaterial->SetMetallicTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/rustediron2_roughness.png", GL_LINEAR);
+	testMaterial->SetRoughnessTexture(texture);
+	CResourceManager::GetInst()->RegisterMaterial(testMaterial);
+
+	testMaterial = std::make_shared<CMaterial>();
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/Iron-Scuffed_basecolor.png", GL_LINEAR);
+	testMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/Iron-Scuffed_normal.png", GL_LINEAR);
+	testMaterial->SetNormalTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/Iron-Scuffed_metallic.png", GL_LINEAR);
+	testMaterial->SetMetallicTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/Iron-Scuffed_roughness.png", GL_LINEAR);
+	testMaterial->SetRoughnessTexture(texture);
+	CResourceManager::GetInst()->RegisterMaterial(testMaterial);
+
+	testMaterial = std::make_shared<CMaterial>();
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/older-padded-leather_albedo.png", GL_LINEAR);
+	testMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/older-padded-leather_normal-ogl.png", GL_LINEAR);
+	testMaterial->SetNormalTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/older-padded-leather_metallic.png", GL_LINEAR);
+	testMaterial->SetMetallicTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/older-padded-leather_roughness.png", GL_LINEAR);
+	testMaterial->SetRoughnessTexture(texture);
+	CResourceManager::GetInst()->RegisterMaterial(testMaterial);
+
+	std::shared_ptr<CObject> obj = std::make_shared<CObject>();
+	obj->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+	obj->SetMaterial(CResourceManager::GetInst()->GetMaterialFromIndex(0));
+
+	m_pObjects.emplace_back(obj);
+
+	obj = std::make_shared<CObject>();
+	obj->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+	obj->SetScale(glm::vec3(0.8f));
+	obj->SetPosition(glm::vec3(-2.5, 0, 0));
+	obj->SetMaterial(CResourceManager::GetInst()->GetMaterialFromIndex(1));
+	m_pObjects.emplace_back(obj);
+
+	obj = std::make_shared<CObject>();
+	obj->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+	obj->SetScale(glm::vec3(0.5f));
+	obj->SetPosition(glm::vec3(-4, 0, 0));
+	obj->SetMaterial(CResourceManager::GetInst()->GetMaterialFromIndex(2));
+	m_pObjects.emplace_back(obj);
 }
