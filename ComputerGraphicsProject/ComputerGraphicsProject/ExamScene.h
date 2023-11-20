@@ -170,6 +170,9 @@ public:
 };
 
 
+
+
+
 class CRouteDisplayer
 {
 	static const UINT MAX_INSTANCE_SIZE = 50;
@@ -221,4 +224,24 @@ public:
 	virtual void Update(float fElapsedTime);
 	virtual void KeyInput(unsigned char key, int x, int y);
 	virtual void RenderScene();
+};
+
+class CExamScene_25 : public CPBR_TestScene
+{
+	CObject* mainObj = nullptr;
+
+	bool yInput = false;
+	bool rInput = false;
+	bool zInput = false;
+	bool ZInput = false;
+public:
+	CExamScene_25();
+	virtual ~CExamScene_25();
+
+	virtual void Init();
+	virtual void RenderScene();
+	virtual void KeyInput(unsigned char key, int x, int y);
+	virtual void KeyUpInput(unsigned char key, int x, int y);
+	virtual void Update(float fElapsedTime);
+	virtual void BuildObjects();
 };

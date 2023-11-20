@@ -46,6 +46,7 @@ protected:
 	UINT DwDirection = 0;
 	float cxDelta, cyDelta;
 
+	bool m_bRegenarateView = true;
 
 	std::vector<std::shared_ptr<CObject>> m_pObjects;
 

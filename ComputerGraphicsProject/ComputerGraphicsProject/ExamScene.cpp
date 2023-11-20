@@ -2189,6 +2189,127 @@ void CExamScene_22::KeyUpInput(unsigned char key, int x, int y)
 	}
 }
 
+CExamScene_25::CExamScene_25()
+{
+}
+
+CExamScene_25::~CExamScene_25()
+{
+	
+}
+
+void CExamScene_25::Init()
+{
+	CPBR_TestScene::Init();
+
+	std::shared_ptr<CMesh> pMesh = CResourceManager::GetInst()->GetMeshFromIndex(0);
+	std::shared_ptr<CMaterial> pMaterial = std::make_shared<CMaterial>();
+	std::shared_ptr<CObject> pObject = std::make_shared<CObject>();
+
+	pObject->SetMesh(pMesh);
+	pObject->SetMaterial(pMaterial);
+
+	m_pObjects.push_back(pObject);
+
+	pObject = std::make_shared<CObject>();
+
+	pObject->SetMesh(pMesh);
+	pObject->SetMaterial(pMaterial);
+	pObject->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+	pObject->SetPosition(glm::vec3(2, 0, 0));
+
+	m_pObjects.push_back(pObject);
+
+	mainObj = pObject.get();
+
+	m_pMainCamera->SetPosision(glm::normalize(glm::vec3(1, 1, 1)) * glm::vec3(4));
+	m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	m_bRegenarateView = false;
+
+	m_pLights.clear();
+	m_pLights.push_back(CLight());
+	m_pLights[0].m_LightType = TYPE_LIGHT_DIRECTION_BY_POSITION;
+	m_pLights[0].m_vec3Position = glm::vec3(1, 0, 0);
+	m_pLights[0].m_vec3LightColor = glm::vec3(1, 1, 1) * glm::vec3(2.0f);
+}
+
+void CExamScene_25::RenderScene()
+{
+	CPBR_TestScene::RenderScene();
+}
+
+void CExamScene_25::KeyInput(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 'y':
+		yInput = true;
+		break;
+	case 'r':
+		rInput = true;
+	
+		break;
+	case 'z':
+		zInput = true;
+		break;
+	case 'x':
+		ZInput = true;
+		break;
+	case 'q':
+		break;
+	}
+}
+
+void CExamScene_25::KeyUpInput(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 'y':
+		yInput = false;
+		break;
+	case 'r':
+		rInput = false;
+		break;
+	case 'z':
+		zInput = false;
+		break;
+	case 'x':
+		ZInput = false;
+		break;
+	case 'q':
+		glutLeaveMainLoop();
+		break;
+	}
+}
+
+void CExamScene_25::Update(float fElapsedTime)
+{
+	if (yInput) {
+		mainObj->RotationQuat(glm::radians(45.f * fElapsedTime), glm::vec3(0, 1, 0));
+	}
+	if (rInput) {
+		glm::vec4 pos = glm::vec4(m_pLights[0].m_vec3Position, 1.0f);
+		glm::mat4 rotate = glm::rotate(glm::identity<glm::mat4>(), glm::radians(45.f * fElapsedTime), glm::vec3(0, 1, 0));
+		pos = rotate * pos;
+		m_pLights[0].m_vec3Position = pos;
+		std::cout << pos.x << " " << pos.y << " " << pos.z << std::endl;
+	}
+	if (zInput) {
+		glm::vec3 pos = m_pLights[0].m_vec3Position;
+		float length = glm::length(pos);
+		m_pLights[0].m_vec3Position = glm::normalize(m_pLights[0].m_vec3Position) * (length + (length * 1.0f * fElapsedTime));
+	}
+	if (ZInput) {
+		glm::vec3 pos = m_pLights[0].m_vec3Position;
+		float length = glm::length(pos);
+		m_pLights[0].m_vec3Position = glm::normalize(m_pLights[0].m_vec3Position) * (length - (length * 1.0f * fElapsedTime));
+	}
+}
+
+void CExamScene_25::BuildObjects()
+{
+}
+
 void CExamScene_22::RenderScene()
 {
 	GLuint s_Program = g_Renderer->TestShader;

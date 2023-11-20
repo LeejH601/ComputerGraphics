@@ -1,6 +1,9 @@
 #pragma once
 #include "stdafx.h"
 
+#define TYPE_LIGHT_DIRECTION 0
+#define TYPE_LIGHT_DIRECTION_BY_POSITION 1
+
 class CLight
 {
 public:

@@ -411,7 +411,7 @@ void CPBR_TestScene::Init()
 	std::shared_ptr<CMaterial> pMaterial = std::make_shared<CMaterial>();
 	pTexture = m_tFilteringedEnvironmentTexture;
 	pMaterial->SetBaseTexture(pTexture);
-	CResourceManager::GetInst()->RegisterMaterial(pMaterial);
+	//CResourceManager::GetInst()->RegisterMaterial(pMaterial);
 
 	m_pSkyBoxObject->SetMesh(testCubeMesh);
 	m_pSkyBoxObject->SetMaterial(pMaterial);
@@ -599,7 +599,7 @@ void CPBR_TestScene::RenderScene()
 
 
 	//m_pSunLight->BindShaderVariables(s_Program);
-	m_pMainCamera->BindShaderVariables(s_Program);
+	m_pMainCamera->BindShaderVariables(s_Program, m_bRegenarateView);
 
 
 
@@ -616,7 +616,7 @@ void CPBR_TestScene::RenderScene()
 	SetPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	//m_pSunLight->BindShaderVariables(s_Program);
-	m_pMainCamera->BindShaderVariables(s_Program);
+	m_pMainCamera->BindShaderVariables(s_Program, m_bRegenarateView);
 
 
 	glDepthFunc(GL_LEQUAL);
