@@ -153,7 +153,7 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 sColor, vec3 norma
 	vec2 envBRDF  = texture(u_BrdfLUT, vec2(NdotV, Roughness)).rg;
 	Specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
 
-	FinalColor += (kD * Diffuse + Specular * LightColor) * NdotL;
+	FinalColor += (kD * Diffuse + Specular) * LightColor * NdotL;
 
 	return FinalColor;
 };
@@ -224,6 +224,7 @@ void main()
 
 		vec3 lightColor = g_lights[i].vec3LightColor * 1.0f;
 		cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, SpecularColor, normalize(normalTBN), vToLight, lightColor, Fresnel, Roughness, MetallicColor);
+		cColor.rgb *= g_lights[i].fIntensity;
 	}
 
 

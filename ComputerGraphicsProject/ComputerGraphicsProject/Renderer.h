@@ -28,6 +28,7 @@ public:
 	GLuint preComputingBRDFShader = -1;
 	GLuint LineShader = -1;
 	GLuint PointInstanceShader = -1;
+	GLuint BaseColorRenderShader = -1;
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);

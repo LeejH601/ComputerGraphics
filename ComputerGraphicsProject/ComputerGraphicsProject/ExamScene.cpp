@@ -1743,6 +1743,9 @@ void CExamScene_20::KeyInput(unsigned char key, int x, int y)
 		cameraLookAt = true;
 
 		break;
+	case 'q':
+		glutLeaveMainLoop();
+		break;
 	default:
 		break;
 	}
@@ -2664,4 +2667,90 @@ void CExamScene_26::BuildObjects()
 	obj->SetPosition(glm::vec3(-4, 0, 0));
 	obj->SetMaterial(CResourceManager::GetInst()->GetMaterialFromIndex(2));
 	m_pObjects.emplace_back(obj);
+}
+
+CExamScene_27::CExamScene_27()
+{
+}
+
+CExamScene_27::~CExamScene_27()
+{
+}
+
+void CExamScene_27::BuildObjects()
+{
+	CExamScene_20::BuildObjects();
+
+	m_pMainCamera->SetPosision(glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(4));
+	m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	m_bRegenarateView = false;
+
+	m_pLights.clear();
+	m_pLights.push_back(CLight());
+	m_pLights[0].m_LightType = TYPE_LIGHT_DIRECTION_BY_POSITION;
+	m_pLights[0].m_vec3Position = glm::vec3(1, 0.3, 0) * 2.5f;
+	m_pLights[0].m_vec3LightColor = glm::vec3(1, 1, 1) * glm::vec3(2.0f);
+	m_vec3LightColorCache = m_pLights[0].m_vec3LightColor;
+
+	m_pSunLightObject = std::make_shared<CObject>();
+	m_pSunLightObject->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+	m_pSunLightObject->SetScale(glm::vec3(0.2f));
+	m_pSunLightObject->GetMaterial(0)->BaseColor = m_pLights[0].m_vec3LightColor;
+}
+
+void CExamScene_27::KeyInput(unsigned char key, int x, int y)
+{
+	static std::uniform_real_distribution<float> urd_color(0, 1.0f);
+	switch (key)
+	{
+	case 'm':
+		if (m_pLights[0].m_fIntensity > 0.001f) {
+			m_vec3LightColorCache = m_pLights[0].m_vec3LightColor;
+			m_pLights[0].m_fIntensity = 0.0f;
+		}
+		else {
+			m_pLights[0].m_vec3LightColor = m_vec3LightColorCache;
+			m_pLights[0].m_fIntensity = 1.0f;
+		}
+		return;
+	case 'c':
+			m_pLights[0].m_vec3LightColor = glm::vec3(urd_color(dre), urd_color(dre), urd_color(dre)) * 2.0f;
+			m_pSunLightObject->GetMaterial(0)->BaseColor = m_pLights[0].m_vec3LightColor;
+		return;
+	case 'r':
+		rInput = 1;
+		return;
+	case 'e':
+		rInput = -1;
+		return;
+	case 's':
+		rInput = 0;
+		return;
+	case 'q':
+		glutLeaveMainLoop();
+		return;
+	}
+	CExamScene_20::KeyInput(key, x, y);
+}
+
+void CExamScene_27::Update(float fElapsedTime)
+{
+	CExamScene_20::Update(fElapsedTime);
+
+	if (rInput != 0) {
+		glm::vec4 pos = glm::vec4(m_pLights[0].m_vec3Position, 1.0f);
+		glm::mat4 rotate = glm::rotate(glm::identity<glm::mat4>(), glm::radians(rInput * 45.f * fElapsedTime), glm::vec3(0, 1, 0));
+		pos = rotate * pos;
+		m_pLights[0].m_vec3Position = pos;
+	}
+
+	GLuint s_Program = g_Renderer->BaseColorRenderShader;
+	glUseProgram(s_Program);
+
+	m_pMainCamera->BindShaderVariables(s_Program, m_bRegenarateView);
+
+	m_pSunLightObject->SetPosition(m_pLights[0].m_vec3Position);
+	m_pSunLightObject->UpdateTransform(nullptr);
+	m_pSunLightObject->BindShaderVariables(s_Program);
+	m_pSunLightObject->Render(s_Program);
 }
