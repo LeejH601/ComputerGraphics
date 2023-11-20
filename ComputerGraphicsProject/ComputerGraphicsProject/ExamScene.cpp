@@ -2717,10 +2717,10 @@ void CExamScene_27::KeyInput(unsigned char key, int x, int y)
 			m_pLights[0].m_vec3LightColor = glm::vec3(urd_color(dre), urd_color(dre), urd_color(dre)) * 2.0f;
 			m_pSunLightObject->GetMaterial(0)->BaseColor = m_pLights[0].m_vec3LightColor;
 		return;
-	case 'r':
+	case 'y':
 		rInput = 1;
 		return;
-	case 'e':
+	case 't':
 		rInput = -1;
 		return;
 	case 's':
