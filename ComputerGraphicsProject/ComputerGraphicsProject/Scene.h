@@ -66,6 +66,8 @@ public:
 	virtual void Update(float fElapsedTime);
 	virtual void SetPolygonMode(GLenum face = GL_FRONT_AND_BACK, GLenum mode = GL_FILL);
 
+	std::vector<std::shared_ptr<CObject>>& GetObjects() { return m_pObjects; };
+
 	virtual void Enter();
 	virtual void Exit();
 };

@@ -540,6 +540,11 @@ void CPBR_TestScene::BuildObjects()
 
 	m_pObjects.push_back(planeObj);
 
+	std::shared_ptr<CObject> obj = std::make_shared<CObject>();
+	obj->LoadGeometryAndAnimationFromFile("./Objects/Robot.bin");
+	obj->SetPosition(glm::vec3(0, 0, 3));
+	m_pObjects.emplace_back(obj);
+
 	CGUIManager::GetInst()->SetSelectedObject(m_pObjects[0].get());
 }
 
@@ -636,7 +641,7 @@ void CPBR_TestScene::RenderScene()
 	static float f = 0.0f;
 	static int counter = 0;*/
 	
-	CGUIManager::GetInst()->ShowAssetInspector();
+	CGUIManager::GetInst()->ShowAssetInspector(this);
 
 }
 

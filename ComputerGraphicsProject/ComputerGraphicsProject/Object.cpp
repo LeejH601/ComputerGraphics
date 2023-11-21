@@ -215,6 +215,9 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 
 			pMaterial = std::make_shared<CMaterial>();
 
+			
+
+			
 			SetMaterial(nMaterial, pMaterial);
 
 			//UINT nMeshType = GetMeshType();
@@ -224,6 +227,7 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 			glm::vec4 baseColor;
 			nReads = (UINT)::fread(&(baseColor), sizeof(float), 4, pInFile);
 			pMaterial->BaseColor = glm::vec3(baseColor.x, baseColor.y, baseColor.z);
+			
 		}
 		else if (!strcmp(pstrToken, "<EmissiveColor>:"))
 		{
@@ -268,6 +272,11 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 
 			LoadTexture();
 			pMaterial->SetBaseTexture(pTexture);
+
+			if (pMaterial->GetName() == "") {
+				pMaterial->SetName(pTexture->GetName());
+				CResourceManager::GetInst()->RegisterMaterial(pMaterial);
+			}
 		}
 		else if (!strcmp(pstrToken, "<SpecularMap>:"))
 		{
@@ -317,6 +326,10 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 		}*/
 		else if (!strcmp(pstrToken, "</Materials>"))
 		{
+			if (pMaterial->GetName() == "") {
+				pMaterial->SetName(std::to_string(CResourceManager::GetInst()->GetMaterialList().size()));
+				CResourceManager::GetInst()->RegisterMaterial(pMaterial);
+			}
 			break;
 		}
 	}

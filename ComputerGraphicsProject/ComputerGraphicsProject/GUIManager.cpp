@@ -3,6 +3,7 @@
 #include "ResourceManager.h"
 #include "Object.h"
 #include "Imgui/ImGuiFileDialog.h"
+#include "Scene.h"
 
 CGUIManager::CGUIManager()
 {
@@ -14,7 +15,7 @@ CGUIManager::~CGUIManager()
 {
 }
 
-void CGUIManager::ShowAssetInspector()
+void CGUIManager::ShowAssetInspector(CScene* pScene)
 {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGLUT_NewFrame();
@@ -22,6 +23,8 @@ void CGUIManager::ShowAssetInspector()
 	ImGuiIO& io = ImGui::GetIO();
 
 	static bool bIsOpenAsset = true;
+
+	ShowSceneInspector(pScene);
 
 	if (ImGui::Begin("Assets", &bIsOpenAsset)) {
 		ImVec2 winSize = ImGui::GetWindowSize();
@@ -256,6 +259,32 @@ void CGUIManager::ShowMaterialInspector()
 	}
 }
 
+void CGUIManager::ShowSceneInspector(CScene* pScene)
+{
+	std::vector<std::shared_ptr<CObject>> pObjects = pScene->GetObjects();
+
+	if (ImGui::Begin("Scene")) {
+		ImVec2 winSize = ImGui::GetWindowSize();
+		ImVec2 winPos = ImGui::GetWindowPos();
+		/*winSize.x = g_WindowSizeX / 3;
+		winSize.y = g_WindowSizeY;
+		ImGui::SetWindowSize("Scene", winSize);*/
+		winPos.x = 0;
+		winPos.y = 0;
+		ImGui::SetWindowPos("Scene", winPos);
+	}
+
+
+	for (int i = 0; i < pObjects.size(); ++i) {
+		std::shared_ptr<CObject> pObj = pObjects[i];
+		ShowObjectHierarchyTree(pObj.get());
+	}
+
+
+	ImGui::End();
+}
+
+
 void CGUIManager::ShowSelectedObjectInfo(CObject* obj)
 {
 	if (ImGui::Begin("object")) {
@@ -422,4 +451,17 @@ void CGUIManager::ShowSelectedObjectInfo(CObject* obj)
 	}
 
 	ImGui::End();
+}
+
+void CGUIManager::ShowObjectHierarchyTree(CObject* obj)
+{
+	if (obj == nullptr)
+		return;
+
+	if (ImGui::TreeNode(obj->GetName().c_str())) {
+		m_pSelectedObject = obj;
+		ShowObjectHierarchyTree(obj->GetChild());
+		ImGui::TreePop();
+	}
+	ShowObjectHierarchyTree(obj->GetSibling());
 }

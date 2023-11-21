@@ -11,6 +11,7 @@ enum class DRAGING_SOURCE_TYPE
 };
 
 class CObject;
+class CScene;
 class CGUIManager
 {
 	ImVec2 frameSize;
@@ -26,11 +27,13 @@ public:
 	CGUIManager();
 	virtual ~CGUIManager();
 
-	void ShowAssetInspector();
+	void ShowAssetInspector(CScene* pScene);
 	void ShowTextureInspector();
 	void ShowMeshInspector();
 	void ShowMaterialInspector();
+	void ShowSceneInspector(CScene* pScene);
 	void ShowSelectedObjectInfo(CObject* obj);
+	void ShowObjectHierarchyTree(CObject* obj);
 
 	void SetSelectedObject(CObject* obj) {
 		m_pSelectedObject = obj;
