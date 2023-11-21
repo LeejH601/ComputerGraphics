@@ -5,6 +5,7 @@ std::shared_ptr<CMesh> CMesh::CreateCubeMesh(float fWidth, float fHeight, float 
 {
 	std::shared_ptr<CMesh> mesh = std::make_shared<CMesh>();
 
+	mesh->SetName("myCube");
 	mesh->m_nVertices = 36;
 	mesh->m_pVertices.resize(mesh->m_nVertices);
 
@@ -142,6 +143,7 @@ std::shared_ptr<CMesh> CMesh::CreateCubeMeshForIndex(float fWidth, float fHeight
 
 	std::shared_ptr<CMesh> mesh = std::make_shared<CMesh>();
 
+	mesh->SetName("myCubeIndexed");
 	mesh->m_nVertices = 8;
 	mesh->m_pVertices.resize(mesh->m_nVertices);
 
@@ -183,6 +185,7 @@ std::shared_ptr<CMesh> CMesh::CreateSphereMesh(int nStacks, int nSlices)
 {
 	std::shared_ptr<CMesh> mesh = std::make_shared<CMesh>();
 
+	mesh->SetName("mySphere");
 	//m_nStride = sizeof(CIlluminatedVertex);
 
 	int k = 0;
@@ -299,6 +302,7 @@ std::shared_ptr<CMesh> CMesh::CreateNDCMesh()
 
 	std::shared_ptr<CMesh> mesh = std::make_shared<CMesh>();
 
+	mesh->SetName("myNDCPlane");
 	mesh->m_nVertices = 6;
 	mesh->m_pVertices.resize(mesh->m_nVertices);
 
@@ -314,6 +318,7 @@ std::shared_ptr<CMesh> CMesh::CreatePointMesh()
 {
 	std::shared_ptr<CMesh> pMesh = std::make_shared<CMesh>();
 
+	pMesh->SetName("myPoint");
 	pMesh->m_PrimitiveTopology = GL_POINTS;
 
 	pMesh->m_nVertices = 1;
@@ -331,6 +336,7 @@ std::shared_ptr<CMesh> CMesh::CreateLineMesh()
 {
 	std::shared_ptr<CMesh> pMesh = std::make_shared<CMesh>();
 
+	pMesh->SetName("myLine");
 	pMesh->m_PrimitiveTopology = GL_LINES;
 
 	pMesh->m_nVertices = 2;
@@ -354,6 +360,7 @@ std::shared_ptr<CMesh> CMesh::CreateTriangleMesh()
 {
 	std::shared_ptr<CMesh> pMesh = std::make_shared<CMesh>();
 
+	pMesh->SetName("myTriangle");
 	pMesh->m_PrimitiveTopology = GL_TRIANGLES;
 
 	pMesh->m_nVertices = 3;
@@ -383,6 +390,7 @@ std::shared_ptr<CMesh> CMesh::CreateRectMesh()
 {
 	std::shared_ptr<CMesh> pMesh = std::make_shared<CMesh>();
 
+	pMesh->SetName("myRect");
 	pMesh->m_PrimitiveTopology = GL_TRIANGLES;
 
 	pMesh->m_nVertices = 6;

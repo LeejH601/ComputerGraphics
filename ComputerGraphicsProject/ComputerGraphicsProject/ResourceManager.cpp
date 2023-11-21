@@ -6,9 +6,9 @@ using namespace std::literals;
 
 CResourceManager::CResourceManager()
 {
-    m_MeshViewCamera.SetPosision(glm::vec3(1.0f));
-    m_MeshViewCamera.GenerateProjectionMatrix(glm::radians(90.0f), (float)g_WindowSizeX / (float)g_WindowSizeY, 0.1f, 50.0f);
-    m_MeshViewCamera.m_mat4x4View = glm::lookAt(m_MeshViewCamera.GetPosition(), glm::vec3(0), glm::vec3(0, 1, 0));
+    m_MeshViewCamera.SetPosision(glm::vec3(1.0f,1.0f,1.0f) * 2.0f);
+    m_MeshViewCamera.GenerateProjectionMatrix(glm::radians(90.0f), 1.0f, 0.1f, 50.0f);
+    m_MeshViewCamera.m_mat4x4View = glm::lookAt(m_MeshViewCamera.GetPosition(), glm::vec3(0), glm::vec3(0, -1, 0));
 }
 
 CResourceManager::~CResourceManager()
@@ -84,6 +84,14 @@ UINT CResourceManager::GetMaterialIndex(std::string str)
     return -1;
 }
 
+UINT CResourceManager::GetMeshIndex(std::string str)
+{
+    auto iMesh = m_MeshNameMap.find(str);
+    if (iMesh != m_MeshNameMap.end())
+        return iMesh->second;
+    return -1;
+}
+
 std::shared_ptr<CMaterial> CResourceManager::GetMaterialFromName(std::string str)
 {
     auto iMaterial = m_MaterialNameMap.find(str);
@@ -138,6 +146,28 @@ bool CResourceManager::SwapMaterial(UINT t1_index, UINT t2_index)
     return true;
 }
 
+bool CResourceManager::SwapMesh(UINT t1_index, UINT t2_index)
+{
+    if (t1_index >= m_pMeshs.size() || t2_index >= m_pMeshs.size())
+        return false;
+
+    std::shared_ptr<CMesh> temp = m_pMeshs[t1_index];
+    m_pMeshs[t1_index] = m_pMeshs[t2_index];
+    m_pMeshs[t2_index] = temp;
+
+    m_MeshNameMap[m_pMeshs[t2_index]->GetName()] = t2_index;
+    m_MeshNameMap[m_pMeshs[t1_index]->GetName()] = t1_index;
+
+    std::shared_ptr<CViewerTexture> tempView = m_pMeshViewerTextures[t1_index];
+    m_pMeshViewerTextures[t1_index] = m_pMeshViewerTextures[t2_index];
+    m_pMeshViewerTextures[t2_index] = tempView;
+
+    m_ViewTextureNameMap[m_pMeshViewerTextures[t2_index]->GetName()] = t2_index;
+    m_ViewTextureNameMap[m_pMeshViewerTextures[t1_index]->GetName()] = t1_index;
+
+    return true;
+}
+
 std::shared_ptr<CTexture> CResourceManager::ImportTexture(std::string path, GLuint samplingMethod)
 {
     std::shared_ptr<CTexture> texture = std::make_shared<CTexture>();
@@ -187,6 +217,16 @@ std::vector<std::string> CResourceManager::GetMaterialNameList()
     return names;
 }
 
+std::vector<std::string> CResourceManager::GetMeshNameList()
+{
+    std::vector<std::string> names;
+    for (std::shared_ptr<CMesh> mesh : m_pMeshs) {
+        names.emplace_back(mesh->GetName());
+    }
+
+    return names;
+}
+
 void CResourceManager::BakeViewTextures()
 {
     GLuint s_Program = g_Renderer->BaseColorRenderShader;
@@ -201,6 +241,7 @@ void CResourceManager::BakeViewTextures()
 
     for (int i = 0; i < m_pMeshViewerTextures.size(); ++i) {
         m_pMeshViewerTextures[i]->Bake(s_Program, m_pMeshs[i].get(), &m_MeshViewCamera);
+        m_ViewTextureNameMap[m_pMeshViewerTextures[i]->GetName()] = i;
     }
     m_bBakedMeshViewTextures = true;
 }

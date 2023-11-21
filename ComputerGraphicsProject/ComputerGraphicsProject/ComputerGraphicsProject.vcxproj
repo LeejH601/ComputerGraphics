@@ -209,6 +209,7 @@
     <None Include="Shaders\PBR_vs.glsl" />
     <None Include="Shaders\preComputeBRDF_ps.glsl" />
     <None Include="Shaders\RenderNDCQuad_vs.glsl" />
+    <None Include="Shaders\ViewerBake_vs.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

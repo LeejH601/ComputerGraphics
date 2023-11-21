@@ -102,6 +102,9 @@
     <ClCompile Include="GUIManager.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Imgui\ImGuiFileDialog.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderer.h">
@@ -182,6 +185,15 @@
     <ClInclude Include="GUIManager.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Imgui\dirent\dirent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Imgui\ImGuiFileDialog.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Imgui\ImGuiFileDialogConfig.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Cube_ps.glsl">
@@ -230,6 +242,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\Color_ps.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\ViewerBake_vs.glsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

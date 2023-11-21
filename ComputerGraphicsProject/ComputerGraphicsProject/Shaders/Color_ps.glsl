@@ -25,6 +25,6 @@ void main()
 {		
     FragColor = vec4(gBaseColor, 1.0);
 
-    float S = 1.0;
-	FragColor.rgb = vec3(S * aces_approx(FragColor.xyz * 0.8));
+    //float S = 1.0;
+	//FragColor.rgb = vec3(S * aces_approx(FragColor.xyz * 0.8));
 }

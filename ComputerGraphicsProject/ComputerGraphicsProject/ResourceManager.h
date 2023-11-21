@@ -20,7 +20,7 @@ private:
 
 	CCamera m_MeshViewCamera;
 	std::vector<std::shared_ptr<CViewerTexture>> m_pMeshViewerTextures;
-	std::unordered_map<std::string, UINT> m_pViewTextureNameMap;
+	std::unordered_map<std::string, UINT> m_ViewTextureNameMap;
 
 	bool m_bBakedMeshViewTextures = false;
 
@@ -38,6 +38,7 @@ public:
 
 	UINT GetTextureIndex(std::string str);
 	UINT GetMaterialIndex(std::string str);
+	UINT GetMeshIndex(std::string str);
 
 	std::shared_ptr<CMaterial> GetMaterialFromName(std::string str);
 	std::shared_ptr<CMesh> GetMeshFromName(std::string str);
@@ -49,16 +50,19 @@ public:
 	std::vector<std::shared_ptr<CViewerTexture>>& GetViewTextureList() { 
 		if (m_bBakedMeshViewTextures == false)
 			BakeViewTextures();
-		return m_pMeshViewerTextures; };
+		return m_pMeshViewerTextures; 
+	};
 
 	bool SwapTexture(UINT t1_index, UINT t2_index);
 	bool SwapMaterial(UINT t1_index, UINT t2_index);
+	bool SwapMesh(UINT t1_index, UINT t2_index);
 
 	std::shared_ptr<CTexture> ImportTexture(std::string path, GLuint samplingMethod);
 	std::shared_ptr<CTexture> ImportTexture(std::string path, std::string textureName, GLuint samplingMethod);
 
 	std::vector<std::string> GetTextureNameList();
 	std::vector<std::string> GetMaterialNameList();
+	std::vector<std::string> GetMeshNameList();
 
 	void BakeViewTextures();
 };

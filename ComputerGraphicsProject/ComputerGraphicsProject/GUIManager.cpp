@@ -44,7 +44,7 @@ void CGUIManager::ShowAssetInspector()
 		ShowTextureInspector();
 		ShowMaterialInspector();
 		ShowMeshInspector();
-		
+
 		ImGui::EndTabBar();
 	}
 
@@ -165,7 +165,8 @@ void CGUIManager::ShowMeshInspector()
 				ImGui::SetDragDropPayload("DND_DEMO_CELL", &i, sizeof(int));
 
 				m_nSelectItemIndex = i;
-				// image display
+				m_eDragingType = DRAGING_SOURCE_TYPE::SOURCE_MESH;
+				ImGui::Image((void*)(pMeshViewTextrue[i]->m_TextureID), resoultion);
 				ImGui::Text(pMeshs[i]->GetName().c_str());
 
 				ImGui::EndDragDropSource();
@@ -177,7 +178,7 @@ void CGUIManager::ShowMeshInspector()
 					IM_ASSERT(payload->DataSize == sizeof(int));
 					int payload_n = *(const int*)payload->Data;
 
-					// swap mesh
+					CResourceManager::GetInst()->SwapMesh(payload_n, i);
 				}
 				m_eDragingType = DRAGING_SOURCE_TYPE::SOURCE_NONE;
 				ImGui::EndDragDropTarget();
@@ -266,6 +267,35 @@ void CGUIManager::ShowSelectedObjectInfo(CObject* obj)
 		winPos.x = g_WindowSizeX * 2 / 3;
 		winPos.y = 0;
 		ImGui::SetWindowPos("object", winPos);
+	}
+
+
+	if (ImGui::TreeNode("Mesh")) {
+
+		std::vector<std::string> meshNames = CResourceManager::GetInst()->GetMeshNameList();
+		std::vector<const char*> meshitems;
+		for (std::string& str : meshNames)
+			meshitems.emplace_back(str.c_str());
+
+		CMesh* pMesh = nullptr;
+		pMesh = obj->GetMesh();
+		int meshIndex = -1;
+		if (pMesh) {
+			meshIndex = CResourceManager::GetInst()->GetMeshIndex(pMesh->GetName());
+		}
+		if (ImGui::Combo("Mesh", &meshIndex, meshitems.data(), meshitems.size())) {
+			std::shared_ptr<CMesh> pNewMesh = CResourceManager::GetInst()->GetMeshFromIndex(meshIndex);
+			obj->SetMesh(pNewMesh);
+		}
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (m_eDragingType == DRAGING_SOURCE_TYPE::SOURCE_MESH) {
+				std::shared_ptr<CMesh> pNewMesh = CResourceManager::GetInst()->GetMeshFromIndex(m_nSelectItemIndex);
+				obj->SetMesh(pNewMesh);
+			}
+			ImGui::EndDragDropTarget();
+		}
+		ImGui::TreePop();
 	}
 
 	std::vector<std::shared_ptr<CMaterial>>& pMaterials = obj->GetAllMaterials();
