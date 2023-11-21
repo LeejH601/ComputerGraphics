@@ -56,6 +56,7 @@ protected:
 	UINT DwDirection = 0;
 	float cxDelta, cyDelta;
 
+	bool m_bRegenarateView = true;
 
 	std::vector<std::shared_ptr<CObject>> m_pObjects;
 
@@ -77,6 +78,8 @@ public:
 	virtual void BindFrameBufferObjectFromIndex(UINT index, bool Is_FBO_Clear = true, GLbitfield FBO_Clear_Option = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	virtual void BindFrameBufferObject(FRAMEBUFFEROBJECT_INFO FBOInfo, bool Is_FBO_Clear = true, GLbitfield FBO_Clear_Option = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	virtual void PostProcessing();
+
+	std::vector<std::shared_ptr<CObject>>& GetObjects() { return m_pObjects; };
 
 	virtual void Enter();
 	virtual void Exit();

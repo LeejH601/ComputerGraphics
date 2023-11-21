@@ -65,7 +65,7 @@ public:
 	static std::shared_ptr<CMesh> CreateLineMesh();
 	static std::shared_ptr<CMesh> CreateTriangleMesh();
 	static std::shared_ptr<CMesh> CreateRectMesh();
-	void LoadMeshFromFile(FILE* pInFile);
+	static std::shared_ptr<CMesh> LoadMeshFromFile(FILE* pInFile);
 
 	std::vector<Vertex> GetVertexs() { return m_pVertices; };
 	std::vector<UINT> GetSubSetIndice(UINT index) { 
@@ -88,6 +88,9 @@ public:
 
 	virtual void Render();
 	virtual void RenderInstanced(int nInstance);
+
+	void SetName(std::string str) { m_strMeshName = str; };
+	std::string GetName() { return m_strMeshName; };
 
 private:
 	std::string m_strMeshName;

@@ -31,6 +31,8 @@ protected:
 	CObject* m_pParent = nullptr;
 	std::shared_ptr<CObject> m_pSibling = nullptr;
 
+	DirectX::BoundingOrientedBox m_OBB;
+
 public:
 	CObject();
 	virtual ~CObject() = default;
@@ -75,6 +77,9 @@ public:
 		if (index < m_nMaterials)
 			return m_ppMaterials[index];
 		return nullptr;
+	}
+	std::vector<std::shared_ptr<CMaterial>>& GetAllMaterials() {
+		return m_ppMaterials;
 	}
 
 	CObject* GetChild() { return m_pChild.get(); };

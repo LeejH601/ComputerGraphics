@@ -28,16 +28,7 @@ public:
 	GLuint preComputingBRDFShader = -1;
 	GLuint LineShader = -1;
 	GLuint PointInstanceShader = -1;
-
-private:
-	std::vector<std::shared_ptr<CMaterial>> m_pMaterials;
-	std::vector<std::shared_ptr<CMesh>> m_pMeshs;
-
-public:
-	UINT RegisterMaterial(std::shared_ptr<CMaterial> material) { m_pMaterials.push_back(material); return m_pMaterials.end() - m_pMaterials.begin(); };
-	UINT RegisterMesh(std::shared_ptr<CMesh> mesh) { m_pMeshs.push_back(mesh); return m_pMeshs.end() - m_pMeshs.begin();};
-	std::shared_ptr<CMaterial> GetMaterialFromIndex(UINT index) { if (index < m_pMaterials.size()) return m_pMaterials[index]; return nullptr; };
-	std::shared_ptr<CMesh> GetMeshFromIndex(UINT index) { if (index < m_pMeshs.size()) return m_pMeshs[index]; return nullptr; };
+	GLuint BaseColorRenderShader = -1;
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);

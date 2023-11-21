@@ -57,7 +57,8 @@ uniform samplerCube u_IrradianceTexture;
 uniform sampler2D u_BrdfLUT;
 uniform samplerCube u_PreFilterMap;
 
-
+#define TYPE_LIGHT_DIRECTION 0
+#define TYPE_LIGHT_DIRECTION_BY_POSITION 1
 
 vec3 aces_approx(vec3 v)
 {
@@ -152,7 +153,7 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 sColor, vec3 norma
 	vec2 envBRDF  = texture(u_BrdfLUT, vec2(NdotV, Roughness)).rg;
 	Specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
 
-	FinalColor += (kD * Diffuse + Specular) * NdotL;
+	FinalColor += (kD * Diffuse + Specular) * LightColor * NdotL;
 
 	return FinalColor;
 };
@@ -213,9 +214,17 @@ void main()
 //		cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, SpecularColor, normalize(normalTBN), vToLight, lightColor, Fresnel, Roughness, MetallicColor);
 
 	for(uint i = 0u; i < g_nLights;++i){
-		vec3 vToLight = -normalize(g_lights[i].vec3Direction);
+		
+		uint lightType = g_lights[i].nLightType;
+		vec3 vToLight;
+		if(lightType == TYPE_LIGHT_DIRECTION)
+			vToLight = -normalize(g_lights[i].vec3Direction);
+		else if(lightType == TYPE_LIGHT_DIRECTION_BY_POSITION)
+			vToLight = normalize(g_lights[i].vec3Position - WorldPos);
+
 		vec3 lightColor = g_lights[i].vec3LightColor * 1.0f;
 		cColor.rgb = Cook_Torrance_BRDF( cColor.rgb, BaseColor, SpecularColor, normalize(normalTBN), vToLight, lightColor, Fresnel, Roughness, MetallicColor);
+		cColor.rgb *= g_lights[i].fIntensity;
 	}
 
 

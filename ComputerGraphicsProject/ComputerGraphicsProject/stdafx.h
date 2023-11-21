@@ -17,6 +17,21 @@
 #include "Dependencies/glm/glm.hpp"
 #include "Dependencies/glm/ext.hpp"
 #include "Dependencies/glm/gtc/matrix_transform.hpp"
+#include "Imgui/imgui.h"
+#include "Imgui/imgui_internal.h"
+#include "Imgui/imgui_impl_opengl3.h"
+#include "Imgui/imgui_impl_glut.h"
+#include <DirectXMath.h>
+#include <DirectXCollision.h>
+
+
+#define DECLARE_SINGLE(MYType)\
+public:\
+	static MYType* GetInst()\
+	{\
+		static MYType m_pInst;\
+		return &m_pInst;\
+	}
 
 
 extern int ReadIntegerFromFile(FILE* pInFile);
