@@ -28,6 +28,7 @@ CScene* g_currentScene = nullptr;
 int g_WindowSizeX = 1280;
 int g_WindowSizeY = 768;
 
+//#define FHD_RESOLUTION
 
 std::vector<std::shared_ptr<CScene>> g_pSceneCache;
 
@@ -141,6 +142,11 @@ void ReshapeFunc(int w, int h)
 
 int main(int argc, char** argv)
 {
+#ifdef FHD_RESOLUTION
+	g_WindowSizeX = 1920;
+	g_WindowSizeY = 1080;
+#endif // FHD_RESOLUTION
+
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(0, 0);

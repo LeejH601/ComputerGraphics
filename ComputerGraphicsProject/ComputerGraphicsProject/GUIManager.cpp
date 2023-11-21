@@ -29,7 +29,7 @@ void CGUIManager::ShowAssetInspector(CScene* pScene)
 	if (ImGui::Begin("Assets", &bIsOpenAsset)) {
 		ImVec2 winSize = ImGui::GetWindowSize();
 		ImVec2 winPos = ImGui::GetWindowPos();
-		winSize.x = g_WindowSizeX * 2 / 3;
+		winSize.x = g_WindowSizeX * 3 / 4;
 		winSize.y = g_WindowSizeY / 3;
 		ImGui::SetWindowSize("Assets", winSize);
 		winPos.x = 0;
@@ -290,10 +290,10 @@ void CGUIManager::ShowSelectedObjectInfo(CObject* obj)
 	if (ImGui::Begin("object")) {
 		ImVec2 winSize = ImGui::GetWindowSize();
 		ImVec2 winPos = ImGui::GetWindowPos();
-		winSize.x = g_WindowSizeX / 3;
+		winSize.x = g_WindowSizeX / 4;
 		winSize.y = g_WindowSizeY;
 		ImGui::SetWindowSize("object", winSize);
-		winPos.x = g_WindowSizeX * 2 / 3;
+		winPos.x = g_WindowSizeX * 3 / 4;
 		winPos.y = 0;
 		ImGui::SetWindowPos("object", winPos);
 	}

@@ -18,7 +18,7 @@ CCamera::CCamera()
 	m_vec3Right = glm::normalize(glm::cross(m_vec3Look, m_vec3Up));*/
 
 
-	m_vec4ViewPort = { 0,0,1280,768 };
+	m_vec4ViewPort = { 0,0,g_WindowSizeX,g_WindowSizeY };
 }
 
 CCamera::~CCamera()
