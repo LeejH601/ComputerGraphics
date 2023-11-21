@@ -43,10 +43,8 @@ void CGUIManager::ShowAssetInspector()
 	if (ImGui::BeginTabBar("assets")) {
 		ShowTextureInspector();
 		ShowMaterialInspector();
-
-		if (ImGui::BeginTabItem("Meshs")) {
-			ImGui::EndTabItem();
-		}
+		ShowMeshInspector();
+		
 		ImGui::EndTabBar();
 	}
 
@@ -126,9 +124,8 @@ void CGUIManager::ShowTextureInspector()
 					IM_ASSERT(payload->DataSize == sizeof(int));
 					int payload_n = *(const int*)payload->Data;
 
-					std::shared_ptr<CTexture> temp = pTexure[payload_n];
-					pTexure[payload_n] = pTexure[i];
-					pTexure[i] = temp;
+					CResourceManager::GetInst()->SwapTexture(payload_n, i);
+					pTexure = CResourceManager::GetInst()->GetTextureList();
 				}
 				m_eDragingType = DRAGING_SOURCE_TYPE::SOURCE_NONE;
 				ImGui::EndDragDropTarget();
@@ -139,6 +136,56 @@ void CGUIManager::ShowTextureInspector()
 
 			ImGui::EndGroup();
 			//ImGui::ImageButton(pTexure->GetName().c_str(), (void*)pTexure->m_TextureID, resoultion);
+
+			ImGui::PopID();
+		}
+		ImGui::EndTabItem();
+	}
+}
+
+void CGUIManager::ShowMeshInspector()
+{
+	if (ImGui::BeginTabItem("Meshs")) {
+		std::vector<std::shared_ptr<CMesh>>& pMeshs = CResourceManager::GetInst()->GetMeshList();
+		std::vector<std::shared_ptr<CViewerTexture>>& pMeshViewTextrue = CResourceManager::GetInst()->GetViewTextureList();
+		for (int i = 0; i < pMeshs.size(); ++i) {
+			ImGui::PushID(i);
+
+			if (i % (widthSize - 1) != 0)
+				ImGui::SameLine();
+
+			ImTextureID textureID;
+			ImVec2 resoultion = ImVec2(frameSize.x / widthSize, frameSize.x / widthSize);
+			ImGui::BeginGroup();
+			ImGui::Image((void*)(pMeshViewTextrue[i]->m_TextureID), resoultion);
+
+
+			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+			{
+				ImGui::SetDragDropPayload("DND_DEMO_CELL", &i, sizeof(int));
+
+				m_nSelectItemIndex = i;
+				// image display
+				ImGui::Text(pMeshs[i]->GetName().c_str());
+
+				ImGui::EndDragDropSource();
+			}
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL"))
+				{
+					IM_ASSERT(payload->DataSize == sizeof(int));
+					int payload_n = *(const int*)payload->Data;
+
+					// swap mesh
+				}
+				m_eDragingType = DRAGING_SOURCE_TYPE::SOURCE_NONE;
+				ImGui::EndDragDropTarget();
+			}
+			ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + resoultion.x);
+			ImGui::Text(pMeshs[i]->GetName().c_str());
+
+			ImGui::EndGroup();
 
 			ImGui::PopID();
 		}
@@ -191,9 +238,7 @@ void CGUIManager::ShowMaterialInspector()
 					IM_ASSERT(payload->DataSize == sizeof(int));
 					int payload_n = *(const int*)payload->Data;
 
-					std::shared_ptr<CMaterial> temp = pMaterials[payload_n];
-					pMaterials[payload_n] = pMaterials[i];
-					pMaterials[i] = temp;
+					CResourceManager::GetInst()->SwapMaterial(payload_n, i);
 				}
 				m_eDragingType = DRAGING_SOURCE_TYPE::SOURCE_NONE;
 				ImGui::EndDragDropTarget();

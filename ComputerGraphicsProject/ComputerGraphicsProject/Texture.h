@@ -23,3 +23,15 @@ public:
 	std::string GetName() { return m_strTextureName; };
 };
 
+class CMesh;
+class CCamera;
+class CViewerTexture : public CTexture
+{
+public:
+	CViewerTexture();
+	virtual ~CViewerTexture();
+
+	virtual void Bake(GLuint s_Program, CMesh* pMesh, CCamera* pCamera);
+
+	bool m_bBaked = false;
+};

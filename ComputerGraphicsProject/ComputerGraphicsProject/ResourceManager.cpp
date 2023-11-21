@@ -1,10 +1,14 @@
 #include "ResourceManager.h"
 #include <string_view>
+#include "Renderer.h"
 
 using namespace std::literals;
 
 CResourceManager::CResourceManager()
 {
+    m_MeshViewCamera.SetPosision(glm::vec3(1.0f));
+    m_MeshViewCamera.GenerateProjectionMatrix(glm::radians(90.0f), (float)g_WindowSizeX / (float)g_WindowSizeY, 0.1f, 50.0f);
+    m_MeshViewCamera.m_mat4x4View = glm::lookAt(m_MeshViewCamera.GetPosition(), glm::vec3(0), glm::vec3(0, 1, 0));
 }
 
 CResourceManager::~CResourceManager()
@@ -104,6 +108,36 @@ std::shared_ptr<CTexture> CResourceManager::GetTextureFromName(std::string str)
     return nullptr;
 }
 
+bool CResourceManager::SwapTexture(UINT t1_index, UINT t2_index)
+{
+    if(t1_index >= m_pTextures.size() || t2_index >= m_pTextures.size())
+        return false;
+
+    std::shared_ptr<CTexture> temp = m_pTextures[t1_index];
+    m_pTextures[t1_index] = m_pTextures[t2_index];
+    m_pTextures[t2_index] = temp;
+
+    m_TextureNameMap[m_pTextures[t2_index]->GetName()] = t2_index;
+    m_TextureNameMap[m_pTextures[t1_index]->GetName()] = t1_index;
+
+    return true;
+}
+
+bool CResourceManager::SwapMaterial(UINT t1_index, UINT t2_index)
+{
+    if (t1_index >= m_pMaterials.size() || t2_index >= m_pMaterials.size())
+        return false;
+
+    std::shared_ptr<CMaterial> temp = m_pMaterials[t1_index];
+    m_pMaterials[t1_index] = m_pMaterials[t2_index];
+    m_pMaterials[t2_index] = temp;
+
+    m_MaterialNameMap[m_pMaterials[t2_index]->GetName()] = t2_index;
+    m_MaterialNameMap[m_pMaterials[t1_index]->GetName()] = t1_index;
+
+    return true;
+}
+
 std::shared_ptr<CTexture> CResourceManager::ImportTexture(std::string path, GLuint samplingMethod)
 {
     std::shared_ptr<CTexture> texture = std::make_shared<CTexture>();
@@ -151,4 +185,22 @@ std::vector<std::string> CResourceManager::GetMaterialNameList()
     }
 
     return names;
+}
+
+void CResourceManager::BakeViewTextures()
+{
+    GLuint s_Program = g_Renderer->BaseColorRenderShader;
+
+    if (m_pMeshViewerTextures.size() < m_pMeshs.size()) {
+        while (m_pMeshViewerTextures.size() < m_pMeshs.size())
+        {
+            std::shared_ptr<CViewerTexture> pTexture = std::make_shared<CViewerTexture>();
+            m_pMeshViewerTextures.emplace_back(pTexture);
+        }
+    }
+
+    for (int i = 0; i < m_pMeshViewerTextures.size(); ++i) {
+        m_pMeshViewerTextures[i]->Bake(s_Program, m_pMeshs[i].get(), &m_MeshViewCamera);
+    }
+    m_bBakedMeshViewTextures = true;
 }

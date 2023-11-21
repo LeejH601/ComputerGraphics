@@ -3,6 +3,7 @@
 #include "Texture.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "Camera.h"
 #include <map>
 #include <unordered_map>
 
@@ -16,6 +17,12 @@ private:
 	std::unordered_map<std::string, UINT> m_MaterialNameMap;
 	std::unordered_map<std::string, UINT> m_MeshNameMap;
 	std::unordered_map<std::string, UINT> m_TextureNameMap;
+
+	CCamera m_MeshViewCamera;
+	std::vector<std::shared_ptr<CViewerTexture>> m_pMeshViewerTextures;
+	std::unordered_map<std::string, UINT> m_pViewTextureNameMap;
+
+	bool m_bBakedMeshViewTextures = false;
 
 public:
 	DECLARE_SINGLE(CResourceManager);
@@ -39,11 +46,20 @@ public:
 	std::vector<std::shared_ptr<CTexture>>& GetTextureList() { return m_pTextures; };
 	std::vector<std::shared_ptr<CMaterial>>& GetMaterialList() { return m_pMaterials; };
 	std::vector<std::shared_ptr<CMesh>>& GetMeshList() { return m_pMeshs; };
+	std::vector<std::shared_ptr<CViewerTexture>>& GetViewTextureList() { 
+		if (m_bBakedMeshViewTextures == false)
+			BakeViewTextures();
+		return m_pMeshViewerTextures; };
+
+	bool SwapTexture(UINT t1_index, UINT t2_index);
+	bool SwapMaterial(UINT t1_index, UINT t2_index);
 
 	std::shared_ptr<CTexture> ImportTexture(std::string path, GLuint samplingMethod);
 	std::shared_ptr<CTexture> ImportTexture(std::string path, std::string textureName, GLuint samplingMethod);
 
 	std::vector<std::string> GetTextureNameList();
 	std::vector<std::string> GetMaterialNameList();
+
+	void BakeViewTextures();
 };
 

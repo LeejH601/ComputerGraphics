@@ -28,6 +28,7 @@ public:
 
 	void ShowAssetInspector();
 	void ShowTextureInspector();
+	void ShowMeshInspector();
 	void ShowMaterialInspector();
 	void ShowSelectedObjectInfo(CObject* obj);
 
