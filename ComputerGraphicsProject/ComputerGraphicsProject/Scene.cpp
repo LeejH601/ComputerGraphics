@@ -132,22 +132,58 @@ void CScene::SetPolygonMode(GLenum face, GLenum mode)
 	glPolygonMode(face, mode);
 }
 
-void CScene::BindFrameBufferObjectFromIndex(UINT index, bool Is_FBO_Clear, GLbitfield FBO_Clear_Option)
+void CScene::CreateMultiRenderTargetObject(int nWidth, int nHeight, std::vector<RENDERTARGET_INFO> RBOinfos)
 {
-	FRAMEBUFFEROBJECT_INFO fboInfo = m_FBOs[index];
-	GLuint FBO = fboInfo.FBO;
+	m_RBOInfo = RBOinfos;
+	int nRbos = m_RBOInfo.size();
 
-	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-	if (Is_FBO_Clear) {
-		glClear(FBO_Clear_Option);
+	glGenFramebuffers(1, &m_FBOMultiRenderTarget);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBOMultiRenderTarget);
+
+	m_RBOs.resize(nRbos);
+
+	for (int i = 0; i < nRbos; ++i) {
+		glGenTextures(1, &m_RBOs[i]);
+		glBindTexture(GL_TEXTURE_2D, m_RBOs[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, m_RBOInfo[i].InternalFormat, nWidth, nHeight, 0, m_RBOInfo[i].Format, m_RBOInfo[i].type, NULL);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
+
+	for (int i = 0; i < nRbos; ++i) {
+		glFramebufferTexture2D(GL_FRAMEBUFFER, m_RBOInfo[i].Attachment, GL_TEXTURE_2D, m_RBOs[i], 0);
+	}
+	
+	std::vector<GLuint> attachments;
+	attachments.resize(m_RBOInfo.size());
+	for (int i = 0; i < attachments.size(); ++i)
+		attachments[i] = m_RBOInfo[i].Attachment;
+
+	glDrawBuffers(attachments.size(), attachments.data());
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	m_bEnableMultiRenderTarget = true;
 }
 
-void CScene::BindFrameBufferObject(FRAMEBUFFEROBJECT_INFO FBOInfo, bool Is_FBO_Clear, GLbitfield FBO_Clear_Option)
+void CScene::BindFrameBufferObject(bool Is_FBO_Clear, GLbitfield FBO_Clear_Option)
 {
-	GLuint FBO = FBOInfo.FBO;
+	if (m_bEnableMultiRenderTarget == false) {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+		if (Is_FBO_Clear) {
+			glClear(FBO_Clear_Option);
+		}
+
+		return;
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBOMultiRenderTarget);
+
+
+	
 	if (Is_FBO_Clear) {
 		glClear(FBO_Clear_Option);
 	}
@@ -451,6 +487,34 @@ void CPBR_TestScene::Init()
 
 void CPBR_TestScene::BuildObjects()
 {
+	std::vector<RENDERTARGET_INFO> RBOInfos;
+
+	RBOInfos.resize(4);
+	RBOInfos[0].InternalFormat = GL_RGBA16F;
+	RBOInfos[0].Format = GL_RGBA;
+	RBOInfos[0].type = GL_FLOAT;
+	RBOInfos[0].Attachment = GL_COLOR_ATTACHMENT0;
+
+	RBOInfos[1].InternalFormat = GL_RGBA16F;
+	RBOInfos[1].Format = GL_RGBA;
+	RBOInfos[1].type = GL_FLOAT;
+	RBOInfos[1].Attachment = GL_COLOR_ATTACHMENT1;
+
+	RBOInfos[2].InternalFormat = GL_RGBA16F;
+	RBOInfos[2].Format = GL_RGBA;
+	RBOInfos[2].type = GL_FLOAT;
+	RBOInfos[2].Attachment = GL_COLOR_ATTACHMENT2;
+
+	RBOInfos[3].InternalFormat = GL_DEPTH_COMPONENT;
+	RBOInfos[3].Format = GL_DEPTH_COMPONENT;
+	RBOInfos[3].type = GL_FLOAT;
+	RBOInfos[3].Attachment = GL_DEPTH_ATTACHMENT;
+
+	CreateMultiRenderTargetObject(g_WindowSizeX, g_WindowSizeY, RBOInfos);
+
+	m_NdcMesh = CMesh::CreateNDCMesh();
+	m_NdcMesh->CreateShaderVariables();
+
 	std::shared_ptr<CMesh> testSphereMesh;
 	testSphereMesh = CMesh::CreateSphereMesh(20, 20);
 	testSphereMesh->CreateShaderVariables();
@@ -608,18 +672,18 @@ void CPBR_TestScene::RenderScene()
 		obj->Render(s_Program);
 	}
 
-	FRAMEBUFFEROBJECT_INFO FBO_Info;
 
 	if (m_bEnableMultiRenderTarget) {
-		FBO_Info = m_FBOs[0];
+		glBindFramebuffer(GL_FRAMEBUFFER, m_FBOMultiRenderTarget);
 	}
-	else {
-		FBO_Info.FBO = 0;
-		FBO_Info.width = g_WindowSizeX;
-		FBO_Info.height = g_WindowSizeY;
-	}
+	else
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	
-	BindFrameBufferObject(FBO_Info);
+	glEnable(GL_DEPTH_TEST);
+
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	SetPolygonMode(m_ePolygonFace, m_ePolygonMode);
 
@@ -666,9 +730,20 @@ void CPBR_TestScene::RenderScene()
 	m_pSkyBoxObject->UpdateTransform(nullptr);
 	m_pSkyBoxObject->Render(s_Program);
 
+	if (m_bEnableMultiRenderTarget) {
+		s_Program = g_Renderer->PostProcessShader;
+		glUseProgram(s_Program);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		for (int i = 0; i < m_RBOs.size(); ++i) {
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, m_RBOs[i]);
+		}
 
-	
+		m_NdcMesh->BindShaderVariables(s_Program);
+		m_NdcMesh->Render();
+	}
 
 	/*static bool showDemo = true;
 	static ImVec4 clear_color = { 0,0,0,1 };
@@ -678,7 +753,6 @@ void CPBR_TestScene::RenderScene()
 	static int counter = 0;*/
 	
 	CGUIManager::GetInst()->ShowAssetInspector(this);
-
 }
 
 void CPBR_TestScene::MouseInput(int button, int state, int x, int y)

@@ -14,7 +14,10 @@ in vec2 Texcoord0;
 in vec3 Tangent;
 in vec3 Bitangent;
 
-out vec4 FragColor;
+
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec3 gNormal;
+layout (location = 2) out vec4 gPosition;
 
 const float c_PI = 3.141592;
 
@@ -234,5 +237,7 @@ void main()
 	cColor.rgb = pow(cColor.rgb, vec3(1.0 / gamma));
 	
 	FragColor = cColor;
+	gNormal = normalTBN;
+	gPosition = vec4(WorldPos, 1.0f);
 	//FragColor = vec4(BaseColor, 1.0f);
 }

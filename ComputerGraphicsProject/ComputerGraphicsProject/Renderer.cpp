@@ -34,6 +34,7 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 	preComputingBRDFShader = CompileShaders((char*)"./Shaders/RenderNDCQuad_vs.glsl", (char*)"./Shaders/preComputeBRDF_ps.glsl");
 	LineShader = CompileShaders((char*)"./Shaders/Line_vs.glsl", (char*)"./Shaders/Line_ps.glsl");
 	BaseColorRenderShader = CompileShaders((char*)"./Shaders/ViewerBake_vs.glsl", (char*)"./Shaders/Color_ps.glsl");
+	PostProcessShader = CompileShaders((char*)"./Shaders/RenderNDCQuad_vs.glsl", (char*)"./Shaders/PostProcess_ps.glsl");
 
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 

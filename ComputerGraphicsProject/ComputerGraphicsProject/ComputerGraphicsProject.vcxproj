@@ -207,6 +207,7 @@
     <None Include="Shaders\PBRInstance_vs.glsl" />
     <None Include="Shaders\PBR_ps.glsl" />
     <None Include="Shaders\PBR_vs.glsl" />
+    <None Include="Shaders\PostProcess_ps.glsl" />
     <None Include="Shaders\preComputeBRDF_ps.glsl" />
     <None Include="Shaders\RenderNDCQuad_vs.glsl" />
     <None Include="Shaders\ViewerBake_vs.glsl" />

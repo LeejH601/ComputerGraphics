@@ -9,11 +9,12 @@
 
 #define MAX_LIGHTS 8
 
-struct FRAMEBUFFEROBJECT_INFO
+struct RENDERTARGET_INFO
 {
-	GLuint FBO = -1;
-	int width = 0;
-	int height = 0;
+	GLint InternalFormat;
+	GLenum Format;
+	GLenum type;
+	GLuint Attachment;
 };
 
 class CScene
@@ -31,7 +32,10 @@ protected:
 	std::shared_ptr<CTexture> m_tShadowDepthTexture;
 
 	bool m_bEnableMultiRenderTarget = false;
-	std::vector<FRAMEBUFFEROBJECT_INFO> m_FBOs;
+	GLuint m_FBOMultiRenderTarget = -1;
+	std::vector<RENDERTARGET_INFO> m_RBOInfo;
+	std::vector<GLuint> m_RBOs;
+	std::shared_ptr<CMesh> m_NdcMesh;
 
 	bool m_bInitialized = false;
 
@@ -75,8 +79,8 @@ public:
 	virtual void BindShaderVariables(GLuint s_Program);
 	virtual void Update(float fElapsedTime);
 	virtual void SetPolygonMode(GLenum face = GL_FRONT_AND_BACK, GLenum mode = GL_FILL);
-	virtual void BindFrameBufferObjectFromIndex(UINT index, bool Is_FBO_Clear = true, GLbitfield FBO_Clear_Option = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	virtual void BindFrameBufferObject(FRAMEBUFFEROBJECT_INFO FBOInfo, bool Is_FBO_Clear = true, GLbitfield FBO_Clear_Option = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	virtual void CreateMultiRenderTargetObject(int nWidth,int nHeight, std::vector<RENDERTARGET_INFO> RBOs);
+	virtual void BindFrameBufferObject(bool Is_FBO_Clear = true, GLbitfield FBO_Clear_Option = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	virtual void PostProcessing();
 
 	std::vector<std::shared_ptr<CObject>>& GetObjects() { return m_pObjects; };
