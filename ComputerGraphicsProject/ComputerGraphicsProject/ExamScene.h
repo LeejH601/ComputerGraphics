@@ -229,6 +229,7 @@ public:
 class CExamScene_25 : public CPBR_TestScene
 {
 	CObject* mainObj = nullptr;
+	std::vector<std::shared_ptr<CObject>> pObjectCache;
 
 	bool yInput = false;
 	bool rInput = false;

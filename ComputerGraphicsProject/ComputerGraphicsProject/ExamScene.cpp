@@ -2213,6 +2213,7 @@ void CExamScene_25::Init()
 	pObject->SetMaterial(pMaterial);
 
 	m_pObjects.push_back(pObject);
+	pObjectCache.push_back(pObject);
 
 	pObject = std::make_shared<CObject>();
 
@@ -2222,6 +2223,10 @@ void CExamScene_25::Init()
 	pObject->SetPosition(glm::vec3(2, 0, 0));
 
 	m_pObjects.push_back(pObject);
+
+	pObject = std::make_shared<CObject>();
+	pObject->LoadGeometryAndAnimationFromFile("./Objects/Robot.bin");
+	pObjectCache.push_back(pObject);
 
 	mainObj = pObject.get();
 
@@ -2245,6 +2250,24 @@ void CExamScene_25::KeyInput(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
+	case 'm':
+		if (m_pLights[0].m_fIntensity > 0.001f) {
+			m_pLights[0].m_fIntensity = 0.0f;
+		}
+		else {
+			m_pLights[0].m_fIntensity = 1.0f;
+		}
+		return;
+	case 'n':
+		if (m_pObjects[0]->GetName() != "Robot") {
+			m_pObjects[0] = pObjectCache[1];
+			
+		}
+		else {
+			m_pObjects[0] = pObjectCache[0];
+		}
+		mainObj = m_pObjects[0].get();
+		break;
 	case 'y':
 		yInput = true;
 		break;
