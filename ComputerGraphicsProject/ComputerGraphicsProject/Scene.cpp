@@ -445,7 +445,7 @@ void CPBR_TestScene::Init()
 	// ¼¨µµ¿ì ¸Ê ÅØ½ºÃÄ »ý¼º
 	glGenFramebuffers(1, &m_FBOShadowDepth);
 
-	m_nShadowMapWidth = 1024; m_nShadowMapHeight = 1024;
+	m_nShadowMapWidth = 2048; m_nShadowMapHeight = 2048;
 
 	m_tShadowDepthTexture = std::make_shared<CTexture>();
 	GLuint& shadowDepthMap = m_tShadowDepthTexture->m_TextureID;
@@ -653,18 +653,24 @@ void CPBR_TestScene::RenderScene()
 
 	glViewport(0, 0, m_nShadowMapWidth, m_nShadowMapHeight);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_FBOShadowDepth);
-	glClear(GL_DEPTH_BUFFER_BIT);
 
+	glClear(GL_DEPTH_BUFFER_BIT);
 
 	// Render ShadowDepthMap
 	CShadowCamera shadowCamera;
 	//shadowCamera.GenerateProjectionMatrix(glm::radians(90.0f), (float)g_WindowSizeX / (float)g_WindowSizeY, 0.1f, 50.0f);
-	float fNear = 1.0f, fFar = 7.5f;
+	float fNear = 1.0f, fFar = 20.0f;
 	shadowCamera.m_mat4x4Projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, fNear, fFar);
 	shadowCamera.SetPosision(m_pSunLight->m_vec3Position);
 	shadowCamera.m_mat4x4View = glm::lookAt(m_pSunLight->m_vec3Position, m_pSunLight->m_vec3Direction, glm::vec3(0, 1, 0));
 	shadowCamera.BindShaderVariables(s_Program);
 
+	glm::mat4 lightSpaceMatrix = shadowCamera.m_mat4x4Projection * shadowCamera.m_mat4x4View;
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+
+	SetPolygonMode(m_ePolygonFace, m_ePolygonMode);
 
 	for (std::shared_ptr<CObject>& obj : m_pObjects) {
 		obj->BindShaderVariables(s_Program);
@@ -674,24 +680,16 @@ void CPBR_TestScene::RenderScene()
 	}
 
 
-	if (m_bEnableMultiRenderTarget) {
-		glBindFramebuffer(GL_FRAMEBUFFER, m_FBOMultiRenderTarget);
 
-		
-	}
-	else
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
+	s_Program = g_Renderer->TestShader;
+	glUseProgram(s_Program);
 
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	SetPolygonMode(m_ePolygonFace, m_ePolygonMode);
 
 	BindShaderVariables(s_Program);
+	GLuint lightSpaceLoc;
+
+	lightSpaceLoc = glGetUniformLocation(s_Program, "lightSpaceMatrix");
+	glUniformMatrix4fv(lightSpaceLoc, 1, GL_FALSE, &lightSpaceMatrix[0][0]);
 
 	GLuint samplerULoc = glGetUniformLocation(s_Program, "u_IrradianceTexture");
 	glUniform1i(samplerULoc, 5);
@@ -704,7 +702,21 @@ void CPBR_TestScene::RenderScene()
 	samplerULoc = glGetUniformLocation(s_Program, "u_PreFilterMap");
 	glUniform1i(samplerULoc, 7);
 	m_tFilteringedEnvironmentTexture->BindShaderVariables(s_Program, GL_TEXTURE7);
+	
+	samplerULoc = glGetUniformLocation(s_Program, "u_ShadowMap");
+	glUniform1i(samplerULoc, 8);
+	glActiveTexture(GL_TEXTURE8);
+	glBindTexture(GL_TEXTURE_2D, m_tShadowDepthTexture->m_TextureID);
 
+	if (m_bEnableMultiRenderTarget) {
+		glBindFramebuffer(GL_FRAMEBUFFER, m_FBOMultiRenderTarget);
+	}
+	else
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
 	//m_pSunLight->BindShaderVariables(s_Program);
@@ -936,7 +948,7 @@ void CPBR_TestScene::Update(float fElapsedTime)
 
 	m_pSunLight->m_vec3LightColor = glm::vec3(1, 1, 1);
 	m_pSunLight->m_vec3Direction = glm::normalize(glm::vec3(-1, -1, -1));
-	m_pSunLight->m_vec3Direction = glm::vec3(sin(fTime), cos(fTime), -1);
+	m_pSunLight->m_vec3Direction = glm::vec3(sin(fTime), -1, cos(fTime));
 	m_pSunLight->m_vec3Position = (-m_pSunLight->m_vec3Direction) * 10.0f;
 
 

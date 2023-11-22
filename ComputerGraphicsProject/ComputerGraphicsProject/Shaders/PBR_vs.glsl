@@ -10,10 +10,12 @@ out vec3 Normal;
 out vec2 Texcoord0;
 out vec3 Tangent;
 out vec3 Bitangent;
+out vec4 LightSpacePos;
 
 uniform mat4 projectionTransform;
 uniform mat4 worldTransform;
 uniform mat4 viewTransform;
+uniform mat4 lightSpaceMatrix;
 
 uniform vec4 gUVOffset;
 
@@ -32,4 +34,5 @@ void main()
 
 	Tangent = mat3(transpose(inverse(worldTransform))) * v_Tangent;
 	Bitangent = mat3(transpose(inverse(worldTransform))) * v_Bitangent;
+	LightSpacePos = lightSpaceMatrix * vec4(WorldPos, 1.0);
 }

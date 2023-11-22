@@ -13,6 +13,7 @@ in vec3 Normal;
 in vec2 Texcoord0;
 in vec3 Tangent;
 in vec3 Bitangent;
+in vec4 LightSpacePos;
 
 
 layout (location = 0) out vec4 FragColor;
@@ -60,6 +61,7 @@ uniform sampler2D u_EmissionTexture;
 uniform samplerCube u_IrradianceTexture;
 uniform sampler2D u_BrdfLUT;
 uniform samplerCube u_PreFilterMap;
+uniform sampler2D u_ShadowMap;
 
 #define TYPE_LIGHT_DIRECTION 0
 #define TYPE_LIGHT_DIRECTION_BY_POSITION 1
@@ -163,6 +165,37 @@ vec3 Cook_Torrance_BRDF(vec3 FinalColor, vec3 BaseColor, vec3 sColor, vec3 norma
 };
 
 
+float ShadowCalculation(vec4 PosLightSpace, vec3 lightPos, vec3 worldPos, vec3 normal)
+{
+    vec3 projCoords = PosLightSpace.xyz / PosLightSpace.w;
+
+    projCoords = projCoords * 0.5 + 0.5;
+    
+    float closestDepth = texture(u_ShadowMap, projCoords.xy).r; 
+    
+    float currentDepth = projCoords.z;
+    
+    vec3 lightDir = normalize(lightPos - worldPos);
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    
+	float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(u_ShadowMap, 0);
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(u_ShadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
+        }    
+    }
+    shadow /= 9.0;
+    
+    if(projCoords.z > 1.0)
+        shadow = 0.0;
+        
+    return shadow;
+}
+
 
 void main()
 {
@@ -232,7 +265,10 @@ void main()
 		cColor.rgb *= g_lights[i].fIntensity;
 	}
 
+	float shadow = ShadowCalculation(LightSpacePos, g_lights[0].vec3Position, WorldPos, normalize(normalTBN));
+	cColor.rgb *= (1.0 - shadow);
 	cColor.rgb += Emissive * 10.f;
+
 
 	//float S = 1.0;
 	//cColor.rgb = vec3(S * aces_approx(cColor.xyz * 0.8));
