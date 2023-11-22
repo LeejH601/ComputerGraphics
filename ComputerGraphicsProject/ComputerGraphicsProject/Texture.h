@@ -12,6 +12,8 @@ public:
 	GLenum m_TextureType = GL_TEXTURE_2D;
 	GLuint m_TextureID;
 
+	float m_fWidth = 0;
+	float m_fHeight = 0;
 	UINT m_nWidth = 0;
 	UINT m_nHeight = 0;
 

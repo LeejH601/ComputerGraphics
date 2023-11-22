@@ -35,6 +35,8 @@ void CRenderer::Initialize(int windowSizeX, int windowSizeY)
 	LineShader = CompileShaders((char*)"./Shaders/Line_vs.glsl", (char*)"./Shaders/Line_ps.glsl");
 	BaseColorRenderShader = CompileShaders((char*)"./Shaders/ViewerBake_vs.glsl", (char*)"./Shaders/Color_ps.glsl");
 	PostProcessShader = CompileShaders((char*)"./Shaders/RenderNDCQuad_vs.glsl", (char*)"./Shaders/PostProcess_ps.glsl");
+	BloomDownSampleShader = CompileShaders((char*)"./Shaders/RenderNDCQuad_vs.glsl", (char*)"./Shaders/BloomDownSample_ps.glsl");
+	BloomUpSampleShader = CompileShaders((char*)"./Shaders/RenderNDCQuad_vs.glsl", (char*)"./Shaders/BloomUpSample_ps.glsl");
 
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 

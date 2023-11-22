@@ -30,6 +30,8 @@ public:
 	GLuint PointInstanceShader = -1;
 	GLuint BaseColorRenderShader = -1;
 	GLuint PostProcessShader = -1;
+	GLuint BloomDownSampleShader = -1;
+	GLuint BloomUpSampleShader = -1;
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);

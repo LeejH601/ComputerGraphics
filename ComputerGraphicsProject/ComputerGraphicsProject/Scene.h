@@ -5,6 +5,7 @@
 #include "Light.h"
 #include "Object.h"
 #include "DynamicObject.h"
+#include "PhysicallyBasedBloomEffecter.h"
 
 
 #define MAX_LIGHTS 8
@@ -56,6 +57,10 @@ protected:
 	MOUSE_STATE m_eMouseState = MOUSE_STATE::MOUSE_CILCK_NONE;
 	POINT m_ptOldMouseCursor{ 0,0 };
 	POINT m_ptCurrMouseCuror;
+
+	bool m_bEnablePhysicallyBasedBloom = false;
+	float m_fbloomFilterRadius = 0.005f;
+	CPhysicallyBasedBloomEffecter m_PBBloomEffecter;
 
 	UINT DwDirection = 0;
 	float cxDelta, cyDelta;

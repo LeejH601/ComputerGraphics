@@ -487,6 +487,9 @@ void CPBR_TestScene::Init()
 
 void CPBR_TestScene::BuildObjects()
 {
+	if (m_PBBloomEffecter.Init(g_WindowSizeX, g_WindowSizeY))
+		m_bEnablePhysicallyBasedBloom = true;
+
 	std::vector<RENDERTARGET_INFO> RBOInfos;
 
 	RBOInfos.resize(4);
@@ -642,9 +645,6 @@ void CPBR_TestScene::BuildObjects()
 
 void CPBR_TestScene::RenderScene()
 {
-
-
-
 	GLuint s_Program = g_Renderer->TestShader;
 	glUseProgram(s_Program);
 
@@ -729,6 +729,18 @@ void CPBR_TestScene::RenderScene()
 	m_pSkyBoxObject->BindShaderVariables(s_Program);
 	m_pSkyBoxObject->UpdateTransform(nullptr);
 	m_pSkyBoxObject->Render(s_Program);
+
+
+	if (m_bEnablePhysicallyBasedBloom) {
+		if (m_bEnableMultiRenderTarget) {
+			m_PBBloomEffecter.RenderBloomTexture(m_RBOs[0], m_fbloomFilterRadius);
+
+		}
+		else {
+
+		}
+	}
+
 
 	if (m_bEnableMultiRenderTarget) {
 		s_Program = g_Renderer->PostProcessShader;
