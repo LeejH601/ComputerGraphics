@@ -124,6 +124,7 @@ void CPhysicallyBasedBloomEffecter::RenderDownsamples(GLuint srcTexture)
     GLuint resoultionLoc = glGetUniformLocation(s_Program, "srcResolution");
     glUniform2fv(resoultionLoc, 1, glm::value_ptr(m_vec2SrcViewportSize));
 
+    glDisable(GL_BLEND);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, srcTexture);
 
@@ -134,11 +135,13 @@ void CPhysicallyBasedBloomEffecter::RenderDownsamples(GLuint srcTexture)
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
             GL_TEXTURE_2D, mip.m_TextureID, 0);
 
+        GLuint miplevelLoc = glGetUniformLocation(s_Program, "mipLevel");
+        glUniform1d(miplevelLoc, i);
+
         m_NdcMesh->BindShaderVariables(s_Program);
         m_NdcMesh->Render();
         glBindVertexArray(0);
 
-        resoultionLoc = glGetUniformLocation(s_Program, "srcResolution");
         glm::vec2 nextResoultion{ mip.m_nWidth, mip.m_nHeight };
         glUniform2fv(resoultionLoc, 1, glm::value_ptr(nextResoultion));
 
@@ -150,10 +153,12 @@ void CPhysicallyBasedBloomEffecter::RenderUpsamples(float filterRadius)
 {
     const std::vector<CTexture>& mipChain = m_BloomFBO.GetTextures();
 
-    GLuint s_Program = g_Renderer->BloomDownSampleShader;
+    GLuint s_Program = g_Renderer->BloomUpSampleShader;
     glUseProgram(s_Program);
     GLuint resoultionLoc = glGetUniformLocation(s_Program, "filterRadius");
     glUniform1f(resoultionLoc, filterRadius);
+    GLuint aspectLoc = glGetUniformLocation(s_Program, "aspect");
+    glUniform1f(aspectLoc, 1);
 
     // Enable additive blending
     glEnable(GL_BLEND);
@@ -168,7 +173,7 @@ void CPhysicallyBasedBloomEffecter::RenderUpsamples(float filterRadius)
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, mip.m_TextureID);
 
-        glViewport(0, 0, mip.m_nWidth, mip.m_nHeight);
+        glViewport(0, 0, nextMip.m_nWidth, nextMip.m_nHeight);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
             GL_TEXTURE_2D, nextMip.m_TextureID, 0);
 

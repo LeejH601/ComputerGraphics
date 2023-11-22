@@ -12,6 +12,6 @@ out vec2 texcoord;
 
 void main()
 {
-    gl_Position = vec4(v_Position, 1.0f);
+    gl_Position = vec4(v_Position.xy, 0.0f, 1.0f);
     texcoord = v_texcoord0;
 }

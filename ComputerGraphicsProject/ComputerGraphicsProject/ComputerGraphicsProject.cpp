@@ -45,7 +45,7 @@ void RenderScene(void)
 	//g_Renderer->DrawAlphaClear();
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-	glCullFace(GL_BACK);
+	//glCullFace(GL_BACK);
 
 	glPolygonMode(GL_FRONT, GL_FILL);
 

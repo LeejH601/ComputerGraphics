@@ -151,6 +151,7 @@
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Object.cpp" />
+    <ClCompile Include="PhysicallyBasedBloomEffecter.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Scene.cpp" />
@@ -185,6 +186,7 @@
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Object.h" />
+    <ClInclude Include="PhysicallyBasedBloomEffecter.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Scene.h" />
@@ -193,6 +195,9 @@
     <ClInclude Include="Timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\BloomDownSample_ps.glsl" />
+    <None Include="Shaders\BloomUpSample_ps.glsl" />
+    <None Include="Shaders\Bloom_ps.glsl" />
     <None Include="Shaders\Color_ps.glsl" />
     <None Include="Shaders\Cube_ps.glsl" />
     <None Include="Shaders\Cube_vs.glsl" />

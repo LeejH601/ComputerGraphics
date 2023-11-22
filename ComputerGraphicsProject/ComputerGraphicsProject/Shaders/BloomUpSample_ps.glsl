@@ -1,15 +1,18 @@
 #version 330 core
+
 out vec4 FragColor;
+
 in vec3 localPos;
 in vec2 texcoord;
 
 uniform sampler2D srcTexture;
 uniform float filterRadius;
+uniform float aspect;
 
 void main()
 {	
     float x = filterRadius;
-    float y = filterRadius;
+    float y = filterRadius * aspect;
 
     vec3 a = texture(srcTexture, vec2(texcoord.x - x, texcoord.y + y)).rgb;
     vec3 b = texture(srcTexture, vec2(texcoord.x,     texcoord.y + y)).rgb;

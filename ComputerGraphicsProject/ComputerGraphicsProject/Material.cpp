@@ -8,6 +8,7 @@ CMaterial::CMaterial()
 	MetallicColor = 1.0f;
 	RoughnessColor = 0.1f;
 	FresnelColor = 0.04f;
+	EmissiveColor = glm::vec3(0, 0, 0);
 	UVOffset = glm::vec4(0, 0, 1, 1);
 }
 
@@ -32,6 +33,9 @@ void CMaterial::BindShaderVariables(GLuint s_Program)
 
 	GLuint RoughnessLoc = glGetUniformLocation(s_Program, "gRoughnessColor");
 	glUniform1f(RoughnessLoc, RoughnessColor);
+
+	GLuint EmissiveLoc = glGetUniformLocation(s_Program, "gEimissiveColor");
+	glUniform3fv(EmissiveLoc, 1, glm::value_ptr(EmissiveColor));
 
 	GLuint FresnelLoc = glGetUniformLocation(s_Program, "gFresnel");
 	glUniform1f(FresnelLoc, FresnelColor);

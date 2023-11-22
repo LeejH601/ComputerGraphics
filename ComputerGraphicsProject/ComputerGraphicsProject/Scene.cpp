@@ -16,10 +16,12 @@ CScene::~CScene()
 
 void CScene::Init()
 {
+	m_fbloomFilterRadius = 0.005f;
+
 	m_pLights.reserve(MAX_LIGHTS);
 	m_pLights.emplace_back();
 	m_pSunLight = &m_pLights[0];
-	m_pSunLight->m_vec3LightColor *= 2.0f;
+	m_pSunLight->m_vec3LightColor *= 1.0f;
 
 	memcpy(UBOLightData.lights, m_pLights.data(), sizeof(CLight) * m_pLights.size());
 	UBOLightData.nLights = m_pLights.size();
@@ -156,12 +158,11 @@ void CScene::CreateMultiRenderTargetObject(int nWidth, int nHeight, std::vector<
 		glFramebufferTexture2D(GL_FRAMEBUFFER, m_RBOInfo[i].Attachment, GL_TEXTURE_2D, m_RBOs[i], 0);
 	}
 	
-	std::vector<GLuint> attachments;
-	attachments.resize(m_RBOInfo.size());
-	for (int i = 0; i < attachments.size(); ++i)
+	GLuint attachments[8];
+	for (int i = 0; i < m_RBOs.size(); ++i)
 		attachments[i] = m_RBOInfo[i].Attachment;
 
-	glDrawBuffers(attachments.size(), attachments.data());
+	glDrawBuffers(m_RBOs.size(), attachments);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -675,11 +676,14 @@ void CPBR_TestScene::RenderScene()
 
 	if (m_bEnableMultiRenderTarget) {
 		glBindFramebuffer(GL_FRAMEBUFFER, m_FBOMultiRenderTarget);
+
+		
 	}
 	else
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	
 	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -735,6 +739,23 @@ void CPBR_TestScene::RenderScene()
 		if (m_bEnableMultiRenderTarget) {
 			m_PBBloomEffecter.RenderBloomTexture(m_RBOs[0], m_fbloomFilterRadius);
 
+			s_Program = g_Renderer->BloomShader;
+			glUseProgram(s_Program);
+			glBindFramebuffer(GL_FRAMEBUFFER, m_FBOMultiRenderTarget);
+			samplerULoc = glGetUniformLocation(s_Program, "scene");
+			glUniform1i(samplerULoc, 0);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, m_RBOs[0]);
+			samplerULoc = glGetUniformLocation(s_Program, "bloomBlur");
+			glUniform1i(samplerULoc, 1);
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, m_PBBloomEffecter.BloomTexture());
+
+			GLuint exposureULoc = glGetUniformLocation(s_Program, "exposure");
+			glUniform1f(exposureULoc, m_fExposure);
+
+			m_NdcMesh->BindShaderVariables(s_Program);
+			m_NdcMesh->Render();
 		}
 		else {
 

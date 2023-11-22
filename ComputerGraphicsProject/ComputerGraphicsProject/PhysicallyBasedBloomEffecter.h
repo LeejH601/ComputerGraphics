@@ -29,7 +29,7 @@ private:
 	void RenderDownsamples(GLuint srcTexture);
 	void RenderUpsamples(float filterRadius);
 
-	bool m_bInit;
+	bool m_bInit = false;
 	CBloomFBO m_BloomFBO;
 	glm::ivec2 m_nvec2SrcViewportSize;
 	glm::vec2 m_vec2SrcViewportSize;

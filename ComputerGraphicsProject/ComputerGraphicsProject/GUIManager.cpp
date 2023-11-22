@@ -361,6 +361,7 @@ void CGUIManager::ShowSelectedObjectInfo(CObject* obj)
 			ImGui::ColorEdit3((std::string("NormalColor##") + nameTag).c_str(), (float*)&pMat->NormalColor);
 			ImGui::DragFloat((std::string("Metallic##") + nameTag).c_str(), (float*)&pMat->MetallicColor);
 			ImGui::DragFloat((std::string("Roughness##") + nameTag).c_str(), (float*)&pMat->RoughnessColor);
+			ImGui::ColorEdit3((std::string("Emissive##") + nameTag).c_str(), (float*)&pMat->EmissiveColor);
 
 			ImGui::InputFloat2((std::string("TexOffset##") + nameTag).c_str(), (float*)&pMat->UVOffset);
 			ImGui::InputFloat2((std::string("TexSacle##") + nameTag).c_str(), (float*)&pMat->UVOffset.z);

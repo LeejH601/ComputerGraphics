@@ -60,6 +60,7 @@ protected:
 
 	bool m_bEnablePhysicallyBasedBloom = false;
 	float m_fbloomFilterRadius = 0.005f;
+	float m_fExposure = 1.0f;
 	CPhysicallyBasedBloomEffecter m_PBBloomEffecter;
 
 	UINT DwDirection = 0;

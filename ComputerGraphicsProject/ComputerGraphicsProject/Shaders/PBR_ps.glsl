@@ -49,6 +49,7 @@ uniform float gRoughnessColor;
 uniform float gFresnel;
 uniform float gMetallicColor;
 uniform vec3 gSpecularColor;
+uniform vec3 gEimissiveColor;
 //uniform vec4 gUVOffset;
 
 uniform sampler2D u_BaseTexture;
@@ -175,6 +176,7 @@ void main()
 	float Fresnel = gFresnel;
 	float Roughness = gRoughnessColor;
 	float MetallicColor = gMetallicColor;
+	vec3 Emissive = gEimissiveColor;
 
 	MetallicColor = max(0.01f, MetallicColor);
 	
@@ -230,11 +232,12 @@ void main()
 		cColor.rgb *= g_lights[i].fIntensity;
 	}
 
+	cColor.rgb += Emissive * 10.f;
 
-	float S = 1.0;
-	cColor.rgb = vec3(S * aces_approx(cColor.xyz * 0.8));
+	//float S = 1.0;
+	//cColor.rgb = vec3(S * aces_approx(cColor.xyz * 0.8));
 	
-	cColor.rgb = pow(cColor.rgb, vec3(1.0 / gamma));
+	//cColor.rgb = pow(cColor.rgb, vec3(1.0 / gamma));
 	
 	FragColor = cColor;
 	gNormal = normalTBN;
