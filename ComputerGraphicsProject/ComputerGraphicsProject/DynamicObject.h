@@ -56,3 +56,17 @@ public:
 	void ScaleLinearVelocity(float scale) { m_PhysicsComponent.ScaleLinearVelocity(scale); };
 };
 
+class CAmazingMovementObject : public CDynamicObject
+{
+public:
+	float m_fCurrentTime;
+	float m_fDeltaOffset;
+	float m_fScaleValue;
+	float m_fTimeScale;
+	bool m_bScaleSimulate;
+public:
+	CAmazingMovementObject();
+	virtual ~CAmazingMovementObject();
+
+	virtual void Update(float fElapsedTime);
+};

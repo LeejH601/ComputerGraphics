@@ -669,7 +669,7 @@ void CExamScene_9::Update(float fElapsedTime)
 		if (rect.w > height)
 			return false;
 		return true;
-		};
+	};
 	static glm::vec4 rectColide{ -0.5, -1.0f, 0.5f, 1.0f };
 	for (int i = 0; i < m_pObjects.size(); ++i) {
 		CObject* obj = m_pObjects[i].get();
@@ -1426,7 +1426,7 @@ void CSPScene::RenderScene()
 			}
 		}
 	}
-	
+
 
 
 	//GLuint lineVBO;
@@ -2198,7 +2198,7 @@ CExamScene_25::CExamScene_25()
 
 CExamScene_25::~CExamScene_25()
 {
-	
+
 }
 
 void CExamScene_25::Init()
@@ -2261,7 +2261,7 @@ void CExamScene_25::KeyInput(unsigned char key, int x, int y)
 	case 'n':
 		if (m_pObjects[0]->GetName() != "Robot") {
 			m_pObjects[0] = pObjectCache[1];
-			
+
 		}
 		else {
 			m_pObjects[0] = pObjectCache[0];
@@ -2273,7 +2273,7 @@ void CExamScene_25::KeyInput(unsigned char key, int x, int y)
 		break;
 	case 'r':
 		rInput = true;
-	
+
 		break;
 	case 'e':
 		RInput = true;
@@ -2537,7 +2537,7 @@ void CRouteDisplayer::Render(GLuint s_Program)
 
 			glUniformMatrix4fv(worldLoc, 1, GL_FALSE, glm::value_ptr(m_mat4x4InstanceWorlds[i]));
 		}
-		};
+	};
 
 	GLuint instanceSizeLoc = glGetUniformLocation(s_Program, "gInstanceSize");
 	glUniform1i(instanceSizeLoc, m_mat4x4InstanceWorlds.size());
@@ -2559,7 +2559,7 @@ void CExamScene_26::Init()
 {
 	CPBR_TestScene::Init();
 
-	
+
 
 	m_pMainCamera->SetPosision(glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(4));
 	m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
@@ -2737,8 +2737,8 @@ void CExamScene_27::KeyInput(unsigned char key, int x, int y)
 		}
 		return;
 	case 'c':
-			m_pLights[0].m_vec3LightColor = glm::vec3(urd_color(dre), urd_color(dre), urd_color(dre)) * 2.0f;
-			m_pSunLightObject->GetMaterial(0)->BaseColor = m_pLights[0].m_vec3LightColor;
+		m_pLights[0].m_vec3LightColor = glm::vec3(urd_color(dre), urd_color(dre), urd_color(dre)) * 2.0f;
+		m_pSunLightObject->GetMaterial(0)->BaseColor = m_pLights[0].m_vec3LightColor;
 		return;
 	case 'y':
 		rInput = 1;
@@ -2776,4 +2776,265 @@ void CExamScene_27::Update(float fElapsedTime)
 	m_pSunLightObject->UpdateTransform(nullptr);
 	m_pSunLightObject->BindShaderVariables(s_Program);
 	m_pSunLightObject->Render(s_Program);
+}
+
+CAMScene::CAMScene()
+{
+	m_nSideCubes = 25;
+}
+
+CAMScene::~CAMScene()
+{
+}
+
+void CAMScene::Update(float fElapsedTime)
+{
+	CPBR_TestScene::Update(fElapsedTime);
+
+
+	for (int i = 0; i < m_nSideCubes * m_nSideCubes; ++i) {
+		m_pObjects[i]->Update(fElapsedTime);
+
+		glm::vec3 pos = m_pObjects[i]->GetPosition();
+		float fMinHeight = m_fCubeBaseSize * m_pObjects[i]->GetScale().y / 2.0f; /*(m_fMinHeight * (m_pObjects[i]->GetScale().y - 1.f));*/
+		if (pos.y < fMinHeight) {
+			pos.y = fMinHeight;
+			m_pObjects[i]->SetPosition(pos);
+		}
+	}
+
+	if (yInput) {
+		glm::vec4 pos = glm::vec4(m_pMainCamera->GetPosition(), 1.0f);
+		glm::mat4 rotate = glm::rotate(glm::identity<glm::mat4>(), glm::radians(45.f * fElapsedTime), glm::vec3(0, 1, 0));
+		pos = rotate * pos;
+		m_pMainCamera->SetPosision(pos);
+		m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	}
+	if (YInput) {
+		glm::vec4 pos = glm::vec4(m_pMainCamera->GetPosition(), 1.0f);
+		glm::mat4 rotate = glm::rotate(glm::identity<glm::mat4>(), glm::radians(-45.f * fElapsedTime), glm::vec3(0, 1, 0));
+		pos = rotate * pos;
+		m_pMainCamera->SetPosision(pos);
+		m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	}
+}
+
+void CAMScene::KeyInput(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case '1':
+		for (int i = 0; i < m_pObjects.size(); ++i) {
+			CAmazingMovementObject* obj = dynamic_cast<CAmazingMovementObject*>(m_pObjects[i].get());
+			if (obj) {
+				obj->m_fCurrentTime = 0.0f;
+				obj->m_fDeltaOffset = urd(dre);
+				obj->m_fScaleValue = urd_Scale(dre);
+				obj->m_fTimeScale = 1.0f;
+			}
+		}
+		break;
+	case '2':
+	{
+		float dT = 3.141592f / m_nSideCubes;
+		for (int i = 0; i < m_pObjects.size(); ++i) {
+			CAmazingMovementObject* obj = dynamic_cast<CAmazingMovementObject*>(m_pObjects[i].get());
+			if (obj) {
+				obj->m_fCurrentTime = 0.0f;
+				obj->m_fDeltaOffset = (i / m_nSideCubes) * dT;
+				obj->m_fScaleValue = 3.0f;
+				obj->m_fTimeScale = 1.0f;
+			}
+		}
+	}
+	break;
+	case '3':
+	{
+		int mid = m_nSideCubes / 2;
+		float dT = 3.141592f / mid;
+		for (int i = 0; i < m_pObjects.size(); ++i) {
+			CAmazingMovementObject* obj = dynamic_cast<CAmazingMovementObject*>(m_pObjects[i].get());
+			if (obj) {
+				int n = (i / m_nSideCubes);
+				int m = i % m_nSideCubes;
+				int level; 
+				level = std::max(abs(n - mid), abs(m - mid));
+				if (m_nSideCubes % 2 == 0) {
+					level = std::max(level, std::max(abs(n - mid + 1), abs(m - mid + 1)));
+				}
+				
+				obj->m_fCurrentTime = 0.0f;
+				obj->m_fDeltaOffset = -level * dT;
+				obj->m_fScaleValue = 3.0f;
+				obj->m_fTimeScale = 1.0f;
+			}
+		}
+	}
+	break;
+	case 't':
+		for (int i = 0; i < m_pLights.size(); ++i) {
+			if (m_pLights[i].m_fIntensity > 0.001f) {
+				m_pLights[i].m_fIntensity = 0.0f;
+			}
+			else { 
+				m_pLights[i].m_fIntensity = 1.0f;
+			}
+		}
+		break;
+	case 'c':
+		m_pLights[0].m_vec3LightColor = glm::vec3(urd(dre), urd(dre), urd(dre)) * 2.0f;
+		return;
+	case '+':
+		for (int i = 0; i < m_pObjects.size(); ++i) {
+			CAmazingMovementObject* obj = dynamic_cast<CAmazingMovementObject*>(m_pObjects[i].get());
+			if (obj) {
+				obj->m_fTimeScale = std::min(5.0f, obj->m_fTimeScale + 0.2f);
+			}
+		}
+		break;
+	case '-':
+		for (int i = 0; i < m_pObjects.size(); ++i) {
+			CAmazingMovementObject* obj = dynamic_cast<CAmazingMovementObject*>(m_pObjects[i].get());
+			if (obj) {
+				obj->m_fTimeScale = std::max(0.2f, obj->m_fTimeScale - 0.2f);
+			}
+		}
+		break;
+	case 'y':
+		yInput = true;
+		break;
+	case 'Y':
+		YInput = true;
+		break;
+	case 'r':
+	{
+		int x;
+		while (true)
+		{
+			std::cin >> x;
+			if (5 <= x && x <= 25)
+				break;
+		}
+		m_nSideCubes = x;
+		CreateCubes();
+	}
+		break;
+	case 'q':
+		glutLeaveMainLoop();
+		break;
+	default:
+		break;
+	}
+	//CPBR_TestScene::KeyInput(key, x, y);
+}
+
+void CAMScene::CreateCubes()
+{
+	m_pObjects.clear();
+
+	
+	std::shared_ptr<CObject> planeObj = std::make_shared<CObject>();
+	std::shared_ptr<CMesh> planemesh = CResourceManager::GetInst()->GetMeshFromName("Plane");
+	std::shared_ptr<CMaterial> planematerial = CResourceManager::GetInst()->GetMaterialFromIndex(0);
+	planeObj->SetMesh(planemesh);
+	planeObj->SetMaterial(planematerial);
+
+	m_fEachCubeSide = m_fSide / (float)m_nSideCubes;
+	m_fEachCubeSizeScale = m_fEachCubeSide / m_fCubeBaseSize;
+	m_fMinHeight = 0.5f;
+
+	for (int i = 0; i < m_nSideCubes; ++i) {
+		for (int j = 0; j < m_nSideCubes; ++j) {
+			std::shared_ptr<CAmazingMovementObject> obj = std::make_shared<CAmazingMovementObject>();
+			std::shared_ptr<CMesh> mesh = CResourceManager::GetInst()->GetMeshFromName("Cube");
+			std::shared_ptr<CMaterial> material = CResourceManager::GetInst()->GetMaterialFromIndex(1);
+			obj->SetMesh(mesh);
+			obj->SetMaterial(material);
+			obj->SetScale(glm::vec3(m_fEachCubeSizeScale, 1.0f, m_fEachCubeSizeScale));
+			glm::vec3 position = glm::vec3(m_fEachCubeSide * i, 10.f, m_fEachCubeSide * j);
+			position -= glm::vec3(m_fSide / 2 - (m_fEachCubeSide / 2), 0.f, m_fSide / 2.0f - (m_fEachCubeSide / 2));
+			obj->SetPosition(position);
+			obj->m_fDeltaOffset = urd(dre);
+			obj->m_fScaleValue = urd_Scale(dre);
+			obj->m_fTimeScale = 1.0f;
+			m_pObjects.push_back(obj);
+		}
+	}
+
+	m_pObjects.push_back(planeObj);
+}
+
+void CAMScene::KeyUpInput(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 'y':
+		yInput = false;
+		break;
+	case 'Y':
+		YInput = false;
+		break;
+	default:
+		break;
+	}
+}
+
+void CAMScene::BuildObjects()
+{
+	if (m_PBBloomEffecter.Init(g_WindowSizeX, g_WindowSizeY))
+		m_bEnablePhysicallyBasedBloom = true;
+
+	std::vector<RENDERTARGET_INFO> RBOInfos;
+
+	RBOInfos.resize(4);
+	RBOInfos[0].InternalFormat = GL_RGBA16F;
+	RBOInfos[0].Format = GL_RGBA;
+	RBOInfos[0].type = GL_FLOAT;
+	RBOInfos[0].Attachment = GL_COLOR_ATTACHMENT0;
+
+	RBOInfos[1].InternalFormat = GL_RGBA16F;
+	RBOInfos[1].Format = GL_RGBA;
+	RBOInfos[1].type = GL_FLOAT;
+	RBOInfos[1].Attachment = GL_COLOR_ATTACHMENT1;
+
+	RBOInfos[2].InternalFormat = GL_RGBA16F;
+	RBOInfos[2].Format = GL_RGBA;
+	RBOInfos[2].type = GL_FLOAT;
+	RBOInfos[2].Attachment = GL_COLOR_ATTACHMENT2;
+
+	RBOInfos[3].InternalFormat = GL_DEPTH_COMPONENT;
+	RBOInfos[3].Format = GL_DEPTH_COMPONENT;
+	RBOInfos[3].type = GL_FLOAT;
+	RBOInfos[3].Attachment = GL_DEPTH_ATTACHMENT;
+
+	CreateMultiRenderTargetObject(g_WindowSizeX, g_WindowSizeY, RBOInfos);
+
+	m_NdcMesh = CMesh::CreateNDCMesh();
+	m_NdcMesh->CreateShaderVariables();
+
+	m_bRegenarateView = false;
+	m_pMainCamera->SetPosision(glm::vec3(6, 8, -6));
+	m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+
+	std::shared_ptr<CObject> planeObj = std::make_shared<CObject>();
+	planeObj->LoadGeometryAndAnimationFromFile("./Objects/Plane.bin");
+	planeObj->GetMaterial(0)->RoughnessColor = 1.0f;
+	
+	std::shared_ptr<CObject> cubeObj = std::make_shared<CObject>();
+	cubeObj->LoadGeometryAndAnimationFromFile("./Objects/obstacle.bin");
+
+	int x;
+	while (true)
+	{
+		std::cin >> x;
+		if (5 <= x && x <= 25)
+			break;
+	}
+	m_nSideCubes = x;
+
+
+
+
+	CreateCubes();
+
 }

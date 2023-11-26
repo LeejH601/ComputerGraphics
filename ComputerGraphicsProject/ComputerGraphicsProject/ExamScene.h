@@ -277,3 +277,32 @@ public:
 	virtual void KeyInput(unsigned char key, int x, int y);
 	virtual void Update(float fElapsedTime);
 };
+
+class CAMScene : public CPBR_TestScene
+{
+	float m_fSide = 10.0f;
+	float m_fCubeBaseSize = 1.0f;
+
+	int m_nSideCubes = 10;
+	float m_fEachCubeSide = 1.0f;
+	float m_fEachCubeSizeScale = 1.0f;
+
+	float m_fMinHeight = 0.0f;
+
+	int m_nAnimationType = 0;
+
+	bool yInput = false;
+	bool YInput = false;
+
+	std::uniform_real_distribution<float> urd{ 0,1 };
+	std::uniform_real_distribution<float> urd_Scale{ 0,5 };
+public:
+	CAMScene();
+	virtual ~CAMScene();
+
+	void CreateCubes();
+	virtual void BuildObjects();
+	virtual void Update(float fElapsedTime);
+	virtual void KeyInput(unsigned char key, int x, int y);
+	virtual void KeyUpInput(unsigned char key, int x, int y);
+};

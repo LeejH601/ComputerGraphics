@@ -7,7 +7,7 @@ in vec2 texcoord;
 uniform sampler2D scene;
 uniform sampler2D bloomBlur;
 uniform float exposure;
-uniform float bloomStrength = 0.08f;
+uniform float bloomStrength = 0.04f;
 
 void main()
 {	

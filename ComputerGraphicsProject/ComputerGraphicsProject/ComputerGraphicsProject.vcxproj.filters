@@ -105,6 +105,9 @@
     <ClCompile Include="Imgui\ImGuiFileDialog.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="PhysicallyBasedBloomEffecter.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderer.h">
@@ -194,6 +197,9 @@
     <ClInclude Include="Imgui\ImGuiFileDialogConfig.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="PhysicallyBasedBloomEffecter.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Cube_ps.glsl">
@@ -247,5 +253,9 @@
     <None Include="Shaders\ViewerBake_vs.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\BloomDownSample_ps.glsl" />
+    <None Include="Shaders\BloomUpSample_ps.glsl" />
+    <None Include="Shaders\Bloom_ps.glsl" />
+    <None Include="Shaders\PostProcess_ps.glsl" />
   </ItemGroup>
 </Project>

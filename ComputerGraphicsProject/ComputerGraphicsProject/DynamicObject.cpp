@@ -1,7 +1,7 @@
 #include "DynamicObject.h"
 
 glm::vec3 CPhysicsComponent::vec3GravityAcceleration = glm::vec3(0, -9.8f / 2, 0);
-  
+
 CDynamicObject::CDynamicObject()
 {
 	CObject::CObject();
@@ -80,7 +80,7 @@ void CPhysicsComponent::simulate(CObject* target, float fElapsedTime)
 	if (m_fAngularVelocity > m_fMaxTorque) {
 		m_fAngularVelocity = m_fMaxTorque;
 	}
-	
+
 	glm::quat rotate = target->GetRotation();
 	rotate = glm::rotate(rotate, glm::radians(m_fAngularVelocity * fElapsedTime), m_vec3AngularAxis);
 	target->SetRotate(rotate);
@@ -109,4 +109,32 @@ float CPhysicsComponent::GetTorqueAcceleration()
 void CPhysicsComponent::SetRotateAxis(glm::vec3 Axis)
 {
 	m_vec3AngularAxis = Axis;
+}
+
+CAmazingMovementObject::CAmazingMovementObject()
+{
+	m_bScaleSimulate = true;
+	m_fCurrentTime = 0.0f;
+	m_fDeltaOffset = 0.0f;
+	m_fScaleValue = 1.0f;
+	m_fTimeScale = 1.0f;
+}
+
+CAmazingMovementObject::~CAmazingMovementObject()
+{
+}
+
+void CAmazingMovementObject::Update(float fElapsedTime)
+{
+	CDynamicObject::Update(fElapsedTime);
+
+	m_fCurrentTime += fElapsedTime;
+
+	if (m_bScaleSimulate) {
+		float scaleY = m_vec3Scale.y;
+		scaleY = std::sin(m_fCurrentTime * m_fTimeScale + m_fDeltaOffset);
+		scaleY = scaleY + 1.0f;
+		scaleY *= m_fScaleValue;
+		m_vec3Scale.y = scaleY;
+	}
 }
