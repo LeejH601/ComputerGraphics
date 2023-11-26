@@ -8,6 +8,7 @@
 #define MATERIAL_METALLIC_MAP		0x08
 #define MATERIAL_EMISSION_MAP		0x10
 #define MATERIAL_SPECULAR_MAP		0x20
+#define MATERIAL_AO_MAP		0x40
 
 
 class CMaterial
@@ -39,6 +40,8 @@ public:
 	std::shared_ptr<CTexture> m_pNormalTexture;
 	std::shared_ptr<CTexture> m_pMetallicTexture;
 	std::shared_ptr<CTexture> m_pRoughnessTexture;
+	std::shared_ptr<CTexture> m_pAOTexture;
+	std::shared_ptr<CTexture> m_pEmissionTexture;
 
 	void SetUVOffset(float t1, float t2, float s1, float s2);
 	void SetUVOffset(glm::vec4 offset);
@@ -46,6 +49,8 @@ public:
 	void SetNormalTexture(std::shared_ptr<CTexture>& pTexture);
 	void SetMetallicTexture(std::shared_ptr<CTexture>& pTexture);
 	void SetRoughnessTexture(std::shared_ptr<CTexture>& pTexture);
+	void SetAOTexture(std::shared_ptr<CTexture>& pTexture);
+	void SetEmissionTexture(std::shared_ptr<CTexture>& pTexture);
 	void SetName(std::string str) { m_strMaterialName = str; };
 	std::string GetName() { return m_strMaterialName; };
 };

@@ -25,6 +25,14 @@ void CObject::SetScale(glm::vec3 scale)
 	ReganerateTransform();
 }
 
+void CObject::FindAndSetSkinnedMesh(CSkinnedMesh** ppSkinnedMeshes, int* pnSkinnedMesh)
+{
+	if (m_pMesh && (m_pMesh->m_MeshType == 1)) ppSkinnedMeshes[(*pnSkinnedMesh)++] = (CSkinnedMesh*)(m_pMesh.get());
+
+	if (m_pSibling) m_pSibling->FindAndSetSkinnedMesh(ppSkinnedMeshes, pnSkinnedMesh);
+	if (m_pChild) m_pChild->FindAndSetSkinnedMesh(ppSkinnedMeshes, pnSkinnedMesh);
+}
+
 void CObject::RotationQuat(float radian, glm::vec3 axis)
 {
 	m_vec4Rotation = glm::rotate(m_vec4Rotation, radian, axis);
@@ -65,6 +73,8 @@ void CObject::LoadFrameHierarchyFromFile(CObject* pParent, FILE* pInFile, int* p
 
 	int nFrame = 0, nTextures = 0;
 
+	std::shared_ptr<CMesh> pMesh = nullptr;
+
 	for (; ; )
 	{
 		::ReadStringFromFile(pInFile, pstrToken);
@@ -94,16 +104,20 @@ void CObject::LoadFrameHierarchyFromFile(CObject* pParent, FILE* pInFile, int* p
 		}
 		else if (!strcmp(pstrToken, "<Mesh>:"))
 		{
-			std::shared_ptr<CMesh> pMesh = CMesh::LoadMeshFromFile(pInFile);
+			pMesh = CMesh::LoadMeshFromFile(pInFile);
 
 			SetMesh(pMesh);
 		}
 		else if (!strcmp(pstrToken, "<SkinningInfo>:"))
 		{
-			//if (pnSkinnedMeshes) (*pnSkinnedMeshes)++;
+			if (pnSkinnedMeshes) (*pnSkinnedMeshes)++;
 
-			//std::shared_ptr<CSkinnedMesh> pSkinnedMesh = std::make_shared<CSkinnedMesh>(pd3dDevice, pd3dCommandList);
-			//pSkinnedMesh->LoadSkinInfoFromFile(pd3dDevice, pd3dCommandList, pInFile);
+			std::shared_ptr<CMesh> temp = pMesh;
+			pMesh = std::make_shared<CSkinnedMesh>();
+			dynamic_cast<CSkinnedMesh*>(pMesh.get())->CopyData(*temp.get());
+			dynamic_cast<CSkinnedMesh*>(pMesh.get())->LoadSkinInfoFromFile(pInFile);
+
+			SetMesh(pMesh);
 
 			//::ReadStringFromFile(pInFile, pstrToken); //<Mesh>:
 			//if (!strcmp(pstrToken, "<Mesh>:")) pSkinnedMesh->LoadMeshFromFile(pd3dDevice, pd3dCommandList, pInFile);
@@ -194,7 +208,10 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 			else {
 				pTexture = loadedTexture;
 			}
+			return true;
 		}
+		else
+			return false;
 		};
 
 	for (; ; )
@@ -270,8 +287,8 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 			nReads = (UINT)::fread(pstrTextureName, sizeof(char), nStrLength, pInFile);
 			pstrTextureName[nStrLength] = '\0';
 
-			LoadTexture();
-			pMaterial->SetBaseTexture(pTexture);
+			if(LoadTexture())
+				pMaterial->SetBaseTexture(pTexture);
 
 			if (pMaterial->GetName() == "") {
 				pMaterial->SetName(pTexture->GetName());
@@ -294,8 +311,18 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 			nReads = (UINT)::fread(pstrTextureName, sizeof(char), nStrLength, pInFile);
 			pstrTextureName[nStrLength] = '\0';
 
-			LoadTexture();
-			pMaterial->SetNormalTexture(pTexture);
+			if (LoadTexture())
+				pMaterial->SetNormalTexture(pTexture);
+		}
+		else if (!strcmp(pstrToken, "<AOMap>:"))
+		{
+			BYTE nStrLength = 64;
+			UINT nReads = (UINT)::fread(&nStrLength, sizeof(BYTE), 1, pInFile);
+			nReads = (UINT)::fread(pstrTextureName, sizeof(char), nStrLength, pInFile);
+			pstrTextureName[nStrLength] = '\0';
+			if (LoadTexture())
+				pMaterial->SetAOTexture(pTexture);
+			
 		}
 		else if (!strcmp(pstrToken, "<MetallicMap>:"))
 		{
@@ -304,8 +331,8 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 			nReads = (UINT)::fread(pstrTextureName, sizeof(char), nStrLength, pInFile);
 			pstrTextureName[nStrLength] = '\0';
 
-			LoadTexture();
-			pMaterial->SetMetallicTexture(pTexture);
+			if (LoadTexture())
+				pMaterial->SetMetallicTexture(pTexture);
 		}
 		else if (!strcmp(pstrToken, "<EmissionMap>:"))
 		{
@@ -314,7 +341,8 @@ void CObject::LoadMaterialsFromFile(CObject* pParent, FILE* pInFile)
 			nReads = (UINT)::fread(pstrTextureName, sizeof(char), nStrLength, pInFile);
 			pstrTextureName[nStrLength] = '\0';
 
-			LoadTexture();
+			if (LoadTexture())
+				pMaterial->SetEmissionTexture(pTexture);
 		}
 		/*else if (!strcmp(pstrToken, "<DetailAlbedoMap>:"))
 		{
@@ -508,6 +536,15 @@ void CObject::SetMaterial(int nMaterial, std::shared_ptr<CMaterial> pMaterial)
 
 CLoadedModelInfo::~CLoadedModelInfo()
 {
+}
+
+void CLoadedModelInfo::PrepareSkinning()
+{
+	int nSkinnedMesh = 0;
+	m_ppSkinnedMeshes.resize(m_nSkinnedMeshes);
+	m_pModelRootObject->FindAndSetSkinnedMesh(m_ppSkinnedMeshes.data(), &nSkinnedMesh);
+
+	for (int i = 0; i < m_nSkinnedMeshes; i++) m_ppSkinnedMeshes[i]->PrepareSkinning(m_pModelRootObject.get());
 }
 
 IMoveContext::IMoveContext()

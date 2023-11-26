@@ -69,9 +69,17 @@ void CMaterial::BindShaderVariables(GLuint s_Program)
 		m_pMetallicTexture->BindShaderVariables(s_Program, GL_TEXTURE3);
 	}
 	if (TextureMask & MATERIAL_EMISSION_MAP) {
+		GLuint samplerULoc = glGetUniformLocation(s_Program, "u_EmissionTexture");
+		glUniform1i(samplerULoc, 4);
 
+		m_pEmissionTexture->BindShaderVariables(s_Program, GL_TEXTURE4);
 	}
+	if (TextureMask & MATERIAL_AO_MAP) {
+		GLuint samplerULoc = glGetUniformLocation(s_Program, "u_AOTexture");
+		glUniform1i(samplerULoc, 9);
 
+		m_pAOTexture->BindShaderVariables(s_Program, GL_TEXTURE9);
+	}
 }
 
 void CMaterial::SetUVOffset(float t1, float t2, float s1, float s2)
@@ -122,5 +130,25 @@ void CMaterial::SetRoughnessTexture(std::shared_ptr<CTexture>& pTexture)
 		TextureMask |= MATERIAL_ROUGHNESS_MAP;
 	else
 		TextureMask -= MATERIAL_ROUGHNESS_MAP;
+	TextureMask = std::max((UINT)0, TextureMask);
+}
+
+void CMaterial::SetAOTexture(std::shared_ptr<CTexture>& pTexture)
+{
+	m_pAOTexture = pTexture;
+	if (pTexture != nullptr)
+		TextureMask |= MATERIAL_AO_MAP;
+	else
+		TextureMask -= MATERIAL_AO_MAP;
+	TextureMask = std::max((UINT)0, TextureMask);
+}
+
+void CMaterial::SetEmissionTexture(std::shared_ptr<CTexture>& pTexture)
+{
+	m_pEmissionTexture = pTexture;
+	if (pTexture != nullptr)
+		TextureMask |= MATERIAL_EMISSION_MAP;
+	else
+		TextureMask -= MATERIAL_EMISSION_MAP;
 	TextureMask = std::max((UINT)0, TextureMask);
 }

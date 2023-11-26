@@ -9,6 +9,9 @@
 
 
 class CMesh;
+class CSkinnedMesh;
+class CAnimationSets;
+class CAnimationController;
 class CObject
 {
 public:
@@ -32,6 +35,8 @@ protected:
 	std::shared_ptr<CObject> m_pSibling = nullptr;
 
 	DirectX::BoundingOrientedBox m_OBB;
+
+	std::unique_ptr<CAnimationController> m_pSkinnedAnimationController;
 
 public:
 	CObject();
@@ -73,6 +78,8 @@ public:
 	void LoadMaterialsFromFile(CObject* pParent, FILE* pInFile);
 	void LoadGeometryAndAnimationFromFile(const char* pstrFileName);
 
+	void FindAndSetSkinnedMesh(CSkinnedMesh** ppSkinnedMeshes, int* pnSkinnedMesh);
+
 	std::shared_ptr<CMaterial> GetMaterial(int index) {
 		if (index < m_nMaterials)
 			return m_ppMaterials[index];
@@ -84,6 +91,8 @@ public:
 
 	CObject* GetChild() { return m_pChild.get(); };
 	CObject* GetSibling() { return m_pSibling.get(); };
+
+
 };
 
 class IMoveContext
@@ -113,11 +122,11 @@ public:
 	std::string pFilePath;
 	std::shared_ptr<CObject> m_pModelRootObject = NULL;
 
-	//int m_nSkinnedMeshes = 0;
-	//std::vector<CSkinnedMesh*> m_ppSkinnedMeshes; //[SkinnedMeshes], Skinned Mesh Cache
+	int m_nSkinnedMeshes = 0;
+	std::vector<CSkinnedMesh*> m_ppSkinnedMeshes; //[SkinnedMeshes], Skinned Mesh Cache
 
-	//std::shared_ptr<CAnimationSets> m_pAnimationSets = NULL;
+	std::shared_ptr<CAnimationSets> m_pAnimationSets = NULL;
 public:
-	//void PrepareSkinning();
+	void PrepareSkinning();
 
 };

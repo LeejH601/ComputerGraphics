@@ -634,11 +634,16 @@ void CPBR_TestScene::BuildObjects()
 		basePos.x += 2.0f;
 	}
 
-	m_pObjects.push_back(planeObj);
+	//m_pObjects.push_back(planeObj);
 
 	std::shared_ptr<CObject> obj = std::make_shared<CObject>();
 	obj->LoadGeometryAndAnimationFromFile("./Objects/Robot.bin");
 	obj->SetPosition(glm::vec3(0, 0, 3));
+	//m_pObjects.emplace_back(obj);
+
+	obj = std::make_shared<CObject>();
+	obj->LoadGeometryAndAnimationFromFile("./Objects/minotaur1.bin");
+	obj->SetPosition(glm::vec3(0, 0, -3));
 	m_pObjects.emplace_back(obj);
 
 	CGUIManager::GetInst()->SetSelectedObject(m_pObjects[0].get());
@@ -927,7 +932,7 @@ void CPBR_TestScene::Update(float fElapsedTime)
 	}
 
 	if (!glm::all(glm::isnan(cameraVelocity)))
-		cameraPosition += cameraVelocity * g_Timer->GetFrameTimeElapsed();
+		cameraPosition += cameraVelocity * g_Timer->GetFrameTimeElapsed() * 10.f;
 	m_pMainCamera->SetPosision(cameraPosition);
 
 	if (m_eMouseState == MOUSE_STATE::MOUSE_CILCK_RIGHT) {

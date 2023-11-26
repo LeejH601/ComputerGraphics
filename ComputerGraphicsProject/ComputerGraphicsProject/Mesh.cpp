@@ -659,7 +659,7 @@ std::shared_ptr<CMesh> CMesh::LoadMeshFromFile(FILE* pInFile)
 
 						if (!strcmp(pstrToken, "<SubMesh>:"))
 						{
-							
+
 							nReads = (UINT)::fread(&nIndex, sizeof(int), 1, pInFile); //i
 							nReads = (UINT)::fread(&(pnSubSetIndices[i]), sizeof(int), 1, pInFile);
 							if (pnSubSetIndices[i] > 0)
@@ -700,6 +700,8 @@ void CMesh::SetSubmesh(std::vector<UINT>& subsetIndices)
 
 void CMesh::CreateShaderVariables()
 {
+	if (m_bInit)
+		return;
 	//glGenVertexArrays(1, &m_VAO);
 	glGenBuffers(1, &m_VBO);
 
@@ -716,10 +718,13 @@ void CMesh::CreateShaderVariables()
 		long long test = m_pnSubSetIndices[i] * sizeof(UINT);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_pnSubSetIndices[i] * sizeof(UINT), m_ppnSubSetIndices[i].data(), GL_STATIC_DRAW);
 	}
+
+	m_bInit = true;
 }
 
 void CMesh::BindShaderVariables(GLuint s_Program)
 {
+	
 	GLuint posLoc = glGetAttribLocation(s_Program, "v_Position");
 	glEnableVertexAttribArray(posLoc);
 	GLuint normalLoc = glGetAttribLocation(s_Program, "v_Normal");
@@ -741,6 +746,9 @@ void CMesh::BindShaderVariables(GLuint s_Program)
 		(GLvoid*)(sizeof(float) * 9));
 	glVertexAttribPointer(tex0Loc, 2, GL_FLOAT, GL_FALSE, sizeof(CMesh::Vertex),
 		(GLvoid*)(sizeof(float) * 12));
+
+	GLuint meshTypeLoc = glGetUniformLocation(s_Program, "gMeshType");
+	glUniform1i(meshTypeLoc, m_MeshType);
 }
 
 void CMesh::Render()
@@ -769,4 +777,176 @@ void CMesh::RenderInstanced(int nInstance)
 	else {
 		glDrawArraysInstanced(m_PrimitiveTopology, 0, m_nVertices, nInstance);
 	}
+}
+
+CSkinnedMesh::CSkinnedMesh() {
+	m_MeshType = 1;
+}
+
+void CSkinnedMesh::CopyData(const CMesh& mesh)
+{
+	this->m_strMeshName = mesh.m_strMeshName; ;
+
+	this->m_nVertices = mesh.m_nVertices;
+	this->m_pVertices = mesh.m_pVertices;
+
+	this->m_nIndices = mesh.m_nIndices;
+	this->m_pnIndices = mesh.m_pnIndices;
+
+	this->m_pnSubSetIndices = mesh.m_pnSubSetIndices;
+	this->m_pnSubSetStartIndices = mesh.m_pnSubSetStartIndices;
+	this->m_ppnSubSetIndices = mesh.m_ppnSubSetIndices;
+
+	this->m_VAO = mesh.m_VAO;
+	this->m_VBO = mesh.m_VBO;
+	this->m_IBOs = mesh.m_IBOs;
+
+	this->m_vec3AABBCenter = mesh.m_vec3AABBCenter;
+	this->m_vec3AABBExtents = mesh.m_vec3AABBExtents;
+
+	this->m_PrimitiveTopology = mesh.m_PrimitiveTopology;
+
+	this->m_nSlot = mesh.m_nSlot;
+	this->m_nSubMeshes = mesh.m_nSubMeshes;
+	this->m_nStride = mesh.m_nStride;
+	this->m_nOffset = mesh.m_nOffset;
+	this->m_nStartIndex = mesh.m_nStartIndex;
+	this->m_nBaseVertex = mesh.m_nBaseVertex;
+}
+
+void CSkinnedMesh::LoadSkinInfoFromFile(FILE* pInFile)
+{
+	char pstrToken[64] = { '\0' };
+	UINT nReads = 0;
+	char pstrMeshName[256];
+	::ReadStringFromFile(pInFile, pstrMeshName);
+
+	bool isLoadMeshed = false;
+
+	for (; ; )
+	{
+		::ReadStringFromFile(pInFile, pstrToken);
+		if (!strcmp(pstrToken, "<BonesPerVertex>:"))
+		{
+			m_nBonesPerVertex = ::ReadIntegerFromFile(pInFile);
+		}
+		else if (!strcmp(pstrToken, "<Bounds>:"))
+		{
+			glm::vec3 m_vec3AABBCenter;
+			glm::vec3 m_vec3AABBExtents;
+			nReads = (UINT)::fread(&m_vec3AABBCenter, sizeof(glm::vec3), 1, pInFile);
+			nReads = (UINT)::fread(&m_vec3AABBExtents, sizeof(glm::vec3), 1, pInFile);
+
+			if (isLoadMeshed == false) {
+				m_vec3AABBCenter = m_vec3AABBCenter;
+				m_vec3AABBExtents = m_vec3AABBExtents;
+			}
+		}
+		else if (!strcmp(pstrToken, "<BoneNames>:"))
+		{
+			m_nSkinningBones = ::ReadIntegerFromFile(pInFile);
+			if (m_nSkinningBones > 0)
+			{
+				m_ppstrSkinningBoneNames.resize(m_nSkinningBones);
+				//m_ppSkinningBoneFrameCaches.resize(m_nSkinningBones);
+				for (int i = 0; i < m_nSkinningBones; i++)
+				{
+					::ReadStringFromFile(pInFile, const_cast<char*>(m_ppstrSkinningBoneNames[i].data()));
+					//m_ppSkinningBoneFrameCaches[i] = NULL;
+				}
+			}
+		}
+		else if (!strcmp(pstrToken, "<BoneOffsets>:"))
+		{
+			m_nSkinningBones = ::ReadIntegerFromFile(pInFile);
+			if (m_nSkinningBones > 0)
+			{
+				m_pxmf4x4BindPoseBoneOffsets.resize(m_nSkinningBones);
+				nReads = (UINT)::fread(m_pxmf4x4BindPoseBoneOffsets.data(), sizeof(glm::mat4x4), m_nSkinningBones, pInFile);
+
+			}
+		}
+		else if (!strcmp(pstrToken, "<BoneIndices>:"))
+		{
+			//m_nType |= VERTEXT_BONE_INDEX_WEIGHT;
+
+			m_nVertices = ::ReadIntegerFromFile(pInFile);
+			if (m_nVertices > 0)
+			{
+				std::vector<glm::ivec4> pivec4BoneIndices;
+				pivec4BoneIndices.resize(m_nVertices);
+
+				nReads = (UINT)::fread(pivec4BoneIndices.data(), sizeof(glm::ivec4), m_nVertices, pInFile);
+				for (int i = 0; i < m_nVertices; ++i) {
+					m_pVertices[i].m_pxmn4BoneIndices = pivec4BoneIndices[i];
+				}
+			}
+		}
+		else if (!strcmp(pstrToken, "<BoneWeights>:"))
+		{
+			//m_nType |= VERTEXT_BONE_INDEX_WEIGHT;
+
+			m_nVertices = ::ReadIntegerFromFile(pInFile);
+			if (m_nVertices > 0)
+			{
+				std::vector<glm::vec4> pvec4BoneWeights;
+				pvec4BoneWeights.resize(m_nVertices);
+
+				nReads = (UINT)::fread(pvec4BoneWeights.data(), sizeof(glm::vec4), m_nVertices, pInFile);
+				for (int i = 0; i < m_nVertices; ++i) {
+					m_pVertices[i].m_pxmf4BoneWeights = pvec4BoneWeights[i];
+				}
+			}
+		}
+		else if (!strcmp(pstrToken, "</SkinningInfo>"))
+		{
+			break;
+		}
+	}
+	CreateShaderVariables();
+}
+
+void CSkinnedMesh::BindShaderVariables(GLuint s_Program)
+{
+	CMesh::BindShaderVariables(s_Program);
+
+	GLuint indiceLoc = glGetAttribLocation(s_Program, "v_BoneIndices");
+	glEnableVertexAttribArray(indiceLoc);
+	GLuint weightLoc = glGetAttribLocation(s_Program, "v_BoneWeights");
+	glEnableVertexAttribArray(weightLoc);
+
+	glVertexAttribPointer(indiceLoc, 4, GL_FLOAT, GL_FALSE, sizeof(CMesh::Vertex),
+		(GLvoid*)(sizeof(float) * 14));
+	glVertexAttribPointer(weightLoc, 4, GL_FLOAT, GL_FALSE, sizeof(CMesh::Vertex),
+		(GLvoid*)(sizeof(float) * 18));
+
+
+	glBindBuffer(GL_UNIFORM_BUFFER, m_UBOBindPoseOffset);
+	GLuint offset = 0u;
+	//glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(UBOLightData), &UBOLightData);
+	glBindBuffer(GL_UNIFORM_BUFFER, 1);
+}
+
+void CSkinnedMesh::CreateShaderVariables()
+{
+	CMesh::CreateShaderVariables();
+
+	glGetError();
+	int size = m_pxmf4x4BindPoseBoneOffsets.size() * sizeof(glm::mat4x4);
+	glGenBuffers(1, &m_UBOBindPoseOffset);
+	glBindBuffer(GL_UNIFORM_BUFFER, m_UBOBindPoseOffset);
+	glBufferData(GL_UNIFORM_BUFFER, size, NULL, GL_STATIC_DRAW);
+	if (glGetError())
+		std::cout << "error BufferData" << std::endl;
+
+	glBindBufferBase(GL_UNIFORM_BUFFER, 1, m_UBOBindPoseOffset);
+	if (glGetError())
+		std::cout << "error BufferData" << std::endl;
+
+	glBindBuffer(GL_UNIFORM_BUFFER, m_UBOBindPoseOffset);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4x4) * m_pxmf4x4BindPoseBoneOffsets.size(), m_pxmf4x4BindPoseBoneOffsets.data());
+	if (glGetError())
+		std::cout << "error BufferData" << std::endl;
+
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }

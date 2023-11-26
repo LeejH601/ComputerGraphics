@@ -42,7 +42,7 @@
 //};
 
 
-
+#define MAX_BONES 4
 class CMesh
 {
 public:
@@ -53,6 +53,8 @@ public:
 		glm::vec3 tangent;
 		glm::vec3 bitangent;
 		glm::vec2 texcoord0;
+		glm::ivec4 m_pxmn4BoneIndices;
+		glm::vec4 m_pxmf4BoneWeights;
 		glm::vec2 texcoord1;
 	};
 
@@ -92,7 +94,7 @@ public:
 	void SetName(std::string str) { m_strMeshName = str; };
 	std::string GetName() { return m_strMeshName; };
 
-private:
+public:
 	std::string m_strMeshName;
 
 	UINT m_nVertices = 0;
@@ -122,6 +124,29 @@ private:
 	UINT                            m_nStartIndex = 0;
 	int                             m_nBaseVertex = 0;
 
-
+	int m_MeshType = 0;
+	bool m_bInit = false;
 };
 
+#define SKINNED_ANIMATION_BONES		128
+class CSkinnedMesh : public CMesh
+{
+	
+	int	m_nBonesPerVertex = 4;
+
+
+	std::vector<glm::mat4x4> m_pxmf4x4BindPoseBoneOffsets;
+
+	GLuint m_UBOBindPoseOffset = -1;
+
+public:
+	std::vector<std::string> m_ppstrSkinningBoneNames;
+	int	m_nSkinningBones = 0;
+
+public:
+	CSkinnedMesh();
+	void CopyData(const CMesh& mesh);
+	void LoadSkinInfoFromFile(FILE* pInFile);
+	virtual void CreateShaderVariables();
+	virtual void BindShaderVariables(GLuint s_Program);
+};

@@ -62,6 +62,7 @@ uniform samplerCube u_IrradianceTexture;
 uniform sampler2D u_BrdfLUT;
 uniform samplerCube u_PreFilterMap;
 uniform sampler2D u_ShadowMap;
+uniform sampler2D u_AOTexture; // 9
 
 #define TYPE_LIGHT_DIRECTION 0
 #define TYPE_LIGHT_DIRECTION_BY_POSITION 1
@@ -267,7 +268,7 @@ void main()
 
 	float shadow = ShadowCalculation(LightSpacePos, g_lights[0].vec3Position, WorldPos, normalize(normalTBN));
 	cColor.rgb *= (1.0 - shadow);
-	cColor.rgb += Emissive * 10.f;
+	//cColor.rgb += Emissive * 10.f;
 
 
 	//float S = 1.0;
