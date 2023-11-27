@@ -2883,6 +2883,7 @@ void CAMScene::KeyInput(unsigned char key, int x, int y)
 		break;
 	case 'c':
 		m_pLights[0].m_vec3LightColor = glm::vec3(urd(dre), urd(dre), urd(dre)) * 2.0f;
+		m_pLights[1].m_vec3LightColor = glm::vec3(urd(dre), urd(dre), urd(dre)) * 2.0f;
 		return;
 	case '+':
 		for (int i = 0; i < m_pObjects.size(); ++i) {
@@ -2903,7 +2904,7 @@ void CAMScene::KeyInput(unsigned char key, int x, int y)
 	case 'y':
 		yInput = true;
 		break;
-	case 'Y':
+	case 'u':
 		YInput = true;
 		break;
 	case 'r':
@@ -2971,7 +2972,7 @@ void CAMScene::KeyUpInput(unsigned char key, int x, int y)
 	case 'y':
 		yInput = false;
 		break;
-	case 'Y':
+	case 'u':
 		YInput = false;
 		break;
 	default:
