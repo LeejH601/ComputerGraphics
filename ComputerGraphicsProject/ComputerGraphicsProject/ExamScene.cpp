@@ -2138,11 +2138,15 @@ void CExamScene_22::BuildObjects()
 	frameName = "L_Leg_Joint";
 	L_Leg_Joint = CObject::FindFrameByName(m_pObjects[0].get(), frameName);
 
-
+	
+	std::shared_ptr<CMaterial> pMaterial = std::make_shared<CMaterial>();
+	pMaterial->Opacity = 0.3f;
+	pMaterial->BaseColor = glm::vec3(1, 1, 1);
 	for (int i = 0; i < 3; ++i) {
 		std::shared_ptr<CObject> obj = std::make_shared<CObject>();
 		obj->LoadGeometryAndAnimationFromFile("./Objects/obstacle.bin");
 		obj->SetPosition(glm::vec3(urd_pos(dre), 0.5f, urd_pos(dre)));
+		obj->GetMaterial(0)->Opacity = 0.6f;
 		m_pObjects.emplace_back(std::move(obj));
 		m_obstacles.emplace_back(m_pObjects.back().get());
 	}
@@ -2378,7 +2382,13 @@ void CExamScene_22::RenderScene()
 
 
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glBlendEquation(GL_FUNC_ADD);
 
+	glEnable(GL_DEPTH_TEST);
+	glFrontFace(GL_CCW);
+	glEnable(GL_CULL_FACE);
 
 	BindShaderVariables(s_Program);
 
@@ -2415,7 +2425,7 @@ void CExamScene_22::RenderScene()
 
 	//m_pSunLight->BindShaderVariables(s_Program);
 	m_pMainCamera->BindShaderVariables(s_Program, false);
-
+	glFrontFace(GL_CW);
 
 	glDepthFunc(GL_LEQUAL);
 
