@@ -274,7 +274,7 @@ void CGUIManager::ShowSceneInspector(CScene* pScene)
 		ImGui::SetWindowPos("Scene", winPos);
 	}
 
-
+	m_pSelectBuf = nullptr;
 	for (int i = 0; i < pObjects.size(); ++i) {
 		std::shared_ptr<CObject> pObj = pObjects[i];
 		ShowObjectHierarchyTree(pObj.get());
@@ -459,10 +459,21 @@ void CGUIManager::ShowObjectHierarchyTree(CObject* obj)
 	if (obj == nullptr)
 		return;
 
-	if (ImGui::TreeNode(obj->GetName().c_str())) {
-		m_pSelectedObject = obj;
+
+
+	ImGuiTreeNodeFlags flag = ImGuiTreeNodeFlags_OpenOnArrow;
+	if (obj->GetChild() == nullptr)
+		flag = ImGuiTreeNodeFlags_Leaf;
+	if (ImGui::TreeNodeEx(obj->GetName().c_str(), flag)) {
+		if (ImGui::IsItemClicked())
+			m_pSelectedObject = obj;
 		ShowObjectHierarchyTree(obj->GetChild());
 		ImGui::TreePop();
 	}
+	else {
+		if (ImGui::IsItemClicked())
+			m_pSelectedObject = obj;
+	}
+	
 	ShowObjectHierarchyTree(obj->GetSibling());
 }

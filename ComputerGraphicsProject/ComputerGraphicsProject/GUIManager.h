@@ -18,6 +18,7 @@ class CGUIManager
 	float wrap_width;
 	int widthSize = 11;
 	CObject* m_pSelectedObject = nullptr;
+	CObject* m_pSelectBuf = nullptr;
 
 	DRAGING_SOURCE_TYPE m_eDragingType = DRAGING_SOURCE_TYPE::SOURCE_NONE;
 	int m_nSelectItemIndex = -1;
