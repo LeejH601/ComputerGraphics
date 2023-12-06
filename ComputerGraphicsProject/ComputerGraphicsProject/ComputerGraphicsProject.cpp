@@ -171,7 +171,7 @@ int main(int argc, char** argv)
 		std::cout << "Renderer could not be initialized.. \n";
 	}
 
-	std::shared_ptr<CScene> scene = std::make_shared<CAMScene>();
+	std::shared_ptr<CScene> scene = std::make_shared<CExamScene_31>();
 	g_pSceneCache.push_back(scene);
 	g_currentScene = g_pSceneCache.back().get();
 	g_currentScene->Enter();

@@ -33,6 +33,8 @@ protected:
 
 	DirectX::BoundingOrientedBox m_OBB;
 
+	bool m_bVisible = true;
+
 public:
 	CObject();
 	virtual ~CObject() = default;
@@ -53,6 +55,7 @@ public:
 
 	virtual void BindShaderVariables(GLuint s_Program);
 
+	void SetVisible(bool visible) { m_bVisible = visible; };
 	void SetMesh(std::shared_ptr<CMesh>& mesh) { m_pMesh = mesh; };
 	CMesh* GetMesh() { if (m_pMesh) return m_pMesh.get(); };
 	std::shared_ptr<CMesh> GetMeshByShared() { return m_pMesh; };

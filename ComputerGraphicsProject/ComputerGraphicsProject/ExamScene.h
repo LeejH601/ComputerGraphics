@@ -278,6 +278,9 @@ public:
 	virtual void Update(float fElapsedTime);
 };
 
+
+
+
 class CAMScene : public CPBR_TestScene
 {
 	float m_fSide = 10.0f;
@@ -305,4 +308,42 @@ public:
 	virtual void Update(float fElapsedTime);
 	virtual void KeyInput(unsigned char key, int x, int y);
 	virtual void KeyUpInput(unsigned char key, int x, int y);
+};
+
+
+class CExamScene_30 : public CPBR_TestScene
+{
+
+	bool yInput = false;
+	bool YInput = false;
+
+	bool xInput = false;
+	bool XInput = false;
+
+public:
+	CExamScene_30();
+	virtual ~CExamScene_30();
+
+	virtual void BuildObjects();
+	virtual void KeyInput(unsigned char key, int x, int y);
+	virtual void KeyUpInput(unsigned char key, int x, int y);
+	virtual void Update(float fElapsedTime);
+};
+
+class CExamScene_31 : public CPBR_TestScene
+{
+	std::uniform_real_distribution<float> urd_pos{ -5,5 };
+	std::uniform_real_distribution<float> urd_scale{ 0,2 };
+	std::uniform_real_distribution<float> urd_Accel{ 0.1,1 };
+
+	bool yInput = false;
+	bool sInput = true;
+public:
+	CExamScene_31();
+	virtual ~CExamScene_31();
+
+	virtual void BuildObjects();
+	virtual void KeyInput(unsigned char key, int x, int y);
+	virtual void KeyUpInput(unsigned char key, int x, int y);
+	virtual void Update(float fElapsedTime);
 };

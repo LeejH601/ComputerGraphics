@@ -51,6 +51,7 @@ uniform float gFresnel;
 uniform float gMetallicColor;
 uniform vec3 gSpecularColor;
 uniform vec3 gEimissiveColor;
+uniform float gOpacity;
 //uniform vec4 gUVOffset;
 
 uniform sampler2D u_BaseTexture;
@@ -268,7 +269,7 @@ void main()
 	float shadow = ShadowCalculation(LightSpacePos, g_lights[0].vec3Position, WorldPos, normalize(normalTBN));
 	cColor.rgb *= (1.0 - shadow);
 	cColor.rgb += Emissive * 10.f;
-
+	cColor.a = gOpacity;
 
 	//float S = 1.0;
 	//cColor.rgb = vec3(S * aces_approx(cColor.xyz * 0.8));

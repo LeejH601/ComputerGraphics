@@ -683,7 +683,20 @@ void CPBR_TestScene::RenderScene()
 
 	s_Program = g_Renderer->TestShader;
 	glUseProgram(s_Program);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glBlendEquation(GL_FUNC_ADD);
 
+	glEnable(GL_DEPTH_TEST);
+	glFrontFace(GL_CW);
+
+	if (m_bUseAlphaBlend) {
+		glEnable(GL_CULL_FACE);
+	}
+	else
+		glDisable(GL_CULL_FACE);
+	
+	//glCullFace(GL_BACK);
 
 	BindShaderVariables(s_Program);
 	GLuint lightSpaceLoc;
@@ -733,6 +746,8 @@ void CPBR_TestScene::RenderScene()
 
 	s_Program = g_Renderer->SkyBoxShader;
 	glUseProgram(s_Program);
+
+	glFrontFace(GL_CCW);
 
 	SetPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -942,6 +957,10 @@ void CPBR_TestScene::Update(float fElapsedTime)
 			cxDelta = 0;
 			cyDelta = 0;
 		}
+	}
+
+	for (int i = 0; i < m_pObjects.size(); ++i) {
+		m_pObjects[i]->Update(fElapsedTime);
 	}
 
 	float fTime = g_Timer->GetTotalTime();

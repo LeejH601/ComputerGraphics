@@ -2857,12 +2857,12 @@ void CAMScene::KeyInput(unsigned char key, int x, int y)
 			if (obj) {
 				int n = (i / m_nSideCubes);
 				int m = i % m_nSideCubes;
-				int level; 
+				int level;
 				level = std::max(abs(n - mid), abs(m - mid));
 				if (m_nSideCubes % 2 == 0) {
 					level = std::max(level, std::max(abs(n - mid + 1), abs(m - mid + 1)));
 				}
-				
+
 				obj->m_fCurrentTime = 0.0f;
 				obj->m_fDeltaOffset = -level * dT;
 				obj->m_fScaleValue = 3.0f;
@@ -2876,7 +2876,7 @@ void CAMScene::KeyInput(unsigned char key, int x, int y)
 			if (m_pLights[i].m_fIntensity > 0.001f) {
 				m_pLights[i].m_fIntensity = 0.0f;
 			}
-			else { 
+			else {
 				m_pLights[i].m_fIntensity = 1.0f;
 			}
 		}
@@ -2919,7 +2919,7 @@ void CAMScene::KeyInput(unsigned char key, int x, int y)
 		m_nSideCubes = x;
 		CreateCubes();
 	}
-		break;
+	break;
 	case 'q':
 		glutLeaveMainLoop();
 		break;
@@ -2933,7 +2933,7 @@ void CAMScene::CreateCubes()
 {
 	m_pObjects.clear();
 
-	
+
 	std::shared_ptr<CObject> planeObj = std::make_shared<CObject>();
 	std::shared_ptr<CMesh> planemesh = CResourceManager::GetInst()->GetMeshFromName("Plane");
 	std::shared_ptr<CMaterial> planematerial = CResourceManager::GetInst()->GetMaterialFromIndex(0);
@@ -3020,7 +3020,7 @@ void CAMScene::BuildObjects()
 	std::shared_ptr<CObject> planeObj = std::make_shared<CObject>();
 	planeObj->LoadGeometryAndAnimationFromFile("./Objects/Plane.bin");
 	planeObj->GetMaterial(0)->RoughnessColor = 1.0f;
-	
+
 	std::shared_ptr<CObject> cubeObj = std::make_shared<CObject>();
 	cubeObj->LoadGeometryAndAnimationFromFile("./Objects/obstacle.bin");
 
@@ -3038,4 +3038,298 @@ void CAMScene::BuildObjects()
 
 	CreateCubes();
 
+}
+
+CExamScene_30::CExamScene_30()
+{
+}
+
+CExamScene_30::~CExamScene_30()
+{
+}
+
+void CExamScene_30::BuildObjects()
+{
+	std::shared_ptr<CMaterial> testMaterial = std::make_shared<CMaterial>();
+	std::shared_ptr<CTexture> texture = CResourceManager::GetInst()->ImportTexture("./Textures/rustediron2_basecolor.png", GL_LINEAR);
+	testMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/rustediron2_normal.png", GL_LINEAR);
+	testMaterial->SetNormalTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/rustediron2_metallic.png", GL_LINEAR);
+	testMaterial->SetMetallicTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/rustediron2_roughness.png", GL_LINEAR);
+	testMaterial->SetRoughnessTexture(texture);
+	CResourceManager::GetInst()->RegisterMaterial(testMaterial);
+
+	testMaterial = std::make_shared<CMaterial>();
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/Iron-Scuffed_basecolor.png", GL_LINEAR);
+	testMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/Iron-Scuffed_normal.png", GL_LINEAR);
+	testMaterial->SetNormalTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/Iron-Scuffed_metallic.png", GL_LINEAR);
+	testMaterial->SetMetallicTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/Iron-Scuffed_roughness.png", GL_LINEAR);
+	testMaterial->SetRoughnessTexture(texture);
+	CResourceManager::GetInst()->RegisterMaterial(testMaterial);
+
+	testMaterial = std::make_shared<CMaterial>();
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/older-padded-leather_albedo.png", GL_LINEAR);
+	testMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/older-padded-leather_normal-ogl.png", GL_LINEAR);
+	testMaterial->SetNormalTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/older-padded-leather_metallic.png", GL_LINEAR);
+	testMaterial->SetMetallicTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/older-padded-leather_roughness.png", GL_LINEAR);
+	testMaterial->SetRoughnessTexture(texture);
+	CResourceManager::GetInst()->RegisterMaterial(testMaterial);
+
+	testMaterial = std::make_shared<CMaterial>();
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/white-quilted-diamond_albedo.png", GL_LINEAR);
+	testMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/white-quilted-diamond_normal-ogl.png", GL_LINEAR);
+	testMaterial->SetNormalTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/white-quilted-diamond_metallic.png", GL_LINEAR);
+	testMaterial->SetMetallicTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/white-quilted-diamond_roughness.png", GL_LINEAR);
+	testMaterial->SetRoughnessTexture(texture);
+	CResourceManager::GetInst()->RegisterMaterial(testMaterial);
+
+	testMaterial = std::make_shared<CMaterial>();
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/wrinkled-paper-albedo.png", GL_LINEAR);
+	testMaterial->SetBaseTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/wrinkled-paper-metalness.png", GL_LINEAR);
+	testMaterial->SetNormalTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/wrinkled-paper-normal-ogl.png", GL_LINEAR);
+	testMaterial->SetMetallicTexture(texture);
+	texture = std::make_shared<CTexture>();
+	texture = CResourceManager::GetInst()->ImportTexture("./Textures/wrinkled-paper-roughness.png", GL_LINEAR);
+	testMaterial->SetRoughnessTexture(texture);
+	CResourceManager::GetInst()->RegisterMaterial(testMaterial);
+
+	std::shared_ptr<CObject> cubeObj = std::make_shared<CObject>();
+	cubeObj->LoadGeometryAndAnimationFromFile("./Objects/cube_2.bin");
+	cubeObj->SetScale(glm::vec3(0.1));
+
+	m_pObjects.emplace_back(cubeObj);
+
+	m_pMainCamera->SetPosision(glm::vec3(1, 1, 1) * 3.f);
+	m_bRegenarateView = false;
+	m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	m_bUseAlphaBlend = false;
+}
+
+void CExamScene_30::KeyInput(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 'y':
+		yInput = true;
+		break;
+	case 'Y':
+		YInput = true;
+		break;
+	case 'x':
+		xInput = true;
+		break;
+	case 'X':
+		XInput = true;
+		break;
+	case 's':
+		m_pObjects[0]->SetRotate(glm::quat(1, 0, 0, 0));
+		break;
+	default:
+		break;
+	}
+}
+
+void CExamScene_30::Update(float fElapsedTime)
+{
+	if (yInput) {
+		m_pObjects[0]->RotationQuat(glm::radians(90.f * fElapsedTime), glm::vec3(0, 1, 0));
+	}
+	if (YInput) {
+		m_pObjects[0]->RotationQuat(glm::radians(-90.f * fElapsedTime), glm::vec3(0, 1, 0));
+	}
+	if (xInput) {
+		m_pObjects[0]->RotationQuat(glm::radians(90.f * fElapsedTime), glm::vec3(1, 0, 0));
+	}
+	if (XInput) {
+		m_pObjects[0]->RotationQuat(glm::radians(-90.f * fElapsedTime), glm::vec3(1, 0, 0));
+	}
+}
+
+void CExamScene_30::KeyUpInput(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 'y':
+		yInput = false;
+		break;
+	case 'Y':
+		YInput = false;
+		break;
+	case 'x':
+		xInput = false;
+		break;
+	case 'X':
+		XInput = false;
+		break;
+	case 's':
+		break;
+	default:
+		break;
+	}
+}
+
+CExamScene_31::CExamScene_31()
+{
+}
+
+CExamScene_31::~CExamScene_31()
+{
+}
+
+void CExamScene_31::BuildObjects()
+{
+
+
+
+	std::shared_ptr<CObject> planeObj = std::make_shared<CObject>();
+	planeObj->LoadGeometryAndAnimationFromFile("./Objects/Plane.bin");
+	planeObj->GetMaterial(0)->RoughnessColor = 1.0f;
+
+	m_pObjects.emplace_back(planeObj);
+
+	std::shared_ptr<CMaterial> pMat = std::make_shared<CMaterial>();
+	pMat->BaseColor = glm::vec3(1, 1, 1);
+
+	for (int i = 0; i < 500; ++i) {
+		std::shared_ptr<CDynamicObject> obj = std::make_shared<CDynamicObject>();
+		obj->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+		obj->SetScale(glm::vec3(0.1f));
+		obj->SetPosition(glm::vec3(urd_pos(dre), 10.0f + 8.5f * (i / 100), urd_pos(dre)));
+		obj->AddAcceleration(glm::vec3(0, -1, 0), urd_Accel(dre));
+		obj->SetMaterial(0, pMat);
+
+		m_pObjects.emplace_back(obj);
+	}
+
+
+	for (int i = 0; i < 5; ++i) {
+		std::shared_ptr<CObject> cubeObj = std::make_shared<CObject>();
+		cubeObj->LoadGeometryAndAnimationFromFile("./Objects/obstacle.bin");
+		cubeObj->SetScale(glm::vec3(urd_scale(dre), urd_scale(dre), urd_scale(dre)));
+		cubeObj->GetMaterial(0)->Opacity = 0.5f;
+		cubeObj->SetPosition(glm::vec3(urd_pos(dre), 0.5f * cubeObj->GetScale().y, urd_pos(dre)));
+
+		m_pObjects.emplace_back(cubeObj);
+	}
+
+	glm::vec3 pos;
+	pos.x = sin(0) * 7.f;
+	pos.y = 7.f;
+	pos.z = cos(0) * 7.f;
+
+	m_pMainCamera->SetPosision(pos);
+	m_pMainCamera->SetQauternion(glm::quatLookAt(glm::normalize(m_pMainCamera->GetPosition()), glm::vec3(0, 1, 0)));
+	
+	/*m_bRegenarateView = false;
+	m_pMainCamera->m_mat4x4View = glm::lookAt(m_pMainCamera->GetPosition(), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));*/
+}
+
+void CExamScene_31::Update(float fElapsedTime)
+{
+	CPBR_TestScene::Update(fElapsedTime);
+
+	if (sInput) {
+		for (int i = 0; i < m_pObjects.size(); ++i) {
+			CDynamicObject* obj = dynamic_cast<CDynamicObject*>(m_pObjects[i].get());
+
+			if (obj == nullptr)
+				continue;
+
+			glm::vec3 pos = obj->GetPosition();
+
+			if (pos.y < 0.0f) {
+				pos.y = 10.0f;
+				obj->SetPosition(pos);
+				obj->GetPhysics() = CPhysicsComponent();
+				obj->AddAcceleration(glm::vec3(0, -1, 0), urd_Accel(dre));
+			}
+		}
+	}
+
+	if (yInput) {
+		/*glm::quat rotate = glm::quatLookAt(glm::normalize(m_pMainCamera->GetPosition()), glm::vec3(0, 1, 0));
+		glm::quat invRot = glm::rotate(rotate, glm::radians(-0.0001f), glm::vec3(0, 1, 0));
+		rotate = glm::rotate(rotate, glm::radians(0.00001f * fElapsedTime), glm::vec3(0, 1, 0));
+		rotate = glm::normalize(rotate);
+		if (!glm::any(glm::isnan(rotate))) {
+			m_pMainCamera->SetPosision(glm::mat4_cast(rotate) * glm::vec4(glm::normalize(glm::vec3(1, 1, 1)) * 7.f, 1));
+				m_pMainCamera->SetQauternion(glm::quatLookAt(glm::normalize(m_pMainCamera->GetPosition()), glm::vec3(0, 1, 0)));
+				std::cout << rotate.x << rotate.y << rotate.z << rotate.w << std::endl;
+		}
+*/
+		static float fTime = 0.0f;
+		glm::vec3 pos = m_pMainCamera->GetPosition();
+		fTime += fElapsedTime;
+		pos.x = sin(fTime) * 7.f;
+		pos.z = cos(fTime) * 7.f;
+
+		m_pMainCamera->SetPosision(pos);
+		m_pMainCamera->SetQauternion(glm::quatLookAt(glm::normalize(m_pMainCamera->GetPosition()), glm::vec3(0, 1, 0)));
+		//m_pMainCamera->SetQauternion(rotate);
+	}
+}
+
+void CExamScene_31::KeyInput(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 'm':
+		if (m_pLights[0].m_fIntensity > 0.001f) {
+			m_pLights[0].m_fIntensity = 0.0f;
+			m_pLights[1].m_fIntensity = 0.0f;
+		}
+		else {
+			m_pLights[0].m_fIntensity = 1.0f;
+			m_pLights[1].m_fIntensity = 1.0f;
+		}
+		return;
+	case 's':
+		sInput = !sInput;
+		for (int i = 0; i < m_pObjects.size(); ++i) {
+			CDynamicObject* obj = dynamic_cast<CDynamicObject*>(m_pObjects[i].get());
+			if(obj != nullptr)
+			obj->SetVisible(sInput);
+		}
+		break;
+	case 'y':
+		yInput = !yInput;
+		break;
+	default:
+		break;
+	}
+}
+
+void CExamScene_31::KeyUpInput(unsigned char key, int x, int y)
+{
 }

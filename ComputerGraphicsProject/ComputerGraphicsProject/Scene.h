@@ -39,6 +39,7 @@ protected:
 	std::shared_ptr<CMesh> m_NdcMesh;
 
 	bool m_bInitialized = false;
+	bool m_bUseAlphaBlend = true;
 
 	GLenum m_ePolygonFace = GL_FRONT_AND_BACK;
 	GLenum m_ePolygonMode = GL_FILL;

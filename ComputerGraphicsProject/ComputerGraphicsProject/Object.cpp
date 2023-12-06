@@ -463,8 +463,10 @@ void CObject::Update(float fElapsedTime)
 void CObject::Render(GLuint s_Program)
 {
 	if (m_pMesh) {
-		BindShaderVariables(s_Program);
-		m_pMesh->Render();
+		if (m_bVisible) {
+			BindShaderVariables(s_Program);
+			m_pMesh->Render();
+		}
 	}
 
 	if (m_pSibling)

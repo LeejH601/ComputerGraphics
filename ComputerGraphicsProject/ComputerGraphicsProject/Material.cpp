@@ -10,6 +10,7 @@ CMaterial::CMaterial()
 	FresnelColor = 0.04f;
 	EmissiveColor = glm::vec3(0, 0, 0);
 	UVOffset = glm::vec4(0, 0, 1, 1);
+	Opacity = 1.0f;
 }
 
 CMaterial::~CMaterial()
@@ -43,6 +44,8 @@ void CMaterial::BindShaderVariables(GLuint s_Program)
 	GLuint UVOffsetLoc = glGetUniformLocation(s_Program, "gUVOffset");
 	glUniform4fv(UVOffsetLoc, 1, glm::value_ptr(UVOffset));
 
+	GLuint OpacityLoc = glGetUniformLocation(s_Program, "gOpacity");
+	glUniform1f(OpacityLoc, Opacity);
 
 	if (TextureMask & MATERIAL_BASE_MAP) {
 		GLuint samplerULoc = glGetUniformLocation(s_Program, "u_BaseTexture");
