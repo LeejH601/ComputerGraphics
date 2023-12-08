@@ -5,13 +5,13 @@
 #include "Material.h"
 #include "Global.h"
 #include <memory>
+#include "Animation.h"
 
 
-
+class CLoadedModelInfo;
 class CMesh;
 class CSkinnedMesh;
-class CAnimationSets;
-class CAnimationController;
+
 class CObject
 {
 public:
@@ -35,7 +35,6 @@ protected:
 	std::shared_ptr<CObject> m_pSibling = nullptr;
 
 	DirectX::BoundingOrientedBox m_OBB;
-
 	std::unique_ptr<CAnimationController> m_pSkinnedAnimationController;
 
 public:
@@ -52,6 +51,8 @@ public:
 	glm::vec3 GetScale() { return m_vec3Scale; };
 
 	static CObject* FindFrameByName(CObject* object, std::string& name);
+	static CSkinnedMesh* FIndSkinnedMesh(CObject* object);
+	static void LoadAnimationFromFile(FILE* pInFile, CLoadedModelInfo* pLoadedModel);
 
 	virtual void Update(float fElapsedTime);
 	virtual void Render(GLuint s_Program);
@@ -73,6 +74,7 @@ public:
 	void ReganerateTransform();
 	void UpdateTransform(glm::mat4x4* parent = nullptr);
 
+	void SetAnimationController(std::unique_ptr<CAnimationController> pController) { m_pSkinnedAnimationController = std::move(pController); };
 
 	void LoadFrameHierarchyFromFile(CObject* pParent, FILE* pInFile, int* pnSkinnedMeshes = nullptr);
 	void LoadMaterialsFromFile(CObject* pParent, FILE* pInFile);

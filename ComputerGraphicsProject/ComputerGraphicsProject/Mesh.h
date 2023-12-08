@@ -128,6 +128,7 @@ public:
 	bool m_bInit = false;
 };
 
+class CAnimationController;
 #define SKINNED_ANIMATION_BONES		128
 class CSkinnedMesh : public CMesh
 {
@@ -137,7 +138,7 @@ class CSkinnedMesh : public CMesh
 
 	std::vector<glm::mat4x4> m_pxmf4x4BindPoseBoneOffsets;
 
-	GLuint m_UBOBindPoseOffset = -1;
+	static GLuint m_UBOBindPoseOffset;
 
 public:
 	std::vector<std::string> m_ppstrSkinningBoneNames;

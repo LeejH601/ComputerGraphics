@@ -32,6 +32,10 @@ layout(std140, binding = 1) uniform BindBoneOffset
 	mat4 gmtxBindBoneOffsets[SKINNED_ANIMATION_BONES];
 };
 
+layout(std140, binding = 2) uniform BoneTransforms
+{
+	mat4 gmtxBoneTransforms[SKINNED_ANIMATION_BONES];
+};
 
 void main()
 {

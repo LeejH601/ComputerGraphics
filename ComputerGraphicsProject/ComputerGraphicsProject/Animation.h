@@ -43,7 +43,7 @@ public:
 
 	int								m_nKeyFrames = 0;
 	std::vector<float>				m_pfKeyFrameTimes;
-	std::vector<glm::mat4x4*>		m_ppxmf4x4KeyFrameTransforms;
+	std::vector<std::vector<glm::mat4x4>>		m_ppxmf4x4KeyFrameTransforms;
 
 #ifdef _WITH_ANIMATION_SRT
 	int								m_nKeyFrameScales = 0;
@@ -71,7 +71,7 @@ public:
 	std::vector<CAnimationSet*>		m_pAnimationSets;
 
 	int								m_nAnimatedBoneFrames = 0;
-	std::vector<CObject*>		m_ppAnimatedBoneFrameCaches; //[m_nAnimatedBoneFrames]
+	std::vector<glm::mat4x4>		m_ppAnimatedBoneFrameCaches; //[m_nAnimatedBoneFrames]
 };
 
 class CAnimationTrack
@@ -121,6 +121,7 @@ typedef std::pair<std::pair<int,int>, CObject*> Obj_Socket; // <int, int>, CGame
 class CAnimationController
 {
 public:
+	CAnimationController();
 	CAnimationController(int nAnimationTracks, CLoadedModelInfo* pModel);
 	virtual ~CAnimationController();
 
@@ -142,9 +143,11 @@ public:
 	int m_nSkinnedMeshes = 0;
 	std::vector<CSkinnedMesh*> m_ppSkinnedMeshes ; //[SkinnedMeshes], Skinned Mesh Cache
 
-	std::vector<glm::mat4*> m_ppcbxmf4x4MappedSkinningBoneTransforms; //[SkinnedMeshes]
+	std::vector<std::vector<glm::mat4>> m_ppMat4x4SkinningBoneTransforms; //[SkinnedMeshes]
 
 	std::vector<Obj_Socket> m_pSockets;
+
+	static GLuint m_UBOBoneTransforms;
 
 public:
 	void UpdateShaderVariables();
@@ -169,7 +172,9 @@ public:
 	void UpdateSocketsTransform();
 	void UpdateBoneTransform();
 
-	void AdvanceTime(float fElapsedTime, CObject* pRootGameObject);
+	virtual void BindShaderVariables(GLuint s_Program, int skinmeshIndex = 0);
+
+	void AdvanceTime(float fElapsedTime, CObject* pRootGameObject, int skinmeshIndex = 0);
 
 	
 

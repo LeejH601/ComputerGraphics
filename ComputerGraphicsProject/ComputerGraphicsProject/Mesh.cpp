@@ -1,5 +1,6 @@
 #include "Mesh.h"
 #include "ResourceManager.h"
+#include "Animation.h"
 
 std::shared_ptr<CMesh> CMesh::CreateCubeMesh(float fWidth, float fHeight, float fDepth)
 {
@@ -779,6 +780,7 @@ void CMesh::RenderInstanced(int nInstance)
 	}
 }
 
+GLuint CSkinnedMesh::m_UBOBindPoseOffset = -1;
 CSkinnedMesh::CSkinnedMesh() {
 	m_MeshType = 1;
 }
@@ -923,30 +925,33 @@ void CSkinnedMesh::BindShaderVariables(GLuint s_Program)
 
 	glBindBuffer(GL_UNIFORM_BUFFER, m_UBOBindPoseOffset);
 	GLuint offset = 0u;
+
 	//glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(UBOLightData), &UBOLightData);
-	glBindBuffer(GL_UNIFORM_BUFFER, 1);
+	//glBindBuffer(GL_UNIFORM_BUFFER, 1);
 }
 
 void CSkinnedMesh::CreateShaderVariables()
 {
 	CMesh::CreateShaderVariables();
 
-	glGetError();
-	int size = m_pxmf4x4BindPoseBoneOffsets.size() * sizeof(glm::mat4x4);
-	glGenBuffers(1, &m_UBOBindPoseOffset);
-	glBindBuffer(GL_UNIFORM_BUFFER, m_UBOBindPoseOffset);
-	glBufferData(GL_UNIFORM_BUFFER, size, NULL, GL_STATIC_DRAW);
-	if (glGetError())
-		std::cout << "error BufferData" << std::endl;
+	if (m_UBOBindPoseOffset == -1) {
+		glGetError();
+		int size = m_pxmf4x4BindPoseBoneOffsets.size() * sizeof(glm::mat4x4);
+		glGenBuffers(1, &m_UBOBindPoseOffset);
+		glBindBuffer(GL_UNIFORM_BUFFER, m_UBOBindPoseOffset);
+		glBufferData(GL_UNIFORM_BUFFER, size, NULL, GL_STATIC_DRAW);
+		if (glGetError())
+			std::cout << "error BufferData" << std::endl;
 
-	glBindBufferBase(GL_UNIFORM_BUFFER, 1, m_UBOBindPoseOffset);
-	if (glGetError())
-		std::cout << "error BufferData" << std::endl;
+		glBindBufferBase(GL_UNIFORM_BUFFER, 1, m_UBOBindPoseOffset);
+		if (glGetError())
+			std::cout << "error BufferData" << std::endl;
 
-	glBindBuffer(GL_UNIFORM_BUFFER, m_UBOBindPoseOffset);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4x4) * m_pxmf4x4BindPoseBoneOffsets.size(), m_pxmf4x4BindPoseBoneOffsets.data());
-	if (glGetError())
-		std::cout << "error BufferData" << std::endl;
+		glBindBuffer(GL_UNIFORM_BUFFER, m_UBOBindPoseOffset);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4x4) * m_pxmf4x4BindPoseBoneOffsets.size(), m_pxmf4x4BindPoseBoneOffsets.data());
+		if (glGetError())
+			std::cout << "error BufferData" << std::endl;
 
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
 }

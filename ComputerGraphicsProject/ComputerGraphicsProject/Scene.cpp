@@ -5,6 +5,7 @@
 #include "Timer.h"
 #include "ResourceManager.h"
 #include "GUIManager.h"
+#include "Animation.h"
 
 CScene::CScene()
 {
@@ -643,7 +644,16 @@ void CPBR_TestScene::BuildObjects()
 
 	obj = std::make_shared<CObject>();
 	obj->LoadGeometryAndAnimationFromFile("./Objects/minotaur1.bin");
+	std::unique_ptr<CAnimationController> pAnimController = std::make_unique<CAnimationController>();
+	pAnimController->m_pRootMotionObject = obj.get();
+	pAnimController->m_ppSkinnedMeshes[0] = CObject::FIndSkinnedMesh(obj.get());
+	std::vector<std::string>& boneNames = pAnimController->m_ppSkinnedMeshes[0]->m_ppstrSkinningBoneNames;
+	for (int i = 0; i < boneNames.size(); ++i) {
+		pAnimController->m_ppMat4x4SkinningBoneTransforms[0][i] = CObject::FindFrameByName(obj.get(), boneNames[i])->m_mat4x4Transform;
+	}
+	obj->SetAnimationController(std::move(pAnimController));
 	obj->SetPosition(glm::vec3(0, 0, -3));
+
 	m_pObjects.emplace_back(obj);
 
 	CGUIManager::GetInst()->SetSelectedObject(m_pObjects[0].get());
