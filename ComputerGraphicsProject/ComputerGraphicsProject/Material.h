@@ -30,6 +30,7 @@ public:
 	glm::float32 RoughnessColor;
 	glm::float32 FresnelColor;
 	glm::vec3 EmissiveColor;
+	glm::float32 EmissiveValue;
 	glm::float32 Refraction;
 	glm::float32 Opacity;
 	glm::vec4 UVOffset;

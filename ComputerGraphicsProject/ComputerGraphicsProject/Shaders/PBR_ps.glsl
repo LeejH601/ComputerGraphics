@@ -53,6 +53,7 @@ uniform vec3 gSpecularColor;
 uniform vec3 gEimissiveColor;
 uniform float gOpacity;
 //uniform vec4 gUVOffset;
+uniform float gEmissiveValue;
 
 uniform sampler2D u_BaseTexture;
 uniform sampler2D u_NormalTexture;
@@ -268,7 +269,7 @@ void main()
 
 	float shadow = ShadowCalculation(LightSpacePos, g_lights[0].vec3Position, WorldPos, normalize(normalTBN));
 	cColor.rgb *= (1.0 - shadow);
-	cColor.rgb += Emissive * 10.f;
+	cColor.rgb += Emissive * gEmissiveValue;
 	cColor.a = gOpacity;
 
 	//float S = 1.0;
