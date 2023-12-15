@@ -3219,8 +3219,11 @@ CExamScene_31::~CExamScene_31()
 
 void CExamScene_31::BuildObjects()
 {
+	CPBR_TestScene::BuildObjects();
 
+	m_pObjects.clear();
 
+	m_bEnablePhysicallyBasedBloom = false;
 
 	std::shared_ptr<CObject> planeObj = std::make_shared<CObject>();
 	planeObj->LoadGeometryAndAnimationFromFile("./Objects/Plane.bin");
@@ -3312,7 +3315,7 @@ void CExamScene_31::Update(float fElapsedTime)
 
 void CExamScene_31::KeyInput(unsigned char key, int x, int y)
 {
-	switch (key)
+	/*switch (key)
 	{
 	case 'm':
 		if (m_pLights[0].m_fIntensity > 0.001f) {
@@ -3337,9 +3340,11 @@ void CExamScene_31::KeyInput(unsigned char key, int x, int y)
 		break;
 	default:
 		break;
-	}
+	}*/
+	CPBR_TestScene::KeyInput(key, x, y);
 }
 
 void CExamScene_31::KeyUpInput(unsigned char key, int x, int y)
 {
+	CPBR_TestScene::KeyUpInput(key, x, y);
 }

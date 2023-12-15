@@ -28,7 +28,7 @@ CScene* g_currentScene = nullptr;
 int g_WindowSizeX = 1280;
 int g_WindowSizeY = 768;
 
-//#define FHD_RESOLUTION
+#define FHD_RESOLUTION
 
 std::vector<std::shared_ptr<CScene>> g_pSceneCache;
 
@@ -151,7 +151,7 @@ int main(int argc, char** argv)
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(0, 0);
 	glutInitWindowSize(g_WindowSizeX, g_WindowSizeY);
-	glutCreateWindow("Game Software Engineering KPU");
+	glutCreateWindow("2023 Computer Graphics");
 
 	glewInit();
 	if (glewIsSupported("GL_VERSION_3_0"))
@@ -175,6 +175,7 @@ int main(int argc, char** argv)
 	g_pSceneCache.push_back(scene);
 	g_currentScene = g_pSceneCache.back().get();
 	g_currentScene->Enter();
+
 
 	/*scene = std::make_shared<CExamScene_8>();
 	g_pSceneCache.push_back(scene);*/

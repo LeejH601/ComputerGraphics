@@ -257,5 +257,7 @@
     <None Include="Shaders\BloomUpSample_ps.glsl" />
     <None Include="Shaders\Bloom_ps.glsl" />
     <None Include="Shaders\PostProcess_ps.glsl" />
+    <None Include="ClassDiagram.cd" />
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
 </Project>

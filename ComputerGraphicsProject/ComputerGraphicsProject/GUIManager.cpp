@@ -40,6 +40,18 @@ void CGUIManager::ShowAssetInspector(CScene* pScene)
 		ImGui::SetWindowPos("Assets", ImVec2(0, g_WindowSizeY));
 	}
 
+	static bool bShowOpenMenu = false;
+	if (ImGui::BeginMenuBar()) {
+		if (ImGui::BeginMenu("Menu"))
+		{
+			if (ImGui::MenuItem("Open", NULL)) {
+
+			}
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
+	}
+
 	frameSize = ImGui::GetWindowSize();
 	//wrap_width = (float)frameSize.x / widthSize;
 	widthSize = std::floor((float)frameSize.x / wrap_width);

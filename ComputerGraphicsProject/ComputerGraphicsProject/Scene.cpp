@@ -880,6 +880,34 @@ void CPBR_TestScene::KeyInput(unsigned char key, int x, int y)
 		m_pMainCamera->m_vec3Look.x -= 0.1f;
 		m_pMainCamera->m_vec3Look = glm::normalize(m_pMainCamera->m_vec3Look);
 		break;
+	case 'b':
+		m_bEnablePhysicallyBasedBloom = !m_bEnablePhysicallyBasedBloom;
+		break;
+	case 'm':
+	{
+		static bool bInit = false;
+		static std::uniform_real_distribution<float> urd_pos{ -5,5 };
+		static std::uniform_real_distribution<float> urd_scale{ 0.07,0.1f };
+		static std::uniform_real_distribution<float> urd_Accel{ 0.1,1 };
+
+		if (bInit == false) {
+			std::shared_ptr<CMaterial> pMat = std::make_shared<CMaterial>();
+			pMat->BaseColor = glm::vec3(1, 1, 1);
+
+			for (int i = 0; i < 500; ++i) {
+				std::shared_ptr<CDynamicObject> obj = std::make_shared<CDynamicObject>();
+				obj->LoadGeometryAndAnimationFromFile("./Objects/TestModel.bin");
+				obj->SetScale(glm::vec3(urd_scale(dre)));
+				obj->SetPosition(glm::vec3(urd_pos(dre), 10.0f + 8.5f * (i / 100), urd_pos(dre)));
+				obj->AddAcceleration(glm::vec3(0, -1, 0), urd_Accel(dre));
+				obj->SetMaterial(0, pMat);
+
+				m_pObjects.emplace_back(obj);
+			}
+			bInit = true;
+		}
+	}
+		break;
 	default:
 		break;
 	}
@@ -971,4 +999,22 @@ void CPBR_TestScene::Update(float fElapsedTime)
 	m_pSunLight->m_vec3Position = (-m_pSunLight->m_vec3Direction) * 10.0f;
 
 
+	{
+		static std::uniform_real_distribution<float> urd_Accel{ 0.1,1 };
+		for (int i = 0; i < m_pObjects.size(); ++i) {
+			CDynamicObject* obj = dynamic_cast<CDynamicObject*>(m_pObjects[i].get());
+
+			if (obj == nullptr)
+				continue;
+
+			glm::vec3 pos = obj->GetPosition();
+
+			if (pos.y < 0.0f) {
+				pos.y = 10.0f;
+				obj->SetPosition(pos);
+				obj->GetPhysics() = CPhysicsComponent();
+				obj->AddAcceleration(glm::vec3(0, -1, 0), urd_Accel(dre));
+			}
+		}
+	}
 }
